@@ -39,7 +39,7 @@ task :compile do
 	full_css.write_to(BUILD_DIR.join('css', 'quick_script.css'))
 
   # images
-  images_src = SOURCE_DIR.join('images')
+  images_src = SOURCE_DIR.join('images/quick_script')
   images_dst = BUILD_DIR.join('img')
   FileUtils.cp_r(Dir["#{images_src}/*"], images_dst)
 end

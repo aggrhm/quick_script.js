@@ -1,9 +1,9 @@
-//= require ./bootstrap-qs
 //= require ./jquery.history
 //= require ./knockout
 //= require ./knockout.punches
 //= require ./date
 //= require ./lawnchair
-//= require ./classes
-//= require ./framework
-//= require ./ko_bindings
+//= require ./quick_script/classes
+//= require ./quick_script/framework
+//= require ./quick_script/ko_bindings
+//= require ./quick_script/bootstrap-qs
