@@ -4,7 +4,7 @@
   "main": [
     "./dist/css/quick_script.css",
     "./dist/js/quick_script.js",
-    "./dist/img/ajax_loader.gif",
+    "./dist/img/ajax-loader.gif",
     "./dist/img/qs-notify-icon.png",
     "./dist/img/remove.png"
   ],
