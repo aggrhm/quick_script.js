@@ -4,9 +4,9 @@
   "main": [
     "./dist/css/quick_script.css",
     "./dist/js/quick_script.js",
-    "./dist/images/ajax_loader.gif",
-    "./dist/images/qs-notify-icon.png",
-    "./dist/images/remove.png"
+    "./dist/img/ajax_loader.gif",
+    "./dist/img/qs-notify-icon.png",
+    "./dist/img/remove.png"
   ],
   "dependencies": {
     "jquery": ">= 1.10.0"
