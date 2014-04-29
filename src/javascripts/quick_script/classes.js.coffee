@@ -154,6 +154,7 @@ class @Overlay
 		$(document).click ->
 			Overlay.removePopovers()
 Overlay.instance = new Overlay()
+Overlay.options = {notify_image_url: '/assets/qs-notify-icon.png'}
 Overlay.closeDialog = ->
 		@remove('dialog')
 Overlay.add = (vm, tmp, opts) ->
@@ -207,7 +208,7 @@ Overlay.notify = (msg, type, opts) ->
 		type = type || 'info'
 
 		Overlay.clearNotifications()
-		$('body').prepend("<div id='qs-notify' class='qs-notify-elegant #{type} p-#{opts.position}' style='display: none;'><img class='icon' src='/assets/qs-notify-icon.png'/><div class='title'>#{msg}</div></div>")
+		$('body').prepend("<div id='qs-notify' class='qs-notify-elegant #{type} p-#{opts.position}' style='display: none;'><img class='icon' src='#{Overlay.options.notify_image_url}'/><div class='title'>#{msg}</div></div>")
 		$notif = $('#qs-notify')
 		$notif.addClass(opts.css) if (opts.css?)
 		$notif.fadeIn 'slow', ->

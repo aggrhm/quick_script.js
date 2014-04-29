@@ -43,6 +43,9 @@ QuickScript.utils =
 			return {x: (coords.x / ts.w) * 100, y: (coords.y / ts.h) * 100}
 		else
 			return coords
+	isBlank : (val)->
+		return true if !val?
+		return val == ""
 
 
 QuickScript.log = (msg, lvl)->
@@ -86,7 +89,7 @@ class @Model
 		@errors = ko.observable({})
 		@errors.extend({errors: true})
 		@model_state = ko.observable(0)
-		@saveProgress = ko.observable(0)
+		@save_progress = ko.observable(0)
 		if opts?
 			@is_submodel = opts.is_submodel
 		@extend()
@@ -145,7 +148,7 @@ class @Model
 		@adapter.save
 			data: opts
 			progress : (ev, prog)=>
-				@saveProgress( prog )
+				@save_progress( prog )
 			success : (resp)=>
 				@handleData(resp.data)
 				callback(resp) if callback?
@@ -160,7 +163,7 @@ class @Model
 		@id('')
 		@init()
 		@db_state(@toJS())
-		@saveProgress(0)
+		@save_progress(0)
 		@model_state(ko.modelStates.READY)
 	delete : (fields, callback)=>
 		fields ||= ['id']
@@ -628,6 +631,7 @@ class @View
 	reload : =>
 		@load.apply(this, arguments)
 	addView : (name, view_class, tpl) ->
+		return if @views[name]?
 		@views[name] = new view_class(name, this)
 		@views[name].templateID = tpl
 		@["is_task_#{name}"] = ko.computed ->
