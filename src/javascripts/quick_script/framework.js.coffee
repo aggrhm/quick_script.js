@@ -287,8 +287,8 @@ class @Collection
 		@scope = ko.observable(@opts.scope || [])
 		@items = ko.observableArray([])
 		@views = ko.observableArray([])
-		@view_model = ko.observable(@opts.view || View)
-		@view_owner = ko.observable(@opts.view_owner || null)
+		@view_model = (@opts.view || View)
+		@view_owner = (@opts.view_owner || null)
 		@page = ko.observable(1)
 		@limit = ko.observable(@opts.limit || 100)
 		@title = ko.observable(@opts.title || 'Collection')
@@ -341,8 +341,8 @@ class @Collection
 		opts.unshift(scp)
 		@scope(opts)
 	updateViews : (items)=>
-		view_cls = @view_model()
-		view_owner = @view_owner()
+		view_cls = @view_model
+		view_owner = @view_owner
 		ra = items
 		ca = @views()
 		max_len = Math.max(ra.length, ca.length)
@@ -375,8 +375,10 @@ class @Collection
 						ca[idx] = new view_cls(view_name, view_owner, rm)
 		@views.valueHasMutated()
 	setView : (view_model, view_owner) =>
-		@view_model(view_model)
-		@view_owner(view_owner)
+		@views([])
+		@view_model = view_model
+		@view_owner = view_owner
+		@updateViews(@items())
 	_load : (scope, op, callback)->
 		#console.log("Loading items for #{scope}")
 		op ||= Collection.REPLACE
@@ -415,7 +417,7 @@ class @Collection
 		models = []
 		views = []
 		op ||= Collection.REPLACE
-		cls = @view_model()
+		cls = @view_model
 		#if (op == Collection.REPLACE) || (op == Collection.UPDATE)
 			#@items([]); @views([])
 		if op == Collection.UPDATE
@@ -462,7 +464,7 @@ class @Collection
 			for item, idx in resp
 				model = new @model(item, this)
 				models.push(model)
-				views.push(new cls("view-#{model.id()}", @view_owner(), model))
+				views.push(new cls("view-#{model.id()}", @view_owner, model))
 
 			#QS.log "COLLECTION::HANDLE_DATA : Finished building data #{QS.time()}.", 3
 			if !op? || op == Collection.REPLACE
@@ -492,13 +494,9 @@ class @Collection
 	addItem : (item, notify)->
 		notify ||= true
 		item.collection = this
-		cls = @view_model()
-		view = new cls("view-#{item.id()}", @view_owner(), item)
 		@items().push(item)
-		#@views().push(view)
 		@items.valueHasMutated() if notify
-		#@views.valueHasMutated() if notify
-		return view
+		return item
 	removeItem : (idx, notify)->
 		notify ||= true
 		@items().splice(idx, 1)
