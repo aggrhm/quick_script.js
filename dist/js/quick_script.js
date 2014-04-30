@@ -1348,6 +1348,10 @@ Lawnchair.adapter('dom', (function() {
 
   Overlay.instance = new Overlay();
 
+  Overlay.options = {
+    notify_image_url: '/assets/qs-notify-icon.png'
+  };
+
   Overlay.closeDialog = function() {
     return this.remove('dialog');
   };
@@ -1422,7 +1426,7 @@ Lawnchair.adapter('dom', (function() {
     opts.position = opts.position || 'right';
     type = type || 'info';
     Overlay.clearNotifications();
-    $('body').prepend("<div id='qs-notify' class='qs-notify-elegant " + type + " p-" + opts.position + "' style='display: none;'><img class='icon' src='/assets/qs-notify-icon.png'/><div class='title'>" + msg + "</div></div>");
+    $('body').prepend("<div id='qs-notify' class='qs-notify-elegant " + type + " p-" + opts.position + "' style='display: none;'><img class='icon' src='" + Overlay.options.notify_image_url + "'/><div class='title'>" + msg + "</div></div>");
     $notif = $('#qs-notify');
     if ((opts.css != null)) {
       $notif.addClass(opts.css);
@@ -1840,6 +1844,12 @@ Lawnchair.adapter('dom', (function() {
       } else {
         return coords;
       }
+    },
+    isBlank: function(val) {
+      if (val == null) {
+        return true;
+      }
+      return val === "";
     }
   };
 
@@ -1913,7 +1923,7 @@ Lawnchair.adapter('dom', (function() {
         errors: true
       });
       this.model_state = ko.observable(0);
-      this.saveProgress = ko.observable(0);
+      this.save_progress = ko.observable(0);
       if (opts != null) {
         this.is_submodel = opts.is_submodel;
       }
@@ -2015,7 +2025,7 @@ Lawnchair.adapter('dom', (function() {
         data: opts,
         progress: (function(_this) {
           return function(ev, prog) {
-            return _this.saveProgress(prog);
+            return _this.save_progress(prog);
           };
         })(this),
         success: (function(_this) {
@@ -2050,7 +2060,7 @@ Lawnchair.adapter('dom', (function() {
       this.id('');
       this.init();
       this.db_state(this.toJS());
-      this.saveProgress(0);
+      this.save_progress(0);
       return this.model_state(ko.modelStates.READY);
     };
 
@@ -2302,8 +2312,8 @@ Lawnchair.adapter('dom', (function() {
       this.scope = ko.observable(this.opts.scope || []);
       this.items = ko.observableArray([]);
       this.views = ko.observableArray([]);
-      this.view_model = ko.observable(this.opts.view || View);
-      this.view_owner = ko.observable(this.opts.view_owner || null);
+      this.view_model = this.opts.view || View;
+      this.view_owner = this.opts.view_owner || null;
       this.page = ko.observable(1);
       this.limit = ko.observable(this.opts.limit || 100);
       this.title = ko.observable(this.opts.title || 'Collection');
@@ -2360,8 +2370,8 @@ Lawnchair.adapter('dom', (function() {
 
     Collection.prototype.updateViews = function(items) {
       var ca, cm, idx, max_len, mh, ra, rm, same_view, view_cls, view_name, view_owner, _i, _ref;
-      view_cls = this.view_model();
-      view_owner = this.view_owner();
+      view_cls = this.view_model;
+      view_owner = this.view_owner;
       ra = items;
       ca = this.views();
       max_len = Math.max(ra.length, ca.length);
@@ -2390,8 +2400,10 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Collection.prototype.setView = function(view_model, view_owner) {
-      this.view_model(view_model);
-      return this.view_owner(view_owner);
+      this.views([]);
+      this.view_model = view_model;
+      this.view_owner = view_owner;
+      return this.updateViews(this.items());
     };
 
     Collection.prototype._load = function(scope, op, callback) {
@@ -2464,7 +2476,7 @@ Lawnchair.adapter('dom', (function() {
       models = [];
       views = [];
       op || (op = Collection.REPLACE);
-      cls = this.view_model();
+      cls = this.view_model;
       if (op === Collection.UPDATE) {
         curr_a = this.items();
         curr_len = this.items().length;
@@ -2502,7 +2514,7 @@ Lawnchair.adapter('dom', (function() {
           item = resp[idx];
           model = new this.model(item, this);
           models.push(model);
-          views.push(new cls("view-" + (model.id()), this.view_owner(), model));
+          views.push(new cls("view-" + (model.id()), this.view_owner, model));
         }
         if ((op == null) || op === Collection.REPLACE) {
           this.items(models);
@@ -2547,16 +2559,13 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Collection.prototype.addItem = function(item, notify) {
-      var cls, view;
       notify || (notify = true);
       item.collection = this;
-      cls = this.view_model();
-      view = new cls("view-" + (item.id()), this.view_owner(), item);
       this.items().push(item);
       if (notify) {
         this.items.valueHasMutated();
       }
-      return view;
+      return item;
     };
 
     Collection.prototype.removeItem = function(idx, notify) {
@@ -2820,6 +2829,9 @@ Lawnchair.adapter('dom', (function() {
     };
 
     View.prototype.addView = function(name, view_class, tpl) {
+      if (this.views[name] != null) {
+        return;
+      }
       this.views[name] = new view_class(name, this);
       this.views[name].templateID = tpl;
       this["is_task_" + name] = ko.computed(function() {
