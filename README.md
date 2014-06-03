@@ -21,6 +21,7 @@ See the [docs](http://agquick.github.io/quick_script).
 
 6. Set master to latest version
 
+		$ git checkout master
 		$ git reset --hard v2.0.1
 
 7. Push code and tags
