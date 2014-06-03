@@ -1,10 +1,10 @@
 {
   "name": "quick_script",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "main": [
     "./dist/css/quick_script.css",
     "./dist/js/quick_script.js",
-    "./dist/img/ajax-loader.gif",
+    "./dist/img/qs-spinner.gif",
     "./dist/img/qs-notify-icon.png",
     "./dist/img/remove.png"
   ],

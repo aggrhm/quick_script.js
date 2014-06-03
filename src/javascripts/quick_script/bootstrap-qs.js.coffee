@@ -8,7 +8,9 @@ Modal.prototype.show = (_relatedTarget)->
 	this.basic_show(_relatedTarget)
 	# update z-index
 	idx = $('.modal.in').length
-	this.$backdrop.css('z-index', 1030 + (10 * idx))
+	if this.$backdrop?
+		this.$backdrop.addClass(this.options.className) if this.options.className?
+		this.$backdrop.css('z-index', 1030 + (10 * idx))
 	this.$element.css('z-index', 1040 + (10 * idx))
 
 	if this.options.attentionAnimation?

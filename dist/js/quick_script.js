@@ -1364,7 +1364,7 @@ Lawnchair.adapter('dom', (function() {
     id = vm.name;
     template = tmp;
     $('#overlay-' + id).remove();
-    modal_tpl = "<div id='overlay-" + id + "' class='modal fade'><div class='modal-dialog'><div class='modal-content'><button class='close' data-bind='click : hideOverlay'>x</button><div class='" + template + "' data-bind=\"template: '" + template + "'\"></div></div></div></div>";
+    modal_tpl = "<div id='overlay-" + id + "' class='modal fade'><div class='modal-dialog'><div class='modal-content'><button class='close' data-bind='click : hideOverlay'>&times;</button><div class='" + template + "' data-bind=\"template: '" + template + "'\"></div></div></div></div>";
     $modal_el = $(modal_tpl).appendTo('body');
     $modal_dialog = $modal_el.find('.modal-dialog');
     $modal_dialog.css({
@@ -1699,6 +1699,36 @@ Lawnchair.adapter('dom', (function() {
     return SupportManager.hasFormData();
   };
 
+  this.AuthToken = (function() {
+    function AuthToken(data) {
+      var key, val, _ref;
+      this.data = data;
+      this.toJSON = __bind(this.toJSON, this);
+      this.timeLeft = __bind(this.timeLeft, this);
+      _ref = this.data;
+      for (key in _ref) {
+        val = _ref[key];
+        this[key] = val;
+      }
+      this.received_at = new Date();
+    }
+
+    AuthToken.prototype.timeLeft = function() {
+      var diff;
+      diff = Date.now_utc() - this.received_at.to_utc();
+      return this.expires_in - diff;
+    };
+
+    AuthToken.prototype.toJSON = function() {
+      return JSON.stringify(this.data);
+    };
+
+    return AuthToken;
+
+  })();
+
+  this.AssetsLibrary = {};
+
   if (window.console == null) {
     window.console = {
       log: function() {}
@@ -1872,8 +1902,6 @@ Lawnchair.adapter('dom', (function() {
     return (now - QS.start_time) / 1000.0;
   };
 
-  QuickScript.request_headers = {};
-
   QuickScript.includeEventable = function(self) {
     self.prototype.handle = function(ev, callback) {
       var _base;
@@ -1977,6 +2005,7 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Model.prototype.load = function(opts, callback) {
+      this.handleData(opts);
       this.adapter.load({
         data: opts,
         success: (function(_this) {
@@ -2306,7 +2335,12 @@ Lawnchair.adapter('dom', (function() {
       this.setView = __bind(this.setView, this);
       this.updateViews = __bind(this.updateViews, this);
       this.setScope = __bind(this.setScope, this);
-      this.opts = opts || {};
+      var key, val;
+      this.opts = {};
+      for (key in opts) {
+        val = opts[key];
+        this.opts[key] = val;
+      }
       this.events = {};
       this._reqid = 0;
       this.scope = ko.observable(this.opts.scope || []);
@@ -2406,10 +2440,14 @@ Lawnchair.adapter('dom', (function() {
       return this.updateViews(this.items());
     };
 
-    Collection.prototype._load = function(scope, op, callback) {
+    Collection.prototype._load = function(scope, op, load_opts) {
       var opts, reqid;
       op || (op = Collection.REPLACE);
-      reqid = ++this._reqid;
+      if (load_opts.overwrite_request === false) {
+        reqid = this._reqid;
+      } else {
+        reqid = ++this._reqid;
+      }
       opts = this.loadOptions();
       opts.scope = scope instanceof Array ? scope : JSON.stringify(scope);
       this.adapter.index({
@@ -2417,14 +2455,15 @@ Lawnchair.adapter('dom', (function() {
         success: (function(_this) {
           return function(resp) {
             if (_this._reqid !== reqid) {
+              QS.log('Collection request has been preempted');
               return;
             }
             _this.handleData(resp.data, op);
             if (resp.count != null) {
               _this.count(resp.count);
             }
-            if (callback != null) {
-              callback(resp);
+            if (load_opts.callback != null) {
+              load_opts.callback(resp);
             }
             if (_this.events.onchange != null) {
               return _this.events.onchange();
@@ -2456,39 +2495,58 @@ Lawnchair.adapter('dom', (function() {
       if (scope != null) {
         this.scope(scope);
       }
-      return this._load(this.scope(), Collection.REPLACE, opts.callback);
+      return this._load(this.scope(), Collection.REPLACE, opts);
     };
 
-    Collection.prototype.update = function(callback) {
-      return this._load(this.scope(), Collection.UPDATE, callback);
+    Collection.prototype.update = function(opts) {
+      if ((opts == null) || (opts instanceof Function)) {
+        opts = {
+          callback: opts
+        };
+      }
+      return this._load(this.scope(), Collection.UPDATE, opts);
     };
 
-    Collection.prototype.insert = function(scope, callback) {
-      return this._load(scope, Collection.INSERT, callback);
+    Collection.prototype.insert = function(scope, opts) {
+      if ((opts == null) || (opts instanceof Function)) {
+        opts = {
+          callback: opts
+        };
+      }
+      return this._load(scope, Collection.INSERT, opts);
     };
 
-    Collection.prototype.append = function(scope, callback) {
-      return this._load(scope, Collection.APPEND, callback);
+    Collection.prototype.append = function(scope, opts) {
+      if ((opts == null) || (opts instanceof Function)) {
+        opts = {
+          callback: opts
+        };
+      }
+      return this._load(scope, Collection.APPEND, opts);
     };
 
-    Collection.prototype.handleData = function(resp, op) {
-      var c_el, c_id, cls, curr_a, curr_len, id_h, idx, item, max_len, model, models, new_a, new_len, r_el, r_id, same_itm, views, _i, _j, _len, _ref;
+    Collection.prototype.handleData = function(data, op) {
+      var c_el, c_id, cls, curr_a, curr_len, id_h, idx, item, itm, leftovers, max_len, model, models, new_a, new_len, r_el, r_id, same_itm, views, _i, _j, _k, _len, _len1, _ref;
+      if (data == null) {
+        return;
+      }
       models = [];
       views = [];
       op || (op = Collection.REPLACE);
       cls = this.view_model;
+      curr_a = this.items();
+      id_h = {};
+      for (_i = 0, _len = curr_a.length; _i < _len; _i++) {
+        itm = curr_a[_i];
+        id_h[itm.id()] = itm;
+      }
       if (op === Collection.UPDATE) {
-        curr_a = this.items();
         curr_len = this.items().length;
-        new_a = resp;
-        new_len = resp.length;
+        new_a = data;
+        new_len = data.length;
         max_len = Math.max(curr_len, new_len);
-        id_h = {};
-        curr_a.forEach(function(itm) {
-          return id_h[itm.id()] = itm;
-        });
         if (max_len > 0) {
-          for (idx = _i = _ref = max_len - 1; _ref <= 0 ? _i <= 0 : _i >= 0; idx = _ref <= 0 ? ++_i : --_i) {
+          for (idx = _j = _ref = max_len - 1; _ref <= 0 ? _j <= 0 : _j >= 0; idx = _ref <= 0 ? ++_j : --_j) {
             c_el = curr_a[idx];
             c_id = c_el != null ? c_el.id() : null;
             r_el = new_a[idx];
@@ -2509,22 +2567,36 @@ Lawnchair.adapter('dom', (function() {
           }
         }
         this.items.valueHasMutated();
+      } else if (op === Collection.REPLACE) {
+        models = (function() {
+          var _k, _len1, _results;
+          _results = [];
+          for (_k = 0, _len1 = data.length; _k < _len1; _k++) {
+            item = data[_k];
+            _results.push(new this.model(item, this));
+          }
+          return _results;
+        }).call(this);
+        this.items(models);
       } else {
-        for (idx = _j = 0, _len = resp.length; _j < _len; idx = ++_j) {
-          item = resp[idx];
-          model = new this.model(item, this);
-          models.push(model);
-          views.push(new cls("view-" + (model.id()), this.view_owner, model));
+        leftovers = [];
+        for (idx = _k = 0, _len1 = data.length; _k < _len1; idx = ++_k) {
+          item = data[idx];
+          same_itm = id_h[item.id];
+          if (same_itm != null) {
+            same_itm.handleData(item);
+          } else {
+            model = new this.model(item, this);
+            leftovers.push(model);
+          }
         }
-        if ((op == null) || op === Collection.REPLACE) {
-          this.items(models);
-        } else if (op === Collection.INSERT) {
-          if (models.length > 0) {
-            this.items(models.concat(this.items()));
+        if (op === Collection.INSERT) {
+          if (leftovers.length > 0) {
+            this.items(leftovers.concat(this.items()));
           }
         } else if (op === Collection.APPEND) {
-          if (models.length > 0) {
-            this.items(this.items().concat(models));
+          if (leftovers.length > 0) {
+            this.items(this.items().concat(leftovers));
           }
         }
       }
@@ -2661,6 +2733,7 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Collection.prototype.reset = function() {
+      this._reqid = 0;
       this.page(1);
       return this.items([]);
     };
@@ -3005,6 +3078,7 @@ Lawnchair.adapter('dom', (function() {
       this.load_url = null;
       this.index_url = null;
       this.host = ModelAdapter.host;
+      this.headers = ModelAdapter.headers;
       this.notifier = null;
       this.event_scope = null;
       for (prop in opts) {
@@ -3082,36 +3156,46 @@ Lawnchair.adapter('dom', (function() {
   })();
 
   ModelAdapter.send = function(host, opts, self) {
-    var def_err_fn, success_fn;
-    def_err_fn = function() {
-      return opts.success({
-        meta: 500,
-        error: 'An error occurred.',
-        data: {
-          errors: ['An error occurred.']
-        }
-      });
-    };
+    var key, success_fn, val, _ref;
     success_fn = opts.callback || opts.success;
     if (opts.type == null) {
       opts.type = 'POST';
     }
     opts.url = host + opts.url;
     if (opts.error == null) {
-      opts.error = def_err_fn;
+      opts.error = ModelAdapter.default_error_fn(opts);
     }
-    opts.success = function(resp) {
+    opts.success = function(resp, status) {
       if (success_fn != null) {
-        success_fn(resp);
-      }
-      if ((self.notifier != null) && (self.event_scope != null) && (opts.event_name != null) && resp.meta === 200) {
-        return self.notifier.trigger("" + self.event_scope + "." + opts.event_name, resp.data);
+        return success_fn(resp, status);
       }
     };
+    opts.headers || (opts.headers = {});
+    _ref = self.headers;
+    for (key in _ref) {
+      val = _ref[key];
+      opts.headers[key] = val;
+    }
     return $.ajax_qs(opts);
   };
 
   ModelAdapter.host = '/api/';
+
+  ModelAdapter.headers = {};
+
+  ModelAdapter.default_error_fn = function(opts) {
+    return function(resp, status) {
+      if (typeof resp === "string") {
+        resp = {
+          success: false,
+          meta: status,
+          error: 'An error occurred.',
+          data: resp
+        };
+      }
+      return opts.success(resp, status);
+    };
+  };
 
   this.AccountAdapter = (function() {
     function AccountAdapter(opts) {
@@ -3127,6 +3211,7 @@ Lawnchair.adapter('dom', (function() {
       this.login_key = "email";
       this.password_key = "password";
       this.host = ModelAdapter.host;
+      this.headers = ModelAdapter.headers;
       for (prop in opts) {
         val = opts[prop];
         this[prop] = val;
@@ -3246,6 +3331,7 @@ Lawnchair.adapter('dom', (function() {
       this.path_parts = [];
       this.title = ko.observable('');
       this.redirect_on_login = ko.observable(null);
+      this.auth_method = 'session';
       LocalStore.get('app.redirect_on_login', (function(_this) {
         return function(val) {
           _this.redirect_on_login(val);
@@ -3259,8 +3345,29 @@ Lawnchair.adapter('dom', (function() {
       this.configure();
       this.account_model || (this.account_model = Model);
       this.current_user = new this.account_model();
+      this.current_user_token = ko.observable(null);
+      LocalStore.get('app.current_user_token', (function(_this) {
+        return function(val) {
+          if (val != null) {
+            _this.setUserToken(JSON.parse(val));
+          }
+          return _this.current_user_token.subscribe(function(val) {
+            if (val != null) {
+              return LocalStore.save('app.current_user_token', val.toJSON());
+            } else {
+              return LocalStore.save('app.current_user_token', null);
+            }
+          });
+        };
+      })(this));
       this.is_logged_in = ko.computed(function() {
-        return !this.current_user.is_new();
+        if (this.auth_method === 'session') {
+          return !this.current_user.is_new();
+        } else if (this.auth_method === 'token') {
+          return this.current_user_token() != null;
+        } else {
+          return false;
+        }
       }, this);
       Application.__super__.constructor.call(this, 'app', null);
     }
@@ -3284,9 +3391,16 @@ Lawnchair.adapter('dom', (function() {
     Application.prototype.handlePath = function(path) {};
 
     Application.prototype.setUser = function(data) {
-      console.log(data);
-      if (data !== null) {
+      QS.log(data);
+      if (data != null) {
         return this.current_user.handleData(data);
+      }
+    };
+
+    Application.prototype.setUserToken = function(data) {
+      QS.log(data);
+      if (data != null) {
+        return this.current_user_token(new AuthToken(data));
       }
     };
 
@@ -3304,6 +3418,18 @@ Lawnchair.adapter('dom', (function() {
       });
     };
 
+    Application.prototype.updateUser = function(adapter) {
+      return adapter.load({
+        callback: (function(_this) {
+          return function(resp) {
+            if (resp.meta === 200) {
+              return _this.setUser(resp.data);
+            }
+          };
+        })(this)
+      });
+    };
+
     Application.prototype.redirectTo = function(path, replace, opts) {
       opts || (opts = {});
       if (opts.on_login != null) {
@@ -3316,8 +3442,13 @@ Lawnchair.adapter('dom', (function() {
       }
     };
 
-    Application.prototype.loginTo = function(path, user_data, opts) {
-      this.current_user.handleData(user_data);
+    Application.prototype.loginTo = function(path, opts) {
+      if (opts.user != null) {
+        this.setUser(opts.user);
+      }
+      if (opts.token != null) {
+        this.setUserToken(opts.token);
+      }
       if (this.redirect_on_login() !== null) {
         this.redirectTo(this.redirect_on_login());
         return this.redirect_on_login(null);
@@ -3328,6 +3459,7 @@ Lawnchair.adapter('dom', (function() {
 
     Application.prototype.logoutTo = function(path, opts) {
       this.current_user.reset();
+      this.current_user_token(null);
       return this.redirectTo(path);
     };
 
@@ -3674,17 +3806,13 @@ Lawnchair.adapter('dom', (function() {
       }
     };
     ko.bindingHandlers.loadingOverlay = {
-      init: function(element, valueAccessor) {
-        return $(element).css({
-          'position': 'relative'
-        });
-      },
+      init: function(element, valueAccessor) {},
       update: function(element, valueAccessor) {
         var is_loading;
         is_loading = ko.utils.unwrapObservable(valueAccessor());
         if (is_loading) {
           if ($(element).children('.loading-overlay').length === 0) {
-            return $(element).prepend("<div class='loading-overlay'><img src='/assets/ajax-loader.gif'/></div>");
+            return $(element).prepend("<div class='loading-overlay'><img src='" + AssetsLibrary['spinner'] + "'/></div>");
           }
         } else {
           return $(element).children('.loading-overlay').fadeOut('fast', (function() {
@@ -4013,10 +4141,11 @@ Lawnchair.adapter('dom', (function() {
         });
       },
       update: function(element, valueAccessor, bindingsAccessor, viewModel) {
-        var html, opts;
+        var html, opts, tip;
         opts = ko.utils.unwrapObservable(valueAccessor());
         html = ko.bindingHandlers.tip.getContent(element, opts, viewModel);
-        return $(element).data('bs.tooltip').options.title = html;
+        tip = $(element).data('tooltip') || $(element).data('bs.tooltip');
+        return tip.options.title = html;
       },
       getContent: function(element, opts, viewModel) {
         if (opts.content != null) {
@@ -4376,12 +4505,16 @@ Lawnchair.adapter('dom', (function() {
           if (opts.loading != null) {
             opts.loading(false);
           }
+          try {
+            resp = JSON.parse(req.responseText);
+          } catch (_error) {
+            resp = req.responseText;
+          }
           if (req.status === 200) {
-            resp = eval("(" + req.responseText + ")");
-            return opts.success(resp);
+            return opts.success(resp, req.status);
           } else {
             if (opts.error != null) {
-              return opts.error(req.status);
+              return opts.error(resp, req.status);
             }
           }
         }
@@ -4395,10 +4528,12 @@ Lawnchair.adapter('dom', (function() {
         });
       }
       req.open(opts.type, url, opts.async);
-      _ref2 = QuickScript.request_headers;
+      _ref2 = opts.headers;
       for (key in _ref2) {
         val = _ref2[key];
-        req.setRequestHeader(key, val);
+        if (val != null) {
+          req.setRequestHeader(key, val);
+        }
       }
       req.withCredentials = true;
       if (opts.loading != null) {
@@ -4442,12 +4577,16 @@ Lawnchair.adapter('dom', (function() {
           if (opts.loading != null) {
             opts.loading(false);
           }
+          try {
+            resp = JSON.parse(req.responseText);
+          } catch (_error) {
+            resp = req.responseText;
+          }
           if (req.status === 200) {
-            resp = eval("(" + req.responseText + ")");
-            return opts.success(resp);
+            return opts.success(resp, req.status);
           } else {
             if (opts.error != null) {
-              return opts.error(req.status);
+              return opts.error(resp, req.status);
             }
           }
         }
@@ -4460,10 +4599,12 @@ Lawnchair.adapter('dom', (function() {
       				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
        */
       req.open(opts.type, url, opts.async);
-      _ref1 = QuickScript.request_headers;
+      _ref1 = opts.headers;
       for (key in _ref1) {
         val = _ref1[key];
-        req.setRequestHeader(key, val);
+        if (val != null) {
+          req.setRequestHeader(key, val);
+        }
       }
       req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       req.withCredentials = true;
@@ -4488,7 +4629,12 @@ Lawnchair.adapter('dom', (function() {
     self = this;
     this.basic_show(_relatedTarget);
     idx = $('.modal.in').length;
-    this.$backdrop.css('z-index', 1030 + (10 * idx));
+    if (this.$backdrop != null) {
+      if (this.options.className != null) {
+        this.$backdrop.addClass(this.options.className);
+      }
+      this.$backdrop.css('z-index', 1030 + (10 * idx));
+    }
     this.$element.css('z-index', 1040 + (10 * idx));
     if (this.options.attentionAnimation != null) {
       anim = this.options.attentionAnimation;

@@ -165,7 +165,7 @@ Overlay.add = (vm, tmp, opts) ->
 		template = tmp
 		#options['z-index'] = Overlay.instance.zindex + 10
 		$('#overlay-' + id).remove()
-		modal_tpl = "<div id='overlay-#{id}' class='modal fade'><div class='modal-dialog'><div class='modal-content'><button class='close' data-bind='click : hideOverlay'>x</button><div class='#{template}' data-bind=\"template: '#{template}'\"></div></div></div></div>"
+		modal_tpl = "<div id='overlay-#{id}' class='modal fade'><div class='modal-dialog'><div class='modal-content'><button class='close' data-bind='click : hideOverlay'>&times;</button><div class='#{template}' data-bind=\"template: '#{template}'\"></div></div></div></div>"
 		$modal_el = $(modal_tpl).appendTo('body')
 		$modal_dialog = $modal_el.find('.modal-dialog')
 		$modal_dialog.css({width : opts.width + 'px'})
@@ -384,6 +384,20 @@ SupportManager.hasFormData = ->
 	(window.FormData?)
 SupportManager.canUpload = ->
 	SupportManager.hasFormData()
+
+# AUTHTOKEN
+class @AuthToken
+	constructor : (@data)->
+		for key,val of @data
+			@[key] = val
+		@received_at = new Date()
+	timeLeft : =>
+		diff = Date.now_utc() - @received_at.to_utc()
+		return @expires_in - diff
+	toJSON : =>
+		JSON.stringify(@data)
+
+@AssetsLibrary = {}
 
 unless window.console?
 	window.console =

@@ -57,7 +57,6 @@ QuickScript.start_time = Date.now()
 QuickScript.time = ->
 	now = Date.now()
 	return (now - QS.start_time) / 1000.0
-QuickScript.request_headers = {}
 
 QuickScript.includeEventable = (self)->
 	self::handle = (ev, callback)->
@@ -122,6 +121,7 @@ class @Model
 		ko.absorbModel(resp, this)
 		@db_state(@toJS())
 	load : (opts, callback)->
+		@handleData(opts)
 		@adapter.load
 			data : opts
 			success : (resp)=>
@@ -281,7 +281,9 @@ class @FileModel extends Model
 class @Collection
 	init : ->
 	constructor: (opts) ->
-		@opts = opts || {}
+		@opts = {}
+		for key,val of opts
+			@opts[key] = val
 		@events = {}
 		@_reqid = 0
 		@scope = ko.observable(@opts.scope || [])
@@ -379,19 +381,24 @@ class @Collection
 		@view_model = view_model
 		@view_owner = view_owner
 		@updateViews(@items())
-	_load : (scope, op, callback)->
+	_load : (scope, op, load_opts)->
 		#console.log("Loading items for #{scope}")
 		op ||= Collection.REPLACE
-		reqid = ++@_reqid
+		if load_opts.overwrite_request == false
+			reqid = @_reqid
+		else
+			reqid = ++@_reqid
 		opts = @loadOptions()
 		opts.scope = if (scope instanceof Array) then scope else JSON.stringify(scope)
 		@adapter.index
 			data : opts
 			success : (resp)=>
-				return if @_reqid != reqid
+				if @_reqid != reqid
+					QS.log 'Collection request has been preempted'
+					return
 				@handleData(resp.data, op)
 				@count(resp.count) if resp.count?
-				callback(resp) if callback?
+				load_opts.callback(resp) if load_opts.callback?
 				@events.onchange() if @events.onchange?
 		if op == Collection.REPLACE
 			@model_state(ko.modelStates.LOADING)
@@ -405,32 +412,35 @@ class @Collection
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
 		@reset() unless opts.reset? && !opts.reset
 		@scope(scope) if scope?
-		@_load(@scope(), Collection.REPLACE, opts.callback)
-	update : (callback)=>
-		@_load(@scope(), Collection.UPDATE, callback)
-	insert : (scope, callback)->
-		@_load(scope, Collection.INSERT, callback)
-	append : (scope, callback)->
-		@_load(scope, Collection.APPEND, callback)
-	handleData : (resp, op) =>
+		@_load(@scope(), Collection.REPLACE, opts)
+	update : (opts)=>
+		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
+		@_load(@scope(), Collection.UPDATE, opts)
+	insert : (scope, opts)->
+		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
+		@_load(scope, Collection.INSERT, opts)
+	append : (scope, opts)->
+		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
+		@_load(scope, Collection.APPEND, opts)
+	handleData : (data, op) =>
+		return if !data?
 		#QS.log "COLLECTION::HANDLE_DATA : Starting (#{QS.time()}).", 3
 		models = []
 		views = []
 		op ||= Collection.REPLACE
 		cls = @view_model
-		#if (op == Collection.REPLACE) || (op == Collection.UPDATE)
-			#@items([]); @views([])
-		if op == Collection.UPDATE
-			curr_a = @items()
-			curr_len = @items().length
-			new_a = resp
-			new_len = resp.length
-			max_len = Math.max(curr_len, new_len)
+		curr_a = @items()
+		# build temp id hash
+		id_h = {}
+		for itm in curr_a
+			id_h[itm.id()] = itm
 
-			# build temp id hash
-			id_h = {}
-			curr_a.forEach (itm)->
-				id_h[itm.id()] = itm
+
+		if op == Collection.UPDATE
+			curr_len = @items().length
+			new_a = data
+			new_len = data.length
+			max_len = Math.max(curr_len, new_len)
 
 			# iterate possible positions
 			if max_len > 0
@@ -460,22 +470,27 @@ class @Collection
 
 			@items.valueHasMutated()
 
+		else if op == Collection.REPLACE
+			models = for item in data
+				new @model(item, this)
+			@items(models)
 		else
-			for item, idx in resp
-				model = new @model(item, this)
-				models.push(model)
-				views.push(new cls("view-#{model.id()}", @view_owner, model))
+			# update items with same id, keep track of leftovers
+			leftovers = []
+			for item, idx in data
+				# check if already in data
+				same_itm = id_h[item.id]
+				if same_itm?
+					same_itm.handleData(item)
+				else
+					model = new @model(item, this)
+					leftovers.push(model)
 
 			#QS.log "COLLECTION::HANDLE_DATA : Finished building data #{QS.time()}.", 3
-			if !op? || op == Collection.REPLACE
-				@items(models)
-				#@views(views)
-			else if op == Collection.INSERT
-				@items(models.concat(@items())) if models.length > 0
-				#@views(views.concat(@views()))
+			if op == Collection.INSERT
+				@items(leftovers.concat(@items())) if leftovers.length > 0
 			else if op == Collection.APPEND
-				@items(@items().concat(models)) if models.length > 0
-				#@views(@views().concat(views))
+				@items(@items().concat(leftovers)) if leftovers.length > 0
 		@model_state(ko.modelStates.READY)
 	handleItemData : (data)=>
 		item = @getItemById(data.id)
@@ -543,9 +558,9 @@ class @Collection
 	getTemplate : ->
 		@template()
 	reset : ->
+		@_reqid = 0
 		@page(1)
 		@items([])
-		#@views([])
 	absorb : (model) =>
 		@reset()
 		@handleData(model.toJS())
@@ -727,6 +742,7 @@ class @ModelAdapter
 		@load_url = null
 		@index_url = null
 		@host = ModelAdapter.host
+		@headers = ModelAdapter.headers
 		@notifier = null
 		@event_scope = null
 		for prop,val of opts
@@ -773,18 +789,23 @@ class @ModelAdapter
 			@send opts
 			
 ModelAdapter.send = (host, opts, self)->
-	def_err_fn = ->
-		opts.success({meta : 500, error : 'An error occurred.', data : {errors : ['An error occurred.']}})
 	success_fn = opts.callback || opts.success
 	opts.type = 'POST' if !opts.type?
 	opts.url = host + opts.url
-	opts.error = def_err_fn unless opts.error?
-	opts.success = (resp)->
-		success_fn(resp) if success_fn?
-		if self.notifier? && self.event_scope? && opts.event_name? && resp.meta == 200
-			self.notifier.trigger "#{self.event_scope}.#{opts.event_name}", resp.data
+	opts.error = ModelAdapter.default_error_fn(opts) unless opts.error?
+	opts.success = (resp, status)->
+		success_fn(resp, status) if success_fn?
+	opts.headers ||= {}
+	for key, val of self.headers
+		opts.headers[key] = val
 	$.ajax_qs opts
 ModelAdapter.host = '/api/'
+ModelAdapter.headers = {}
+ModelAdapter.default_error_fn = (opts)->
+	return (resp, status)->
+		if typeof(resp) == "string"
+			resp = {success: false, meta : status, error : 'An error occurred.', data : resp}
+		opts.success(resp, status)
 
 class @AccountAdapter
 	constructor : (opts)->
@@ -799,6 +820,7 @@ class @AccountAdapter
 		@login_key = "email"
 		@password_key = "password"
 		@host = ModelAdapter.host
+		@headers = ModelAdapter.headers
 		for prop,val of opts
 			@[prop] = val
 	login : (opts)->
@@ -866,6 +888,7 @@ class @Application extends @View
 		@path_parts = []
 		@title = ko.observable('')
 		@redirect_on_login = ko.observable(null)
+		@auth_method = 'session'
 		LocalStore.get 'app.redirect_on_login', (val)=>
 			@redirect_on_login(val)
 			@redirect_on_login.subscribe (val)=>
@@ -885,9 +908,23 @@ class @Application extends @View
 		@configure()
 		@account_model ||= Model
 		@current_user = new @account_model()
+		@current_user_token = ko.observable(null)
+		LocalStore.get 'app.current_user_token', (val)=>
+			@setUserToken(JSON.parse(val)) if val?
+			@current_user_token.subscribe (val)=>
+				if val?
+					LocalStore.save 'app.current_user_token', val.toJSON()
+				else
+					LocalStore.save 'app.current_user_token', null
+
 		@is_logged_in = ko.computed ->
+			if @auth_method == 'session'
 				!@current_user.is_new()
-			, this
+			else if @auth_method == 'token'
+				@current_user_token()?
+			else
+				false
+		, this
 		super('app', null)
 	configure : ->
 	route : ->
@@ -901,14 +938,21 @@ class @Application extends @View
 		@handlePath(path)
 	handlePath : (path) ->
 	setUser : (data)->
-		console.log(data)
-		@current_user.handleData(data) if data != null
+		QS.log(data)
+		@current_user.handleData(data) if data?
+	setUserToken : (data)->
+		QS.log data
+		@current_user_token(new AuthToken(data)) if data?
 	loadUser : (adapter)->
 		adapter.load
 			loading : @is_loading
 			callback : (resp)=>
 				@setUser(resp.data) if resp.meta == 200
 				@route()
+	updateUser : (adapter)->
+		adapter.load
+			callback : (resp)=>
+				@setUser(resp.data) if resp.meta == 200
 	redirectTo : (path, replace, opts) ->
 		opts ||= {}
 		@redirect_on_login(opts.on_login) if opts.on_login?
@@ -916,8 +960,9 @@ class @Application extends @View
 			History.replaceState(null, null, path)
 		else
 			History.pushState(null, null, path)
-	loginTo : (path, user_data, opts)->
-		@current_user.handleData(user_data)
+	loginTo : (path, opts)->
+		@setUser(opts.user) if opts.user?
+		@setUserToken(opts.token) if opts.token?
 		if @redirect_on_login() != null
 			@redirectTo(@redirect_on_login())
 			@redirect_on_login(null)
@@ -925,6 +970,7 @@ class @Application extends @View
 			@redirectTo(path)
 	logoutTo : (path, opts)->
 		@current_user.reset()
+		@current_user_token(null)
 		@redirectTo(path)
 	runLater : (callback)->
 		setTimeout callback, 10

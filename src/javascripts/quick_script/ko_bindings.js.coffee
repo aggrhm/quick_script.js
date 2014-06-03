@@ -185,12 +185,12 @@ QuickScript.initKO = ->
 	
 	ko.bindingHandlers.loadingOverlay =
 		init : (element, valueAccessor) ->
-			$(element).css({'position' : 'relative'})
+			#$(element).css({'position' : 'relative'}) unless $(element).css('position') == 'absolute'
 		update : (element, valueAccessor) ->
 			is_loading = ko.utils.unwrapObservable(valueAccessor())
 			#loading_text = ko.utils.unwrapObservable(valueAccessor()[1])
 			if is_loading
-				$(element).prepend("<div class='loading-overlay'><img src='/assets/ajax-loader.gif'/></div>") if $(element).children('.loading-overlay').length == 0
+				$(element).prepend("<div class='loading-overlay'><img src='#{AssetsLibrary['spinner']}'/></div>") if $(element).children('.loading-overlay').length == 0
 			else
 				$(element).children('.loading-overlay').fadeOut('fast', (-> $(this).remove()))
 	
@@ -443,7 +443,8 @@ QuickScript.initKO = ->
 		update : (element, valueAccessor, bindingsAccessor, viewModel) ->
 			opts = ko.utils.unwrapObservable(valueAccessor())
 			html = ko.bindingHandlers.tip.getContent(element, opts, viewModel)
-			$(element).data('bs.tooltip').options.title = html
+			tip = $(element).data('tooltip') || $(element).data('bs.tooltip')
+			tip.options.title = html
 		getContent : (element, opts, viewModel) ->
 			if opts.content?
 				return opts.content
@@ -692,18 +693,21 @@ if SupportManager.hasFormData()
 		req.onreadystatechange = (ev)->
 			if req.readyState == 4
 				opts.loading(false) if opts.loading?
+				try
+					resp = JSON.parse(req.responseText)
+				catch
+					resp = req.responseText
 				if req.status == 200
-					resp = eval("(" + req.responseText + ")")
-					opts.success(resp)
+					opts.success(resp, req.status)
 				else
-					opts.error(req.status) if opts.error?
+					opts.error(resp, req.status) if opts.error?
 		req.upload.addEventListener('error', opts.error) if opts.error?
 		if opts.progress?
 			req.upload.addEventListener 'progress', (ev)->
 				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
 		req.open opts.type, url, opts.async
-		for key, val of QuickScript.request_headers
-			req.setRequestHeader key, val
+		for key, val of opts.headers
+			req.setRequestHeader(key, val) if val?
 		req.withCredentials = true
 		opts.loading(true) if opts.loading?
 		if opts.type == "GET" then req.send() else req.send(data)
@@ -730,11 +734,14 @@ else
 		req.onreadystatechange = (ev)->
 			if req.readyState == 4
 				opts.loading(false) if opts.loading?
+				try
+					resp = JSON.parse(req.responseText)
+				catch
+					resp = req.responseText
 				if req.status == 200
-					resp = eval("(" + req.responseText + ")")
-					opts.success(resp)
+					opts.success(resp, req.status)
 				else
-					opts.error(req.status) if opts.error?
+					opts.error(resp, req.status) if opts.error?
 		###
 		req.upload.addEventListener('error', opts.error) if opts.error?
 		if opts.progress?
@@ -742,8 +749,8 @@ else
 				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
 		###
 		req.open opts.type, url, opts.async
-		for key, val of QuickScript.request_headers
-			req.setRequestHeader key, val
+		for key, val of opts.headers
+			req.setRequestHeader(key, val) if val?
 		req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
 		req.withCredentials = true
 		opts.loading(true) if opts.loading?
