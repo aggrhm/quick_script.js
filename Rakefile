@@ -3,11 +3,10 @@ require "fileutils"
 require "pathname"
 require "sprockets"
 require "sprockets-sass"
-require "uglifier"
 
 ROOT        = Pathname(File.dirname(__FILE__))
 LOGGER      = Logger.new(STDOUT)
-BUNDLES     = %w( quick_script.css quick_script.js )
+BUNDLES     = %w( quick_script.js )
 BUILD_DIR   = ROOT.join("dist")
 SOURCE_DIR  = ROOT.join("src")
 
@@ -18,14 +17,13 @@ task :compile do
   end
 
   # init directories
-  ['js', 'css', 'img'].each do |dir|
+  ['js'].each do |dir|
     path = File.join(BUILD_DIR, dir)
     FileUtils.remove_dir(path) if File.exists?(path)
     FileUtils.mkdir_p path
   end
 
   sprockets.append_path(SOURCE_DIR.join('javascripts').to_s)
-  sprockets.append_path(SOURCE_DIR.join('stylesheets').to_s)
 
 	# javascript
 	full_js = sprockets.find_asset('quick_script.js').to_s
@@ -34,14 +32,5 @@ task :compile do
 		f.write(full_js)
 	end
 	
-	# stylesheets
-	full_css = sprockets.find_asset('quick_script.css')
-	full_css.write_to(BUILD_DIR.join('css', 'quick_script.css'))
-
-  # images
-  images_src = SOURCE_DIR.join('images/quick_script')
-  images_dst = BUILD_DIR.join('img')
-  FileUtils.cp_r(Dir["#{images_src}/*"], images_dst)
 end
-
 

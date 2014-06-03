@@ -705,16 +705,6 @@ class @View
 				new_el = $(@element).find('.slide-item-' + idx)
 				new_el.addClass('active')
 			, 500
-	showAsOverlay : (tmp, opts, cls)=>
-		Overlay.add(this, tmp, opts, cls)
-	showAsPopover : (el, tmp, opts)=>
-		Overlay.popover(el, this, tmp, opts)
-	hideOverlay : =>
-		Overlay.remove(@name)
-	hidePopover : =>
-		Overlay.removePopover(@name)
-	overlayVisible : =>
-		Overlay.isVisible(@name)
 	toAPI : (flds)=>
 		flds ||= @fields
 		obj = {}

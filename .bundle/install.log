@@ -40,3 +40,15 @@ I, [2014-04-14T20:03:16.882672 #15919]  INFO -- : 0:  tilt (1.4.1) from /usr/loc
 I, [2014-04-14T20:03:16.884622 #15919]  INFO -- : 0:  sprockets (2.12.0) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/sprockets-2.12.0.gemspec
 I, [2014-04-14T20:03:16.887693 #15919]  INFO -- : 0:  sprockets-sass (1.0.3) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/sprockets-sass-1.0.3.gemspec
 I, [2014-04-14T20:03:16.890558 #15919]  INFO -- : 0:  bundler (1.5.1) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/bundler-1.5.1.gemspec
+I, [2014-06-03T17:39:14.846847 #6323]  INFO -- : 0:  rake (10.2.2) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/rake-10.2.2.gemspec
+I, [2014-06-03T17:39:14.848915 #6323]  INFO -- : 0:  coffee-script-source (1.7.0) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/coffee-script-source-1.7.0.gemspec
+I, [2014-06-03T17:39:14.853483 #6323]  INFO -- : 0:  execjs (2.0.2) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/execjs-2.0.2.gemspec
+I, [2014-06-03T17:39:14.855489 #6323]  INFO -- : 0:  coffee-script (2.2.0) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/coffee-script-2.2.0.gemspec
+I, [2014-06-03T17:39:14.857169 #6323]  INFO -- : 0:  hike (1.2.3) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/hike-1.2.3.gemspec
+I, [2014-06-03T17:39:14.858807 #6323]  INFO -- : 0:  multi_json (1.9.2) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/multi_json-1.9.2.gemspec
+I, [2014-06-03T17:39:14.860534 #6323]  INFO -- : 0:  rack (1.5.2) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/rack-1.5.2.gemspec
+I, [2014-06-03T17:39:14.862183 #6323]  INFO -- : 0:  sass (3.3.4) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/sass-3.3.4.gemspec
+I, [2014-06-03T17:39:14.864294 #6323]  INFO -- : 0:  tilt (1.4.1) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/tilt-1.4.1.gemspec
+I, [2014-06-03T17:39:14.866472 #6323]  INFO -- : 0:  sprockets (2.12.0) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/sprockets-2.12.0.gemspec
+I, [2014-06-03T17:39:14.868234 #6323]  INFO -- : 0:  sprockets-sass (1.0.3) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/sprockets-sass-1.0.3.gemspec
+I, [2014-06-03T17:39:14.870237 #6323]  INFO -- : 0:  bundler (1.5.1) from /usr/local/rvm/gems/ruby-1.9.3-p194@working/specifications/bundler-1.5.1.gemspec

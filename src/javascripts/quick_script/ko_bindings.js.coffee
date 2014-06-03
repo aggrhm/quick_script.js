@@ -183,17 +183,6 @@ QuickScript.initKO = ->
 				opts.after(element)
 			img.src = opts.src
 	
-	ko.bindingHandlers.loadingOverlay =
-		init : (element, valueAccessor) ->
-			#$(element).css({'position' : 'relative'}) unless $(element).css('position') == 'absolute'
-		update : (element, valueAccessor) ->
-			is_loading = ko.utils.unwrapObservable(valueAccessor())
-			#loading_text = ko.utils.unwrapObservable(valueAccessor()[1])
-			if is_loading
-				$(element).prepend("<div class='loading-overlay'><img src='#{AssetsLibrary['spinner']}'/></div>") if $(element).children('.loading-overlay').length == 0
-			else
-				$(element).children('.loading-overlay').fadeOut('fast', (-> $(this).remove()))
-	
 	ko.bindingHandlers.toggleHover =
 		init: (element, valueAccessor, allBindingsAccessor) ->
 			$(element).on 'mouseover', ->
@@ -455,13 +444,6 @@ QuickScript.initKO = ->
 		tipContentElement : (element) ->
 				return $(element).data('bs.tooltip').tip().find('.tooltip-inner')
 
-	# popover : {template : <tmp>, placement : <pos>}
-	ko.bindingHandlers.popover =
-		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
-			opts = valueAccessor()
-			$(element).click ->
-				Overlay.popover element, viewModel, opts.template, opts
-	
 	ko.bindingHandlers.datepicker =
 		init : (element, valueAccessor) ->
 			obs = valueAccessor()

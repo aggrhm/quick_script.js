@@ -6,4 +6,3 @@
 //= require ./quick_script/classes
 //= require ./quick_script/framework
 //= require ./quick_script/ko_bindings
-//= require ./quick_script/bootstrap-qs
