@@ -1607,7 +1607,58 @@ Lawnchair.adapter('dom', (function() {
         return true;
       }
       return val === "";
-    }
+    },
+    objectToArray: function(obj) {
+      var key, ret, val;
+      return ret = (function() {
+        var _results;
+        _results = [];
+        for (key in obj) {
+          val = obj[key];
+          _results.push({
+            'key': key,
+            'value': val
+          });
+        }
+        return _results;
+      })();
+    },
+    preventDefault: (function(_this) {
+      return function(view, ev) {
+        return typeof ev.preventDefault === "function" ? ev.preventDefault() : void 0;
+      };
+    })(this),
+    getURLPath: (function(_this) {
+      return function(url) {
+        var i;
+        i = url.indexOf("?");
+        if (i === -1) {
+          return url;
+        } else {
+          return url.substring(0, i);
+        }
+      };
+    })(this),
+    getURLParams: (function(_this) {
+      return function(url) {
+        var i, kv, pair, ret, str, _i, _len, _ref;
+        i = url.indexOf("?");
+        if (i === -1) {
+          return {};
+        }
+        str = url.substring(i + 1);
+        ret = {};
+        _ref = str.split("&");
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          pair = _ref[_i];
+          kv = pair.split("=");
+          if (!QS.utils.isBlank(kv[0])) {
+            ret[kv[0]] = kv[1];
+          }
+        }
+        return ret;
+      };
+    })(this)
   };
 
   QuickScript.log = function(msg, lvl) {
@@ -2055,6 +2106,8 @@ Lawnchair.adapter('dom', (function() {
       this.hasItems = __bind(this.hasItems, this);
       this.prevPage = __bind(this.prevPage, this);
       this.nextPage = __bind(this.nextPage, this);
+      this.filteredViews = __bind(this.filteredViews, this);
+      this.addViewFilter = __bind(this.addViewFilter, this);
       this.handleItemData = __bind(this.handleItemData, this);
       this.handleData = __bind(this.handleData, this);
       this.update = __bind(this.update, this);
@@ -2084,6 +2137,7 @@ Lawnchair.adapter('dom', (function() {
       this.adapter = this.opts.adapter || new ModelAdapter();
       this.template = ko.observable(this.opts.template);
       this.model_state = ko.observable(0);
+      this.view_filters = {};
       this.items.subscribe(this.updateViews);
       this.is_ready = ko.dependentObservable(function() {
         return this.model_state() === ko.modelStates.READY;
@@ -2337,6 +2391,33 @@ Lawnchair.adapter('dom', (function() {
         item.handleData(data);
       }
       return item;
+    };
+
+    Collection.prototype.addViewFilter = function(name, fn) {
+      this.view_filters[name] = fn;
+      return this["views_" + name] = ko.computed(function() {
+        return this.views().filter(fn);
+      }, this);
+    };
+
+    Collection.prototype.filteredViews = function(filts) {
+      return ko.computed(function() {
+        var fa, fsv;
+        fsv = ko.unwrap(filts);
+        fa = typeof fsv === 'Array' ? fsv : [fsv];
+        return this.views().filter((function(_this) {
+          return function(el) {
+            var filt, filt_fn, ret, _i, _len;
+            ret = true;
+            for (_i = 0, _len = fa.length; _i < _len; _i++) {
+              filt = fa[_i];
+              filt_fn = _this.view_filters[filt];
+              ret = ret && filt_fn(el);
+            }
+            return ret;
+          };
+        })(this));
+      }, this);
     };
 
     Collection.prototype.nextPage = function() {
@@ -2773,6 +2854,16 @@ Lawnchair.adapter('dom', (function() {
 
   })();
 
+  this.Host = (function() {
+    function Host(url) {
+      this.url = url;
+      this.headers = {};
+    }
+
+    return Host;
+
+  })();
+
   this.ModelAdapter = (function() {
     function ModelAdapter(opts) {
       var prop, val;
@@ -2780,7 +2871,6 @@ Lawnchair.adapter('dom', (function() {
       this.load_url = null;
       this.index_url = null;
       this.host = ModelAdapter.host;
-      this.headers = ModelAdapter.headers;
       this.notifier = null;
       this.event_scope = null;
       for (prop in opts) {
@@ -2863,7 +2953,7 @@ Lawnchair.adapter('dom', (function() {
     if (opts.type == null) {
       opts.type = 'POST';
     }
-    opts.url = host + opts.url;
+    opts.url = host.url + opts.url;
     if (opts.error == null) {
       opts.error = ModelAdapter.default_error_fn(opts);
     }
@@ -2873,7 +2963,7 @@ Lawnchair.adapter('dom', (function() {
       }
     };
     opts.headers || (opts.headers = {});
-    _ref = self.headers;
+    _ref = host.headers;
     for (key in _ref) {
       val = _ref[key];
       opts.headers[key] = val;
@@ -2881,9 +2971,7 @@ Lawnchair.adapter('dom', (function() {
     return $.ajax_qs(opts);
   };
 
-  ModelAdapter.host = '/api/';
-
-  ModelAdapter.headers = {};
+  ModelAdapter.host = new Host("/api/");
 
   ModelAdapter.default_error_fn = function(opts) {
     return function(resp, status) {
@@ -2913,7 +3001,6 @@ Lawnchair.adapter('dom', (function() {
       this.login_key = "email";
       this.password_key = "password";
       this.host = ModelAdapter.host;
-      this.headers = ModelAdapter.headers;
       for (prop in opts) {
         val = opts[prop];
         this[prop] = val;
@@ -3031,6 +3118,7 @@ Lawnchair.adapter('dom', (function() {
       this.path = ko.observable(null);
       this.previous_path = ko.observable(null);
       this.path_parts = [];
+      this.path_params = {};
       this.title = ko.observable('');
       this.redirect_on_login = ko.observable(null);
       this.auth_method = 'session';
@@ -3077,12 +3165,14 @@ Lawnchair.adapter('dom', (function() {
     Application.prototype.configure = function() {};
 
     Application.prototype.route = function() {
-      var path;
-      path = History.getRelativeUrl();
+      var full_path, path;
+      full_path = History.getRelativeUrl();
+      path = QS.utils.getURLPath(full_path);
       console.log("Loading path '" + path + "'");
       this.setTitle(this.name, true);
       this.previous_path(this.path());
       this.path_parts = path.split('/');
+      this.path_params = QS.utils.getURLParams(full_path);
       if (this.path_parts[this.path_parts.length - 1] !== '') {
         this.path_parts.push('');
       }
@@ -3605,54 +3695,6 @@ Lawnchair.adapter('dom', (function() {
     ko.bindingHandlers.bindelem = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel) {
         return viewModel.element = element;
-      }
-    };
-    ko.bindingHandlers.tinymce = {
-      init: function(element, valueAccessor, bindingsAccessor, viewModel) {
-        var options, val;
-        options = {
-          width: $(element).width(),
-          height: $(element).height(),
-          theme: 'advanced',
-          theme_advanced_toolbar_location: 'top',
-          theme_advanced_buttons1: 'bold, italic, underline, separator, undo, redo, separator, bullist, numlist, blockquote, separator, justifyleft, justifycenter, justifyright, separator, image, link, unlink, separator, code',
-          theme_advanced_buttons2: '',
-          theme_advanced_buttons3: '',
-          content_css: '/assets/tinymce.css'
-        };
-        val = valueAccessor();
-        options.setup = function(ed) {
-          return ed.onInit.add(function(ed, l) {
-            tinyMCE.dom.Event.add(ed.getWin(), "blur", function() {
-              console.log('leaving...');
-              return val(ed.getContent());
-            });
-            val.editor = function() {
-              return tinyMCE.get(element.id);
-            };
-            if (viewModel.onTinyMCEInit != null) {
-              return viewModel.onTinyMCEInit(element.id, val);
-            }
-          });
-        };
-        ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-          var ed;
-          ed = tinyMCE.get(element.id);
-          if (ed) {
-            ed.remove();
-            return console.log('removing tinymce');
-          }
-        });
-        setTimeout(function() {
-          $(element).tinymce(options);
-          if ($(element).attr('name') !== 'undefined') {
-            return ko.editors[$(element).attr('name')] = element.id;
-          }
-        }, 100);
-        return console.log('init tinymce');
-      },
-      update: function(element, valueAccessor) {
-        return $(element).html(ko.utils.unwrapObservable(valueAccessor()));
       }
     };
     ko.bindingHandlers.jsfileupload = {

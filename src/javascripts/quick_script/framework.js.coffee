@@ -46,6 +46,24 @@ QuickScript.utils =
 	isBlank : (val)->
 		return true if !val?
 		return val == ""
+	objectToArray : (obj)->
+		ret = for key, val of obj
+			{'key': key, 'value': val}
+	preventDefault : (view, ev)=>
+		ev.preventDefault?()
+	getURLPath : (url)=>
+		i = url.indexOf("?")
+		if i == -1 then url else url.substring(0, i)
+	getURLParams : (url)=>
+		i = url.indexOf("?")
+		return {} if i == -1
+		str = url.substring(i+1)
+		ret = {}
+		for pair in str.split("&")
+			kv = pair.split("=")
+			ret[kv[0]] = kv[1] unless QS.utils.isBlank(kv[0])
+		return ret
+
 
 
 QuickScript.log = (msg, lvl)->
@@ -300,6 +318,7 @@ class @Collection
 		@adapter = @opts.adapter || new ModelAdapter()
 		@template = ko.observable(@opts.template)
 		@model_state = ko.observable(0)
+		@view_filters = {}
 		@items.subscribe @updateViews
 		@is_ready = ko.dependentObservable ->
 				@model_state() == ko.modelStates.READY
@@ -496,6 +515,22 @@ class @Collection
 		item = @getItemById(data.id)
 		item.handleData(data) if item?
 		return item
+	addViewFilter : (name, fn)=>
+		@view_filters[name] = fn
+		@["views_#{name}"] = ko.computed ->
+			@views().filter(fn)
+		, this
+	filteredViews : (filts)=>
+		ko.computed ->
+			fsv = ko.unwrap(filts)
+			fa = if typeof(fsv) == 'Array' then fsv else [fsv]
+			@views().filter (el)=>
+				ret = true
+				for filt in fa
+					filt_fn = @view_filters[filt]
+					ret = ret && filt_fn(el)
+				ret
+		, this
 	nextPage : =>
 		@page(@page() + 1)
 		@update()
@@ -726,13 +761,17 @@ class @View
 					obj[prop] = val if val != null
 		obj
 
+class @Host
+	constructor : (url)->
+		@url = url
+		@headers = {}
+
 class @ModelAdapter
 	constructor : (opts)->
 		@save_url = null
 		@load_url = null
 		@index_url = null
 		@host = ModelAdapter.host
-		@headers = ModelAdapter.headers
 		@notifier = null
 		@event_scope = null
 		for prop,val of opts
@@ -781,16 +820,15 @@ class @ModelAdapter
 ModelAdapter.send = (host, opts, self)->
 	success_fn = opts.callback || opts.success
 	opts.type = 'POST' if !opts.type?
-	opts.url = host + opts.url
+	opts.url = host.url + opts.url
 	opts.error = ModelAdapter.default_error_fn(opts) unless opts.error?
 	opts.success = (resp, status)->
 		success_fn(resp, status) if success_fn?
 	opts.headers ||= {}
-	for key, val of self.headers
+	for key, val of host.headers
 		opts.headers[key] = val
 	$.ajax_qs opts
-ModelAdapter.host = '/api/'
-ModelAdapter.headers = {}
+ModelAdapter.host = new Host("/api/")
 ModelAdapter.default_error_fn = (opts)->
 	return (resp, status)->
 		if typeof(resp) == "string"
@@ -810,7 +848,6 @@ class @AccountAdapter
 		@login_key = "email"
 		@password_key = "password"
 		@host = ModelAdapter.host
-		@headers = ModelAdapter.headers
 		for prop,val of opts
 			@[prop] = val
 	login : (opts)->
@@ -876,6 +913,7 @@ class @Application extends @View
 		@path = ko.observable(null)
 		@previous_path = ko.observable(null)
 		@path_parts = []
+		@path_params = {}
 		@title = ko.observable('')
 		@redirect_on_login = ko.observable(null)
 		@auth_method = 'session'
@@ -918,11 +956,13 @@ class @Application extends @View
 		super('app', null)
 	configure : ->
 	route : ->
-		path = History.getRelativeUrl()
+		full_path = History.getRelativeUrl()
+		path = QS.utils.getURLPath(full_path)
 		console.log("Loading path '#{path}'")
 		@setTitle(@name, true)
 		@previous_path(@path())
 		@path_parts = path.split('/')
+		@path_params = QS.utils.getURLParams(full_path)
 		@path_parts.push('') unless @path_parts[@path_parts.length-1] == ''
 		@path(path)
 		@handlePath(path)
