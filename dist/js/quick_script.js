@@ -1431,19 +1431,27 @@ Lawnchair.adapter('dom', (function() {
       var key, val, _ref;
       this.data = data;
       this.toJSON = __bind(this.toJSON, this);
+      this.is_expired = __bind(this.is_expired, this);
       this.timeLeft = __bind(this.timeLeft, this);
       _ref = this.data;
       for (key in _ref) {
         val = _ref[key];
         this[key] = val;
       }
-      this.received_at = new Date();
+      if (this.data.received_at == null) {
+        this.received_at = this.data.received_at = Date.now_utc();
+      }
+      if (this.data.expires_at == null) {
+        this.expires_at = this.data.expires_at = this.received_at + this.expires_in;
+      }
     }
 
     AuthToken.prototype.timeLeft = function() {
-      var diff;
-      diff = Date.now_utc() - this.received_at.to_utc();
-      return this.expires_in - diff;
+      return this.expires_at - Date.now_utc();
+    };
+
+    AuthToken.prototype.is_expired = function() {
+      return this.timeLeft() <= 0;
     };
 
     AuthToken.prototype.toJSON = function() {
@@ -1519,10 +1527,6 @@ Lawnchair.adapter('dom', (function() {
 
 }).call(this);
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
   this.QuickScript = {};
 
   this.QS = QuickScript;
@@ -1699,6 +1703,162 @@ Lawnchair.adapter('dom', (function() {
       }
     };
   };
+
+  if (SupportManager.hasFormData()) {
+    QuickScript.ajax = function(opts) {
+      var aval, data, first, key, req, url, val, _i, _len, _ref, _ref1, _ref2;
+      data = new FormData();
+      req = new XMLHttpRequest();
+      url = opts.url;
+      if (opts.async == null) {
+        opts.async = true;
+      }
+      opts.data || (opts.data = {});
+      if (opts.type === "GET") {
+        url = url + "?";
+        first = true;
+        _ref = opts.data;
+        for (key in _ref) {
+          val = _ref[key];
+          if (val instanceof Array) {
+            for (_i = 0, _len = val.length; _i < _len; _i++) {
+              aval = val[_i];
+              url = url + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
+            }
+          } else {
+            url = url + ("" + key + "=" + (escape(val)) + "&");
+          }
+        }
+        url = url.substring(0, url.length - 1);
+      } else {
+        _ref1 = opts.data;
+        for (key in _ref1) {
+          val = _ref1[key];
+          data.append(key, val);
+        }
+      }
+      req.onreadystatechange = function(ev) {
+        var resp;
+        if (req.readyState === 4) {
+          if (opts.loading != null) {
+            opts.loading(false);
+          }
+          try {
+            resp = JSON.parse(req.responseText);
+          } catch (_error) {
+            resp = req.responseText;
+          }
+          if (req.status === 200) {
+            return opts.success(resp, req.status);
+          } else {
+            if (opts.error != null) {
+              return opts.error(resp, req.status);
+            }
+          }
+        }
+      };
+      if (opts.error != null) {
+        req.upload.addEventListener('error', opts.error);
+      }
+      if (opts.progress != null) {
+        req.upload.addEventListener('progress', function(ev) {
+          return opts.progress(ev, Math.floor(ev.loaded / ev.total * 100));
+        });
+      }
+      req.open(opts.type, url, opts.async);
+      _ref2 = opts.headers;
+      for (key in _ref2) {
+        val = _ref2[key];
+        if (val != null) {
+          req.setRequestHeader(key, val);
+        }
+      }
+      req.withCredentials = true;
+      if (opts.loading != null) {
+        opts.loading(true);
+      }
+      if (opts.type === "GET") {
+        req.send();
+      } else {
+        req.send(data);
+      }
+      return req;
+    };
+  } else {
+    QuickScript.ajax = function(opts) {
+      var aval, data_s, key, req, url, val, _i, _len, _ref, _ref1;
+      req = new XMLHttpRequest();
+      url = opts.url;
+      if (opts.async == null) {
+        opts.async = true;
+      }
+      data_s = '';
+      _ref = opts.data;
+      for (key in _ref) {
+        val = _ref[key];
+        if (val instanceof Array) {
+          for (_i = 0, _len = val.length; _i < _len; _i++) {
+            aval = val[_i];
+            data_s = data_s + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
+          }
+        } else {
+          data_s = data_s + ("" + key + "=" + (escape(val)) + "&");
+        }
+      }
+      data_s = data_s.substring(0, data_s.length - 1);
+      if (opts.type === "GET") {
+        url = url + "?" + data_s;
+      }
+      req.onreadystatechange = function(ev) {
+        var resp;
+        if (req.readyState === 4) {
+          if (opts.loading != null) {
+            opts.loading(false);
+          }
+          try {
+            resp = JSON.parse(req.responseText);
+          } catch (_error) {
+            resp = req.responseText;
+          }
+          if (req.status === 200) {
+            return opts.success(resp, req.status);
+          } else {
+            if (opts.error != null) {
+              return opts.error(resp, req.status);
+            }
+          }
+        }
+      };
+
+      /*
+      		req.upload.addEventListener('error', opts.error) if opts.error?
+      		if opts.progress?
+      			req.upload.addEventListener 'progress', (ev)->
+      				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
+       */
+      req.open(opts.type, url, opts.async);
+      _ref1 = opts.headers;
+      for (key in _ref1) {
+        val = _ref1[key];
+        if (val != null) {
+          req.setRequestHeader(key, val);
+        }
+      }
+      req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      req.withCredentials = true;
+      if (opts.loading != null) {
+        opts.loading(true);
+      }
+      req.send(data_s);
+      return req;
+    };
+  }
+
+}).call(this);
+(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   this.Model = (function() {
     Model.prototype.init = function() {};
@@ -2760,7 +2920,7 @@ Lawnchair.adapter('dom', (function() {
       last_view = this.view;
       view = this.views[view_name];
       if (last_view !== view) {
-        console.log("View [" + view.name + "] selected.");
+        QS.log("View [" + view.name + "] selected.", 2);
         this.view = view;
         this.prev_task(this.task());
         this.task(view.name);
@@ -2856,13 +3016,98 @@ Lawnchair.adapter('dom', (function() {
 
   this.Host = (function() {
     function Host(url) {
+      this.resumeRequests = __bind(this.resumeRequests, this);
+      this.pauseRequests = __bind(this.pauseRequests, this);
+      this.executeRequest = __bind(this.executeRequest, this);
+      this.processRequests = __bind(this.processRequests, this);
+      this.request = __bind(this.request, this);
       this.url = url;
       this.headers = {};
+      this.requests = [];
+      this.state = Host.READY;
+      this.before_request = null;
+      this.process_response = function(resp, status) {
+        return resp;
+      };
     }
+
+    Host.prototype.request = function(req) {
+      if (typeof this.before_request === "function") {
+        this.before_request(req);
+      }
+      if (this.state === Host.PAUSED) {
+        this.requests.push(req);
+        return typeof req.loading === "function" ? req.loading(true) : void 0;
+      } else {
+        return this.executeRequest(req);
+      }
+    };
+
+    Host.prototype.processRequests = function() {
+      var req, _results;
+      _results = [];
+      while (this.requests.length > 0) {
+        req = this.requests.shift();
+        _results.push(this.executeRequest(req));
+      }
+      return _results;
+    };
+
+    Host.prototype.executeRequest = function(opts) {
+      var callback_fn, key, resp_fn, val, _ref;
+      resp_fn = opts.callback || opts.success;
+      callback_fn = (function(_this) {
+        return function(resp, status) {
+          resp = _this.process_response(resp, status);
+          return typeof resp_fn === "function" ? resp_fn(resp, status) : void 0;
+        };
+      })(this);
+      if (opts.type == null) {
+        opts.type = 'POST';
+      }
+      opts.url = this.url + opts.url;
+      opts.success = callback_fn;
+      if (opts.error == null) {
+        opts.error = callback_fn;
+      }
+      opts.headers || (opts.headers = {});
+      _ref = this.headers;
+      for (key in _ref) {
+        val = _ref[key];
+        opts.headers[key] = val;
+      }
+      return QS.ajax(opts);
+    };
+
+    Host.prototype.pauseRequests = function() {
+      return this.state = Host.PAUSED;
+    };
+
+    Host.prototype.resumeRequests = function() {
+      this.state = Host.READY;
+      return this.processRequests();
+    };
 
     return Host;
 
   })();
+
+  Host.READY = 1;
+
+  Host.PAUSED = 2;
+
+  Host.process_api_response = function(resp, status) {
+    if (typeof resp === "string") {
+      return resp = {
+        success: false,
+        meta: status,
+        error: 'An error occurred.',
+        data: resp
+      };
+    } else {
+      return resp;
+    }
+  };
 
   this.ModelAdapter = (function() {
     function ModelAdapter(opts) {
@@ -2920,7 +3165,7 @@ Lawnchair.adapter('dom', (function() {
     };
 
     ModelAdapter.prototype.send = function(opts) {
-      return ModelAdapter.send(this.host, opts, this);
+      return this.host.request(opts);
     };
 
     ModelAdapter.prototype["delete"] = function(opts) {
@@ -2947,45 +3192,7 @@ Lawnchair.adapter('dom', (function() {
 
   })();
 
-  ModelAdapter.send = function(host, opts, self) {
-    var key, success_fn, val, _ref;
-    success_fn = opts.callback || opts.success;
-    if (opts.type == null) {
-      opts.type = 'POST';
-    }
-    opts.url = host.url + opts.url;
-    if (opts.error == null) {
-      opts.error = ModelAdapter.default_error_fn(opts);
-    }
-    opts.success = function(resp, status) {
-      if (success_fn != null) {
-        return success_fn(resp, status);
-      }
-    };
-    opts.headers || (opts.headers = {});
-    _ref = host.headers;
-    for (key in _ref) {
-      val = _ref[key];
-      opts.headers[key] = val;
-    }
-    return $.ajax_qs(opts);
-  };
-
   ModelAdapter.host = new Host("/api/");
-
-  ModelAdapter.default_error_fn = function(opts) {
-    return function(resp, status) {
-      if (typeof resp === "string") {
-        resp = {
-          success: false,
-          meta: status,
-          error: 'An error occurred.',
-          data: resp
-        };
-      }
-      return opts.success(resp, status);
-    };
-  };
 
   this.AccountAdapter = (function() {
     function AccountAdapter(opts) {
@@ -3055,7 +3262,7 @@ Lawnchair.adapter('dom', (function() {
     };
 
     AccountAdapter.prototype.send = function(opts) {
-      return ModelAdapter.send(this.host, opts, this);
+      return this.host.request(opts);
     };
 
     AccountAdapter.prototype["delete"] = function(opts) {
@@ -3183,16 +3390,20 @@ Lawnchair.adapter('dom', (function() {
     Application.prototype.handlePath = function(path) {};
 
     Application.prototype.setUser = function(data) {
-      QS.log(data);
+      QS.log(data, 2);
       if (data != null) {
         return this.current_user.handleData(data);
+      } else {
+        return this.current_user.reset();
       }
     };
 
     Application.prototype.setUserToken = function(data) {
-      QS.log(data);
+      QS.log(data, 2);
       if (data != null) {
         return this.current_user_token(new AuthToken(data));
+      } else {
+        return this.current_user_token(null);
       }
     };
 
@@ -3235,6 +3446,7 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Application.prototype.loginTo = function(path, opts) {
+      opts || (opts = {});
       if (opts.user != null) {
         this.setUser(opts.user);
       }
@@ -3985,7 +4197,7 @@ Lawnchair.adapter('dom', (function() {
         }, target);
       };
       target.any = ko.computed(function() {
-        return jQuery.isEmptyObject(target());
+        return !jQuery.isEmptyObject(target());
       }, target);
       return target;
     };
@@ -4185,157 +4397,8 @@ Lawnchair.adapter('dom', (function() {
     }
   });
 
-  if (SupportManager.hasFormData()) {
-    jQuery.ajax_qs = function(opts) {
-      var aval, data, first, key, req, url, val, _i, _len, _ref, _ref1, _ref2;
-      data = new FormData();
-      req = new XMLHttpRequest();
-      url = opts.url;
-      if (opts.async == null) {
-        opts.async = true;
-      }
-      opts.data || (opts.data = {});
-      if (opts.type === "GET") {
-        url = url + "?";
-        first = true;
-        _ref = opts.data;
-        for (key in _ref) {
-          val = _ref[key];
-          if (val instanceof Array) {
-            for (_i = 0, _len = val.length; _i < _len; _i++) {
-              aval = val[_i];
-              url = url + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
-            }
-          } else {
-            url = url + ("" + key + "=" + (escape(val)) + "&");
-          }
-        }
-        url = url.substring(0, url.length - 1);
-      } else {
-        _ref1 = opts.data;
-        for (key in _ref1) {
-          val = _ref1[key];
-          data.append(key, val);
-        }
-      }
-      req.onreadystatechange = function(ev) {
-        var resp;
-        if (req.readyState === 4) {
-          if (opts.loading != null) {
-            opts.loading(false);
-          }
-          try {
-            resp = JSON.parse(req.responseText);
-          } catch (_error) {
-            resp = req.responseText;
-          }
-          if (req.status === 200) {
-            return opts.success(resp, req.status);
-          } else {
-            if (opts.error != null) {
-              return opts.error(resp, req.status);
-            }
-          }
-        }
-      };
-      if (opts.error != null) {
-        req.upload.addEventListener('error', opts.error);
-      }
-      if (opts.progress != null) {
-        req.upload.addEventListener('progress', function(ev) {
-          return opts.progress(ev, Math.floor(ev.loaded / ev.total * 100));
-        });
-      }
-      req.open(opts.type, url, opts.async);
-      _ref2 = opts.headers;
-      for (key in _ref2) {
-        val = _ref2[key];
-        if (val != null) {
-          req.setRequestHeader(key, val);
-        }
-      }
-      req.withCredentials = true;
-      if (opts.loading != null) {
-        opts.loading(true);
-      }
-      if (opts.type === "GET") {
-        req.send();
-      } else {
-        req.send(data);
-      }
-      return req;
-    };
-  } else {
-    jQuery.ajax_qs = function(opts) {
-      var aval, data_s, key, req, url, val, _i, _len, _ref, _ref1;
-      req = new XMLHttpRequest();
-      url = opts.url;
-      if (opts.async == null) {
-        opts.async = true;
-      }
-      data_s = '';
-      _ref = opts.data;
-      for (key in _ref) {
-        val = _ref[key];
-        if (val instanceof Array) {
-          for (_i = 0, _len = val.length; _i < _len; _i++) {
-            aval = val[_i];
-            data_s = data_s + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
-          }
-        } else {
-          data_s = data_s + ("" + key + "=" + (escape(val)) + "&");
-        }
-      }
-      data_s = data_s.substring(0, data_s.length - 1);
-      if (opts.type === "GET") {
-        url = url + "?" + data_s;
-      }
-      req.onreadystatechange = function(ev) {
-        var resp;
-        if (req.readyState === 4) {
-          if (opts.loading != null) {
-            opts.loading(false);
-          }
-          try {
-            resp = JSON.parse(req.responseText);
-          } catch (_error) {
-            resp = req.responseText;
-          }
-          if (req.status === 200) {
-            return opts.success(resp, req.status);
-          } else {
-            if (opts.error != null) {
-              return opts.error(resp, req.status);
-            }
-          }
-        }
-      };
-
-      /*
-      		req.upload.addEventListener('error', opts.error) if opts.error?
-      		if opts.progress?
-      			req.upload.addEventListener 'progress', (ev)->
-      				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
-       */
-      req.open(opts.type, url, opts.async);
-      _ref1 = opts.headers;
-      for (key in _ref1) {
-        val = _ref1[key];
-        if (val != null) {
-          req.setRequestHeader(key, val);
-        }
-      }
-      req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      req.withCredentials = true;
-      if (opts.loading != null) {
-        opts.loading(true);
-      }
-      req.send(data_s);
-      return req;
-    };
-  }
-
 }).call(this);
+
 
 
 

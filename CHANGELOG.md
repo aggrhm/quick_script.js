@@ -1,5 +1,10 @@
 # CHANGELOG
 
+- v2.3.0
+	- ModelAdapter now uses Host to send requests
+	- Host supports request pausing (for token refresh)
+	- Utility functions moved to core.js file
+
 - v2.2.0
 	- Added Host class to use with ModelAdapters (for setting headers)
 	- Added view filters to Collection

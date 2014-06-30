@@ -209,10 +209,12 @@ class @AuthToken
 	constructor : (@data)->
 		for key,val of @data
 			@[key] = val
-		@received_at = new Date()
+		@received_at = @data.received_at = Date.now_utc() if !@data.received_at?
+		@expires_at = @data.expires_at = @received_at + @expires_in if !@data.expires_at?
 	timeLeft : =>
-		diff = Date.now_utc() - @received_at.to_utc()
-		return @expires_in - diff
+		return @expires_at - Date.now_utc()
+	is_expired : =>
+		return @timeLeft() <= 0
 	toJSON : =>
 		JSON.stringify(@data)
 

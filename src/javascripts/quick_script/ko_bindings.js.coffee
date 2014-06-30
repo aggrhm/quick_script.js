@@ -474,7 +474,7 @@ QuickScript.initKO = ->
 				if target()[field]? then target()[field][0] else null
 			, target
 		target.any = ko.computed ->
-				jQuery.isEmptyObject(target())
+				!jQuery.isEmptyObject(target())
 			, target
 		return target
 
@@ -613,93 +613,4 @@ jQuery.fn.extend
 		this.each ->
 			$(this).removeAttr('data-bind')
 			ko.cleanNode(this)
-
-if SupportManager.hasFormData()
-	jQuery.ajax_qs = (opts)->
-		data = new FormData()
-		req = new XMLHttpRequest()
-		url = opts.url
-		opts.async = true unless opts.async?
-		opts.data ||= {}
-
-		if opts.type == "GET"
-			url = url + "?"
-			first = true
-			for key, val of opts.data
-				if val instanceof Array
-					for aval in val
-						url = url + "#{key}#{escape('[]')}=#{escape(aval)}&"
-				else
-					url = url + "#{key}=#{escape(val)}&"
-			url = url.substring(0, url.length - 1)
-		else
-			for key, val of opts.data
-				data.append key, val
-		req.onreadystatechange = (ev)->
-			if req.readyState == 4
-				opts.loading(false) if opts.loading?
-				try
-					resp = JSON.parse(req.responseText)
-				catch
-					resp = req.responseText
-				if req.status == 200
-					opts.success(resp, req.status)
-				else
-					opts.error(resp, req.status) if opts.error?
-		req.upload.addEventListener('error', opts.error) if opts.error?
-		if opts.progress?
-			req.upload.addEventListener 'progress', (ev)->
-				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
-		req.open opts.type, url, opts.async
-		for key, val of opts.headers
-			req.setRequestHeader(key, val) if val?
-		req.withCredentials = true
-		opts.loading(true) if opts.loading?
-		if opts.type == "GET" then req.send() else req.send(data)
-		return req
-else
-	# IE compliant
-	jQuery.ajax_qs = (opts)->
-		#data = new FormData()
-		req = new XMLHttpRequest()
-		url = opts.url
-		opts.async = true unless opts.async?
-
-		# build data
-		data_s = ''
-		for key, val of opts.data
-			if val instanceof Array
-				for aval in val
-					data_s = data_s + "#{key}#{escape('[]')}=#{escape(aval)}&"
-			else
-				data_s = data_s + "#{key}=#{escape(val)}&"
-		data_s = data_s.substring(0, data_s.length - 1)
-		if opts.type == "GET"
-			url = url + "?" + data_s
-		req.onreadystatechange = (ev)->
-			if req.readyState == 4
-				opts.loading(false) if opts.loading?
-				try
-					resp = JSON.parse(req.responseText)
-				catch
-					resp = req.responseText
-				if req.status == 200
-					opts.success(resp, req.status)
-				else
-					opts.error(resp, req.status) if opts.error?
-		###
-		req.upload.addEventListener('error', opts.error) if opts.error?
-		if opts.progress?
-			req.upload.addEventListener 'progress', (ev)->
-				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
-		###
-		req.open opts.type, url, opts.async
-		for key, val of opts.headers
-			req.setRequestHeader(key, val) if val?
-		req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-		req.withCredentials = true
-		opts.loading(true) if opts.loading?
-		req.send(data_s)
-		return req
-
 

@@ -1,94 +1,3 @@
-@QuickScript = {}
-@QS = QuickScript
-
-QuickScript.utils =
-	buildOptions : (hash)->
-		ret = []
-		for key, val of hash
-			ret.push {value: key, text: val}
-		return ret
-	renderToString : (tmpl, vm)->
-		$el = $('<div>')
-		$el.koBind(vm, tmpl)
-		html = $el[0].innerHTML
-		$el.koClean()
-		return html
-	pluralize : (count, single, plural)->
-		if count == 1
-			return "#{count} #{single}"
-		else
-			return "#{count} #{plural}"
-	isFunction : (fn)->
-		return (typeof(fn) == 'function')
-	isRegularObject : (obj)->
-		return obj.constructor == Object
-	uuid : ->
-		Math.random().toString().substring(2)
-	linkify : (text)->
-		exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig
-		return text.replace(exp,"<a target='_blank' href='$1'>$1</a>")
-	toUSDString : (amt) ->
-		amt_usd = amt / 100.0
-		"$ #{amt_usd.toFixed(2)}"
-	getMouseCoords : (ev, type, opts)->
-		type ||= 'absolute'
-		coords = null
-		if ev.originalEvent.offsetX? && ev.originalEvent.offsetY?
-			coords = {x: ev.originalEvent.offsetX, y: ev.originalEvent.offsetY}
-		else
-			coords = {x: ev.originalEvent.layerX, y: ev.originalEvent.layerY}
-
-		if type == 'relative'
-			ts = {w: ev.currentTarget.offsetWidth, h: ev.currentTarget.offsetHeight}
-			return {x: (coords.x / ts.w) * 100, y: (coords.y / ts.h) * 100}
-		else
-			return coords
-	isBlank : (val)->
-		return true if !val?
-		return val == ""
-	objectToArray : (obj)->
-		ret = for key, val of obj
-			{'key': key, 'value': val}
-	preventDefault : (view, ev)=>
-		ev.preventDefault?()
-	getURLPath : (url)=>
-		i = url.indexOf("?")
-		if i == -1 then url else url.substring(0, i)
-	getURLParams : (url)=>
-		i = url.indexOf("?")
-		return {} if i == -1
-		str = url.substring(i+1)
-		ret = {}
-		for pair in str.split("&")
-			kv = pair.split("=")
-			ret[kv[0]] = kv[1] unless QS.utils.isBlank(kv[0])
-		return ret
-
-
-
-QuickScript.log = (msg, lvl)->
-	lvl ||= 1
-	console.log(msg) if (QS.debug == true && lvl <= QS.log_level)
-QuickScript.debug ||= true
-QuickScript.log_level ||= 5
-QuickScript.start_time = Date.now()
-QuickScript.time = ->
-	now = Date.now()
-	return (now - QS.start_time) / 1000.0
-
-QuickScript.includeEventable = (self)->
-	self::handle = (ev, callback)->
-		@_events ||= {}
-		@_events[ev] ||= []
-		@_events[ev].push callback
-	self::trigger = (ev, data)->
-		QS.log "EVENTABLE::TRIGGER : #{ev}", 5
-		@_events ||= {}
-		cbs = @_events[ev]
-		if cbs?
-			cbs.forEach (callback)->
-				callback(data)
-
 
 class @Model
 	init : ->
@@ -705,7 +614,7 @@ class @View
 		last_view = @view
 		view = @views[view_name]
 		if (last_view != view)
-			console.log("View [#{view.name}] selected.")
+			QS.log("View [#{view.name}] selected.", 2)
 			@view = view
 			@prev_task(@task())
 			@task(view.name)
@@ -765,6 +674,54 @@ class @Host
 	constructor : (url)->
 		@url = url
 		@headers = {}
+		@requests = []
+		@state = Host.READY
+		@before_request = null
+		@process_response = (resp, status)->
+			return resp
+	request : (req)=>
+		#QS.log "#{req.method || "POST"} #{req.url} (#{@state})"
+		@before_request?(req)
+
+		if @state == Host.PAUSED
+			#QS.log "... adding request"
+			@requests.push(req)
+			req.loading?(true)
+		else
+			@executeRequest(req)
+	processRequests : =>
+		while @requests.length > 0
+			req = @requests.shift()
+			#QS.log "Processing #{req.url}"
+			@executeRequest(req)
+	executeRequest : (opts)=>
+		resp_fn = opts.callback || opts.success
+		callback_fn = (resp, status)=>
+			#QS.log "response : #{status}"
+			resp = @process_response(resp, status)
+			resp_fn?(resp, status)
+		opts.type = 'POST' if !opts.type?
+		opts.url = @url + opts.url
+		opts.success = callback_fn
+		opts.error = callback_fn if !opts.error?
+		opts.headers ||= {}
+		for key, val of @headers
+			opts.headers[key] = val
+		QS.ajax opts
+	pauseRequests : =>
+		@state = Host.PAUSED
+	resumeRequests : =>
+		#QS.log "Resuming #{@requests.length} requests"
+		@state = Host.READY
+		@processRequests()
+Host.READY = 1
+Host.PAUSED = 2
+Host.process_api_response = (resp, status)->
+	if typeof(resp) == "string"
+		resp = {success: false, meta : status, error : 'An error occurred.', data : resp}
+	else
+		resp
+
 
 class @ModelAdapter
 	constructor : (opts)->
@@ -802,7 +759,7 @@ class @ModelAdapter
 		opts.event_name = "updated"
 		@send opts
 	send : (opts)->
-		ModelAdapter.send(@host, opts, this)
+		@host.request(opts)
 	delete : (opts)->
 		opts.type = 'DELETE'
 		opts.url = @save_url
@@ -817,23 +774,7 @@ class @ModelAdapter
 			opts.type = http_m
 			@send opts
 			
-ModelAdapter.send = (host, opts, self)->
-	success_fn = opts.callback || opts.success
-	opts.type = 'POST' if !opts.type?
-	opts.url = host.url + opts.url
-	opts.error = ModelAdapter.default_error_fn(opts) unless opts.error?
-	opts.success = (resp, status)->
-		success_fn(resp, status) if success_fn?
-	opts.headers ||= {}
-	for key, val of host.headers
-		opts.headers[key] = val
-	$.ajax_qs opts
 ModelAdapter.host = new Host("/api/")
-ModelAdapter.default_error_fn = (opts)->
-	return (resp, status)->
-		if typeof(resp) == "string"
-			resp = {success: false, meta : status, error : 'An error occurred.', data : resp}
-		opts.success(resp, status)
 
 class @AccountAdapter
 	constructor : (opts)->
@@ -880,7 +821,7 @@ class @AccountAdapter
 		opts.url = @activate_url
 		@send opts
 	send : (opts)->
-		ModelAdapter.send(@host, opts, this)
+		@host.request(opts)
 	delete : (opts)->
 		opts.type = 'DELETE'
 		opts.url = @save_url
@@ -968,11 +909,11 @@ class @Application extends @View
 		@handlePath(path)
 	handlePath : (path) ->
 	setUser : (data)->
-		QS.log(data)
-		@current_user.handleData(data) if data?
+		QS.log(data, 2)
+		if data? then @current_user.handleData(data) else @current_user.reset()
 	setUserToken : (data)->
-		QS.log data
-		@current_user_token(new AuthToken(data)) if data?
+		QS.log(data, 2)
+		if data? then @current_user_token(new AuthToken(data)) else @current_user_token(null)
 	loadUser : (adapter)->
 		adapter.load
 			loading : @is_loading
@@ -991,6 +932,7 @@ class @Application extends @View
 		else
 			History.pushState(null, null, path)
 	loginTo : (path, opts)->
+		opts ||= {}
 		@setUser(opts.user) if opts.user?
 		@setUserToken(opts.token) if opts.token?
 		if @redirect_on_login() != null
