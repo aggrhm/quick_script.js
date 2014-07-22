@@ -227,7 +227,10 @@ class @Collection
 		@adapter = @opts.adapter || new ModelAdapter()
 		@template = ko.observable(@opts.template)
 		@model_state = ko.observable(0)
-		@view_filters = {}
+		@named_view_filters = {}
+		@named_view_sorts = {}
+		@view_filter = ko.observable({})
+		@filtered_views = @computeFilteredViews(@view_filter)
 		@items.subscribe @updateViews
 		@is_ready = ko.dependentObservable ->
 				@model_state() == ko.modelStates.READY
@@ -425,20 +428,26 @@ class @Collection
 		item.handleData(data) if item?
 		return item
 	addViewFilter : (name, fn)=>
-		@view_filters[name] = fn
+		@named_view_filters[name] = fn
 		@["views_#{name}"] = ko.computed ->
 			@views().filter(fn)
 		, this
-	filteredViews : (filts)=>
+	addViewSort : (name, fn)=>
+		@named_view_sorts[name] = fn
+	computeFilteredViews : (filter)=>
 		ko.computed ->
-			fsv = ko.unwrap(filts)
-			fa = if typeof(fsv) == 'Array' then fsv else [fsv]
-			@views().filter (el)=>
+			fo = ko.unwrap(filter)
+			fsv = fo.select || []
+			sort = fo.sort || null
+			fa = if fsv instanceof Array then fsv else [fsv]
+			views = @views().filter (el)=>
 				ret = true
 				for filt in fa
-					filt_fn = @view_filters[filt]
+					filt_fn = @named_view_filters[filt]
 					ret = ret && filt_fn(el)
 				ret
+			views = views.sort(@named_view_sorts[sort]) if sort != null
+			return views
 		, this
 	nextPage : =>
 		@page(@page() + 1)
@@ -649,6 +658,16 @@ class @View
 				new_el = $(@element).find('.slide-item-' + idx)
 				new_el.addClass('active')
 			, 500
+	ensure : (key, fn)=>
+		@_ensure_fns ||= {}
+		if fn?
+			# write mode
+			@_ensure_fns[key] = fn
+		else
+			# read mode
+			unless (fn = @_ensure_fns[key]) == true
+				fn()
+				@_ensure_fns[key] = true
 	toAPI : (flds)=>
 		flds ||= @fields
 		obj = {}

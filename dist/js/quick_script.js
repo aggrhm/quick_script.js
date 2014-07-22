@@ -2266,7 +2266,8 @@ Lawnchair.adapter('dom', (function() {
       this.hasItems = __bind(this.hasItems, this);
       this.prevPage = __bind(this.prevPage, this);
       this.nextPage = __bind(this.nextPage, this);
-      this.filteredViews = __bind(this.filteredViews, this);
+      this.computeFilteredViews = __bind(this.computeFilteredViews, this);
+      this.addViewSort = __bind(this.addViewSort, this);
       this.addViewFilter = __bind(this.addViewFilter, this);
       this.handleItemData = __bind(this.handleItemData, this);
       this.handleData = __bind(this.handleData, this);
@@ -2297,7 +2298,10 @@ Lawnchair.adapter('dom', (function() {
       this.adapter = this.opts.adapter || new ModelAdapter();
       this.template = ko.observable(this.opts.template);
       this.model_state = ko.observable(0);
-      this.view_filters = {};
+      this.named_view_filters = {};
+      this.named_view_sorts = {};
+      this.view_filter = ko.observable({});
+      this.filtered_views = this.computeFilteredViews(this.view_filter);
       this.items.subscribe(this.updateViews);
       this.is_ready = ko.dependentObservable(function() {
         return this.model_state() === ko.modelStates.READY;
@@ -2554,29 +2558,39 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Collection.prototype.addViewFilter = function(name, fn) {
-      this.view_filters[name] = fn;
+      this.named_view_filters[name] = fn;
       return this["views_" + name] = ko.computed(function() {
         return this.views().filter(fn);
       }, this);
     };
 
-    Collection.prototype.filteredViews = function(filts) {
+    Collection.prototype.addViewSort = function(name, fn) {
+      return this.named_view_sorts[name] = fn;
+    };
+
+    Collection.prototype.computeFilteredViews = function(filter) {
       return ko.computed(function() {
-        var fa, fsv;
-        fsv = ko.unwrap(filts);
-        fa = typeof fsv === 'Array' ? fsv : [fsv];
-        return this.views().filter((function(_this) {
+        var fa, fo, fsv, sort, views;
+        fo = ko.unwrap(filter);
+        fsv = fo.select || [];
+        sort = fo.sort || null;
+        fa = fsv instanceof Array ? fsv : [fsv];
+        views = this.views().filter((function(_this) {
           return function(el) {
             var filt, filt_fn, ret, _i, _len;
             ret = true;
             for (_i = 0, _len = fa.length; _i < _len; _i++) {
               filt = fa[_i];
-              filt_fn = _this.view_filters[filt];
+              filt_fn = _this.named_view_filters[filt];
               ret = ret && filt_fn(el);
             }
             return ret;
           };
         })(this));
+        if (sort !== null) {
+          views = views.sort(this.named_view_sorts[sort]);
+        }
+        return views;
       }, this);
     };
 
@@ -2757,6 +2771,7 @@ Lawnchair.adapter('dom', (function() {
       this.model = model;
       this.opts = opts;
       this.toAPI = __bind(this.toAPI, this);
+      this.ensure = __bind(this.ensure, this);
       this.afterRender = __bind(this.afterRender, this);
       this.validate_fields = __bind(this.validate_fields, this);
       this.validate_for = __bind(this.validate_for, this);
@@ -2976,6 +2991,18 @@ Lawnchair.adapter('dom', (function() {
             return new_el.addClass('active');
           };
         })(this), 500);
+      }
+    };
+
+    View.prototype.ensure = function(key, fn) {
+      this._ensure_fns || (this._ensure_fns = {});
+      if (fn != null) {
+        return this._ensure_fns[key] = fn;
+      } else {
+        if ((fn = this._ensure_fns[key]) !== true) {
+          fn();
+          return this._ensure_fns[key] = true;
+        }
       }
     };
 

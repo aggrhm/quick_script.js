@@ -1,5 +1,9 @@
 # CHANGELOG
 
+- v2.4.0
+	- Added 'ensure' method for postponing initializations
+	- Updated view filters and sorting
+
 - v2.3.0
 	- ModelAdapter now uses Host to send requests
 	- Host supports request pausing (for token refresh)
