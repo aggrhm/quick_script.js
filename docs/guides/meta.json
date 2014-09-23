@@ -6,6 +6,6 @@
 		"application",
 		"views",
 		"models",
-		"custom_bindings",
+		"custom_bindings"
 	]
 }
