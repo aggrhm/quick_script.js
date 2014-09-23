@@ -60,9 +60,9 @@ class @TodoListView extends @View
 
 This method adds a view to your application.
 
-`name` - the name of the view. This is used with `selectView`  
-`view_class` - the View-extending class that you want to render  
-`template_name` - the name of the view template that should be bound to the view
+* `name` - the name of the view. This is used with `selectView`
+* `view_class` - the View-extending class that you want to render
+* `template_name` - the name of the view template that should be bound to the view
 
 ```coffeescript
 class @HomeView extends @View
@@ -79,8 +79,8 @@ class @AppView extends @Application
 
 This method selects an embedded view to be displayed and hides all other embedded views. It is typically called in the routing code of your application, as the view to be rendered usually corresponds with the url path. When called, it also calls the `load` method on view to be displayed, passing the additional arguments along.
 
-`name` - the name of the view to display  
-`args` - arguments to pass to the `load` method of the view
+* `name` - the name of the view to display
+* `args` - arguments to pass to the `load` method of the view
 
 ```coffeescript
 @selectView('item-view', @item)

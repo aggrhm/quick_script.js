@@ -65,8 +65,8 @@ class @TodoItem extends @Model
 
 Loads data from persistent storage using the assigned `ModelAdapter`.
 
-`opts` - passed to the server indicating the record to fetch (typically an id).  
-`callback(resp, status)` - function to call once the model has been loaded. The callback function is passed the response text from the server and the status of the response.
+* `opts` - passed to the server indicating the record to fetch (typically an id).
+* `callback(resp, status)` - function to call once the model has been loaded. The callback function is passed the response text from the server and the status of the response.
 
 ```coffeescript
 @todo_item = new TodoItem()
@@ -80,8 +80,8 @@ Loads data from persistent storage using the assigned `ModelAdapter`.
 `model.save(fields, [callback])`
 
 Saves data to persistent storage using the assigned `ModelAdapter`.  
-`fields` - an array that indicates the fields of the model that should be sent to the server. The `id` field is automatically included.
-`callback(resp, status)` - a function to call once the model has been saved. The callback function is passed the response from the server.
+* `fields` - an array that indicates the fields of the model that should be sent to the server. The `id` field is automatically included.
+* `callback(resp, status)` - a function to call once the model has been saved. The callback function is passed the response from the server.
 
 ```coffeescript
 @todo_item = new TodoItem()
@@ -96,8 +96,8 @@ Saves data to persistent storage using the assigned `ModelAdapter`.
 
 Deletes the model from persistent storage using the assigned `ModelAdapter`.  
 
-`fields` - an array that indicates the fields of the model that should be sent to the server. The `id` field is automatically included.
-`callback` - a function to call once the model has been deleted. The callback function is passed the response from the server.
+* `fields` - an array that indicates the fields of the model that should be sent to the server. The `id` field is automatically included.
+* `callback` - a function to call once the model has been deleted. The callback function is passed the response from the server.
 
 ```coffeescript
 @todo_item.delete ['id'], (resp)=>
