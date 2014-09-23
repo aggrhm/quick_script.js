@@ -4,5 +4,8 @@
 		"guides",
 		"api",
 		"tutorials"
-	]
+	],
+	"menu_titles": {
+		"api": "API"
+	}
 }
