@@ -16,8 +16,8 @@ gem 'ramba', github: 'agquick/ramba'
 
 Now do a bundle install.
 
-```
-	$ bundle install
+```sh
+$ bundle install
 ```
 
 Now create your Assetfile for use with Ramba.
@@ -33,8 +33,8 @@ package "animate", github: "daneden/animate.css", branch: "master"
 
 Now run a ramba install. This will install all javascript packages.
 
-```
-	$ bundle exec ramba install
+```sh
+$ bundle exec ramba install
 ```
 
 Now add Ramba to your javascript and stylesheet application manifests.
@@ -43,7 +43,9 @@ Now add Ramba to your javascript and stylesheet application manifests.
 // ... application.js
 //= require ramba
 ...
+```
 
+```css
 /* ... application.css
  *= require ramba
  ...
@@ -60,7 +62,7 @@ end
 
 Next, setup your file hierarchy. This is how I set up mine for the TodoList example, but up to you. The javascript files should be added to your asset pipeline file.
 
-```
+```text
 app/
 	assets/
 		views/
@@ -78,7 +80,7 @@ One good thing about QuickScript is all of your client-side files are found in t
 
 Now update your application layout in `app/views/layouts/application.html.erb`.
 
-```ruby
+```erb
 <!DOCTYPE html>
 <html>
 	<head>
@@ -97,7 +99,7 @@ Now update your application layout in `app/views/layouts/application.html.erb`.
 	
 And update your routing rules in `config/routes.rb`
 
-```ruby
+```coffeescript
 TodoList::Application.routes.draw do
 	scope "/api" do
 		# your api routes go here

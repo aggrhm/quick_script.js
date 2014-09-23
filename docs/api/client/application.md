@@ -1,6 +1,6 @@
 # Application
 
-The `Application` class is the heart of your web application views. You must extend it using the standard coffeescript call, and name it whatever you passed to 'include_quick_script_init'. Here you define the name of your application, initialize your application views, and handle routing. `Application` extends the `View` class, so you have all of the functionality available in a normal view. For more information, see the `defining` method.
+The `Application` class is the heart of your web application views. You must extend it using the standard coffeescript call, and name it whatever you passed to `include_quick_script_init`. Here you define the name of your application, initialize your application views, and handle routing. `Application` extends the `View` class, so you have all of the functionality available in a normal view. For more information, see the `defining` method.
 
 ## Defining
 
@@ -16,6 +16,23 @@ class @AppView extends @Application
 	account_model : User
 ```
 	
+## Properties
+
+### path_parts
+
+`@path_parts[idx]`
+
+An array that tracks the URL location of the website 
+
+```ruby
+#!ruby
+# user is on page /todo_item/12345
+root = @path_parts[1]
+# root = "todo_item"
+id = @path_parts[2]
+# id = "12345"
+```
+
 ## Methods
 
 ### handlePath
@@ -41,26 +58,9 @@ handlePath : =>
 
 Routes the user to a new path (local to the web application)
 
-	* `path` - new path
+`path` - new path
 
 ```ruby
 @redirectTo("/todo_item/12345")
-```
-
-## Properties
-
-### path_parts
-
-`@path_parts[idx]`
-
-An array that tracks the URL location of the website 
-
-```ruby
-#!ruby
-# user is on page /todo_item/12345
-root = @path_parts[1]
-# root = "todo_item"
-id = @path_parts[2]
-# id = "12345"
 ```
 
