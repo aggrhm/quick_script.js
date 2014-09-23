@@ -24,7 +24,7 @@ class @TodoItem extends Model
 
 ## Methods
 
-### Constructor
+### constructor
 
 `new Model([attributes, [collection]])`
 

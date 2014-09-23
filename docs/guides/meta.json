@@ -1,11 +1,11 @@
 {
 	"order": [
 		"installing",
-		"concepts",
 		"templates",
 		"application",
 		"views",
 		"models",
 		"custom_bindings"
+		"server_setup"
 	]
 }
