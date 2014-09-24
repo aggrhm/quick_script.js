@@ -8,7 +8,7 @@ QuickScript is written in CoffeeScript, so get familiar with it [here](http://co
 
 It is also heavily based on Knockout.js, so get familiar with it [here](http://knockoutjs.com)
 
-To get started, checkout the [Getting Started](getting_started) page
+To get started, checkout the [Getting Started][getting_started] page
 
 ## Concepts
 
