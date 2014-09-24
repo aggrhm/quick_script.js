@@ -1,4 +1,4 @@
-# Installing
+# Getting Started
 
 QuickScript is optimized for Rails 3+. This guide will outline setting up QuickScript with Rails.
 
