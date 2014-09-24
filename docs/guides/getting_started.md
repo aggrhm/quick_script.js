@@ -60,24 +60,6 @@ class ApplicationController
 end
 ```
 
-Next, setup your file hierarchy. This is how I set up mine for the TodoList example, but up to you. The javascript files should be added to your asset pipeline file.
-
-```text
-app/
-	assets/
-		views/
-			todo_item/
-				row.html.haml					# our partial template for a TodoItem row
-			home.html.haml					# our root home view template (I use haml)
-		javascripts/
-			views.js.coffee					# for our application js views
-			models.js.coffee				# for our application js models
-		stylesheets/
-			home.css.sass						# for our home css
-```
-
-One good thing about QuickScript is all of your client-side files are found in the `/assets` folder of your rails app. The view names correspond to their file path, as we will see later. For example, the `home.html.haml` view template is given the id 'view-home', while the `row.html.haml` template has the id 'view-todo_item-row'. You will use this id to reference the view when building your application.
-
 Now update your application layout in `app/views/layouts/application.html.erb`.
 
 ```erb
@@ -116,4 +98,43 @@ TodoList::Application.routes.draw do
 end
 ```
 
-Now you are ready to start building your application.
+## Client-Side Setup
+
+Next, setup your file hierarchy. This is how I set up mine for the TodoList example, but up to you. For Rails, all asset files should be added to your asset pipeline file (this is typically under /app/assets). For other projects, your assets may go elsewhere, but the overall logic is the same: you should have a directory for your views, javascripts, and stylesheets (and possibly even images and fonts).
+
+```text
+app/
+	assets/
+		views/
+			home.html.haml					# our root home view template (I use haml)
+			todo_item/
+				row.html.haml					# our partial template for a TodoItem row
+
+		javascripts/
+			app.js.coffee					# for our application and views
+			models.js.coffee				# for our application js models
+
+		stylesheets/
+			home.css.sass						# for our home css
+```
+
+Logically, your view templates all go in the `views` directory, your javascripts in `javascripts` and so on. Here are a couple quick notes about each type, with more detail in the additional guides.
+
+### Views
+
+One immediate question you will have after adding the views is, how do I refer to them? The template names correspond to their file path, as we will see later.
+
+For example, the `home.html.haml` view template is given the id 'view-home', while the `row.html.haml` template has the id `view-todo_item-row`. You will use this id to reference the template when building your application.
+
+### Javascripts
+
+All javascript logic is placed in the `javascripts` folder. This is where your application, views, and models are defined. There is no requirements for file names here, however you want to structure your app is up to you. For small projects, place the application and views in `app.js.coffee` and your models in `models.js.coffee`. For larger projects, make use of subdirectories.
+
+### Stylesheets
+
+The files in the `stylesheets` folder are for styling your views. It is common to create a separate stylesheet for each template, however this isn't required (just helps when looking for where a certain style is defined). To do this, prefix the styles with the class of the template (usually it's the template name). You can read more about this in the [Templates][templates] guide.
+
+Now you are ready to start building your [Application][application].
+
+[templates]: templates
+[application]: application

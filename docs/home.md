@@ -4,9 +4,9 @@ QuickScript is a client-side javascript framework which extends Knockout.js to p
 
 QuickScript allows you to render your entire web application client-side.
 
-QuickScript is written in CoffeeScript, so get familiar with it [here](http://coffeescript.org)
+QuickScript is written in CoffeeScript, so get familiar with it [here](http://coffeescript.org).
 
-It is also heavily based on Knockout.js, so get familiar with it [here](http://knockoutjs.com)
+It is also heavily based on Knockout.js, so get familiar with it [here](http://knockoutjs.com).
 
 To get started, checkout the [Getting Started][getting_started] page
 
