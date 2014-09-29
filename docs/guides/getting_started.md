@@ -134,7 +134,7 @@ All javascript logic is placed in the `javascripts` folder. This is where your a
 
 The files in the `stylesheets` folder are for styling your views. It is common to create a separate stylesheet for each template, however this isn't required (just helps when looking for where a certain style is defined). To do this, prefix the styles with the class of the template (usually it's the template name). You can read more about this in the [Templates][templates] guide.
 
-Now you are ready to start building your [Application][application].
+Now you are ready to start building your [Templates][templates].
 
 [templates]: templates
 [application]: application
