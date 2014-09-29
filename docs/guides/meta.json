@@ -1,0 +1,11 @@
+{
+	"order": [
+		"getting_started",
+		"templates",
+		"application",
+		"views",
+		"models",
+		"custom_bindings",
+		"server_setup"
+	]
+}
