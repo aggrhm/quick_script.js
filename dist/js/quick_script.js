@@ -2004,7 +2004,11 @@ Lawnchair.adapter('dom', (function() {
         console.log("Save postponed.");
         return;
       }
-      opts = this.toAPI(fields);
+      if (fields instanceof Array) {
+        opts = this.toAPI(fields);
+      } else {
+        opts = fields;
+      }
       opts['id'] = this.id();
       this.adapter.save({
         data: opts,
@@ -2877,6 +2881,7 @@ Lawnchair.adapter('dom', (function() {
       }
       this.views = {};
       this.events = {};
+      this.opts || (this.opts = {});
       this.templateID = "view-" + this.name;
       this.fields = [];
       this.view_name = ko.computed(function() {
@@ -3140,11 +3145,16 @@ Lawnchair.adapter('dom', (function() {
     view_class || (view_class = this);
     return ko.components.register(name, {
       viewModel: function(params, componentInfo) {
-        var model, new_view, owner, vn;
-        model = params.model;
-        owner = params.owner;
-        vn = "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0);
-        new_view = new view_class(vn, owner, model, params);
+        var model, new_view, owner, view, vn;
+        view = params.view;
+        if (view != null) {
+          new_view = view;
+        } else {
+          model = params.model;
+          owner = params.owner;
+          vn = "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0);
+          new_view = new view_class(vn, owner, model, params);
+        }
         if (componentInfo != null) {
           new_view.element = componentInfo.element;
         }

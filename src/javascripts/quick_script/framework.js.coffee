@@ -70,7 +70,10 @@ class @Model
 		if (@model_state() != ko.modelStates.READY)
 			console.log("Save postponed.")
 			return
-		opts = @toAPI(fields)
+		if fields instanceof Array
+			opts = @toAPI(fields)
+		else
+			opts = fields
 		opts['id'] = @id()
 		@adapter.save
 			data: opts
@@ -572,6 +575,7 @@ class @View
 		@app = @owner.app if @owner?
 		@views = {}
 		@events = {}
+		@opts ||= {}
 		@templateID = "view-#{@name}"
 		@fields = []
 		@view_name = ko.computed ->
@@ -724,10 +728,14 @@ View.registerComponent = (name, template, view_class)->
 	ko.components.register name,
 		viewModel : (params, componentInfo)->
 			#QS.log componentInfo
-			model = params.model
-			owner = params.owner
-			vn = "#{name}-#{model.id?()}"
-			new_view = new view_class(vn, owner, model, params)
+			view = params.view
+			if view?
+				new_view = view
+			else
+				model = params.model
+				owner = params.owner
+				vn = "#{name}-#{model.id?()}"
+				new_view = new view_class(vn, owner, model, params)
 			new_view.element = componentInfo.element if componentInfo?
 			return new_view
 		template: {element: template}

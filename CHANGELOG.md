@@ -1,5 +1,9 @@
 # CHANGELOG
 
+- v2.5.1
+	- Added `view` option to params for components
+	- `Model.save` now accepts data hash
+
 - v2.5.0
 	- Updated to Knockout.js v.3.2.0
 	- Separated ViewCollection from Collection. Must now use @includeViewCollection if want full View functionality

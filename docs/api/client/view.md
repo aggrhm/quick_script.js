@@ -35,8 +35,6 @@ This function allows you to register a view component with KnockoutJS, so that i
 * `component_name` - the id for this component
 * `template_name` - the name of the template to attach to this component
 
-Defining:
-
 ```coffeescript
 class @TodoItemView extends @View
 	@registerComponent 'todo-item', 'view-todo_item-row'
@@ -44,12 +42,23 @@ class @TodoItemView extends @View
 end
 ```
 
-Usage:
+You can then use the `viewComponents` custom binding to use the component, specifically with a collection of items:
 
 ```haml
 .todo-items(data-bind="viewComponents : {name: 'todo-item', data: todos.items}")
 	// views will render here for all todo items
 ```
+
+When passing parameters directly into the `component` binding you should use the following API:
+
+`component : {name: 'component_name', params: param_opts}`
+
+Where the `params` hash has the following:
+
+* `model` - this model bound to the `model` property of the view
+* `owner` - the owner of the newly created view
+* `view` - (optional) pass the already created view to bind to this component. The other options do nothing when this param is used
+
 
 ## Instance Methods
 
