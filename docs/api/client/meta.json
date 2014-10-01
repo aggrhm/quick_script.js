@@ -5,6 +5,7 @@
 		"model",
 		"model_adapter",
 		"account_adapter",
-		"collection"
+		"collection",
+		"extensions"
 	]
 }

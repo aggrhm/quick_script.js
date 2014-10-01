@@ -164,6 +164,13 @@ Model.includeCollection = (self)->
 			super(opts)
 			@adapter = self.Adapter
 			@model = self
+Model.includeViewCollection = (self)->
+	self ||= this
+	self.Collection = class extends ViewCollection
+		constructor : (opts)->
+			super(opts)
+			@adapter = self.Adapter
+			@model = self
 Model.includeAdapter = (adapter, self)->
 	self ||= this
 	if !adapter.save? && !adapter.load?
@@ -215,9 +222,6 @@ class @Collection
 		@_reqid = 0
 		@scope = ko.observable(@opts.scope || [])
 		@items = ko.observableArray([])
-		@views = ko.observableArray([])
-		@view_model = (@opts.view || View)
-		@view_owner = (@opts.view_owner || null)
 		@page = ko.observable(1)
 		@limit = ko.observable(@opts.limit || 100)
 		@title = ko.observable(@opts.title || 'Collection')
@@ -225,13 +229,11 @@ class @Collection
 		@extra_params = ko.observable(@opts.extra_params || {})
 		@model = @opts.model || Model
 		@adapter = @opts.adapter || new ModelAdapter()
-		@template = ko.observable(@opts.template)
 		@model_state = ko.observable(0)
-		@named_view_filters = {}
-		@named_view_sorts = {}
-		@view_filter = ko.observable({})
-		@filtered_views = @computeFilteredViews(@view_filter)
-		@items.subscribe @updateViews
+		@named_filters = {}
+		@named_sorts = {}
+		@filter = ko.observable({})
+		@filtered_items = @computeFilteredItems(@filter)
 		@is_ready = ko.dependentObservable ->
 				@model_state() == ko.modelStates.READY
 			, this
@@ -268,50 +270,13 @@ class @Collection
 		@length = ko.computed ->
 				@items().length
 			, this
+		@extend(opts)
 		@init()
+	extend : (opts)=>
 	setScope : (scp, args) =>
 		opts = args
 		opts.unshift(scp)
 		@scope(opts)
-	updateViews : (items)=>
-		view_cls = @view_model
-		view_owner = @view_owner
-		ra = items
-		ca = @views()
-		max_len = Math.max(ra.length, ca.length)
-
-		# cache views by model
-		mh = {}
-		ca.forEach (view)->
-			mh[view.model._uuid] = view
-		#QS.log mh
-
-		# iterate possible positions
-		if max_len > 0
-			for idx in [(max_len-1)..0]
-				# here we will check if any of the views in the current list
-				# have models that match ones in the new list
-				rm = ra[idx]
-				cm = if ca[idx]? then ca[idx].model else null
-
-				if !rm?
-					# item has been deleted
-					ca.splice(idx, 1)
-				else
-					# models aren't the same
-					# check if another view in list has model
-					view_name = "view-#{rm.id()}"
-					same_view = mh[rm._uuid]
-					if same_view?
-						ca[idx] = same_view
-					else
-						ca[idx] = new view_cls(view_name, view_owner, rm)
-		@views.valueHasMutated()
-	setView : (view_model, view_owner) =>
-		@views([])
-		@view_model = view_model
-		@view_owner = view_owner
-		@updateViews(@items())
 	_load : (scope, op, load_opts)->
 		#console.log("Loading items for #{scope}")
 		op ||= Collection.REPLACE
@@ -357,9 +322,7 @@ class @Collection
 		return if !data?
 		#QS.log "COLLECTION::HANDLE_DATA : Starting (#{QS.time()}).", 3
 		models = []
-		views = []
 		op ||= Collection.REPLACE
-		cls = @view_model
 		curr_a = @items()
 		# build temp id hash
 		id_h = {}
@@ -427,27 +390,27 @@ class @Collection
 		item = @getItemById(data.id)
 		item.handleData(data) if item?
 		return item
-	addViewFilter : (name, fn)=>
-		@named_view_filters[name] = fn
-		@["views_#{name}"] = ko.computed ->
-			@views().filter(fn)
+	addNamedFilter : (name, fn)=>
+		@named_filters[name] = fn
+		@["filter_#{name}"] = ko.computed ->
+			@items().filter(fn)
 		, this
-	addViewSort : (name, fn)=>
-		@named_view_sorts[name] = fn
-	computeFilteredViews : (filter)=>
+	addNamedSort : (name, fn)=>
+		@named_sorts[name] = fn
+	computeFilteredItems : (filter)=>
 		ko.computed ->
 			fo = ko.unwrap(filter)
 			fsv = fo.select || []
 			sort = fo.sort || null
 			fa = if fsv instanceof Array then fsv else [fsv]
-			views = @views().filter (el)=>
+			items = @items().filter (el)=>
 				ret = true
 				for filt in fa
-					filt_fn = @named_view_filters[filt]
+					filt_fn = @named_filters[filt]
 					ret = ret && filt_fn(el)
 				ret
-			views = views.sort(@named_view_sorts[sort]) if sort != null
-			return views
+			items = items.sort(@named_sorts[sort]) if sort != null
+			return items
 		, this
 	nextPage : =>
 		@page(@page() + 1)
@@ -468,20 +431,13 @@ class @Collection
 	removeItem : (idx, notify)->
 		notify ||= true
 		@items().splice(idx, 1)
-		#@views().splice(idx, 1)
 		@items.valueHasMutated() if notify
-		#@views.valueHasMutated() if notify
 	moveItem : (from, to, notify)->
 		notify ||= true
 		@items().splice(to, 0, @items().splice(from, 1)[0])
-		#@views().splice(to, 0, @views().splice(from, 1)[0])
 		@items.valueHasMutated() if notify
-		#@views.valueHasMutated() if notify
 	getItemById : (id)->
 		list = @items().filter ((item)=> item.id() == id)
-		ret = if list.length > 0 then list[0] else null
-	getViewById : (id)->
-		list = @views().filter ((view)=> view.model.id() == id)
 		ret = if list.length > 0 then list[0] else null
 	getIndexById : (id)->
 		idx = 0
@@ -489,27 +445,20 @@ class @Collection
 			return idx if item.id() == id
 			idx = idx + 1
 		return null
-	nthViews : (n, offset) ->
-		@views().filter (el, i)->
-			(i-offset) % n == 0
 	removeDuplicates : ->
 		ids = []
 		@items().forEach (item, idx, array)=>
 			if ids.includes(item.id())
 				@items.splice(idx, 1)
-				#@views.splice(idx, 1)
 			else
 				ids.push(item.id())
 	removeIf : (callback)->
 		@items().forEach (item, idx, array)=>
 			if callback(item, idx)
 				@items.splice(idx, 1)
-				#@views.splice(idx, 1)
 	removeItemById : (id)->
 		@removeIf (item)=>
 			item.id() == id
-	getTemplate : ->
-		@template()
 	reset : ->
 		@_reqid = 0
 		@page(1)
@@ -533,6 +482,88 @@ Collection.REPLACE = 0
 Collection.INSERT = 1
 Collection.APPEND = 2
 Collection.UPDATE = 3
+
+class @ViewCollection extends @Collection
+	extend: (opts)->
+		super()
+		@views = ko.observableArray([])
+		@view_model = (@opts.view || View)
+		@view_owner = (@opts.view_owner || null)
+		@named_view_filters = {}
+		@named_view_sorts = {}
+		@view_filter = ko.observable({})
+		@template = ko.observable(@opts.template)
+		@filtered_views = @computeFilteredViews(@view_filter)
+		@items.subscribe @updateViews
+	updateViews : (items)=>
+		view_cls = @view_model
+		view_owner = @view_owner
+		ra = items
+		ca = @views()
+		max_len = Math.max(ra.length, ca.length)
+
+		# cache views by model
+		mh = {}
+		ca.forEach (view)->
+			mh[view.model._uuid] = view
+		#QS.log mh
+
+		# iterate possible positions
+		if max_len > 0
+			for idx in [(max_len-1)..0]
+				# here we will check if any of the views in the current list
+				# have models that match ones in the new list
+				rm = ra[idx]
+				cm = if ca[idx]? then ca[idx].model else null
+
+				if !rm?
+					# item has been deleted
+					ca.splice(idx, 1)
+				else
+					# models aren't the same
+					# check if another view in list has model
+					view_name = "view-#{rm.id()}"
+					same_view = mh[rm._uuid]
+					if same_view?
+						ca[idx] = same_view
+					else
+						ca[idx] = new view_cls(view_name, view_owner, rm)
+		@views.valueHasMutated()
+	setView : (view_model, view_owner) =>
+		@views([])
+		@view_model = view_model
+		@view_owner = view_owner
+		@updateViews(@items())
+	addViewFilter : (name, fn)=>
+		@named_view_filters[name] = fn
+		@["views_#{name}"] = ko.computed ->
+			@views().filter(fn)
+		, this
+	addViewSort : (name, fn)=>
+		@named_view_sorts[name] = fn
+	computeFilteredViews : (filter)=>
+		ko.computed ->
+			fo = ko.unwrap(filter)
+			fsv = fo.select || []
+			sort = fo.sort || null
+			fa = if fsv instanceof Array then fsv else [fsv]
+			views = @views().filter (el)=>
+				ret = true
+				for filt in fa
+					filt_fn = @named_view_filters[filt]
+					ret = ret && filt_fn(el)
+				ret
+			views = views.sort(@named_view_sorts[sort]) if sort != null
+			return views
+		, this
+	getViewById : (id)->
+		list = @views().filter ((view)=> view.model.id() == id)
+		ret = if list.length > 0 then list[0] else null
+	nthViews : (n, offset) ->
+		@views().filter (el, i)->
+			(i-offset) % n == 0
+	getTemplate : ->
+		@template()
 
 class @View
 	QuickScript.includeEventable(this)
@@ -688,6 +719,18 @@ class @View
 				else
 					obj[prop] = val if val != null
 		obj
+View.registerComponent = (name, template, view_class)->
+	view_class ||= this
+	ko.components.register name,
+		viewModel : (params, componentInfo)->
+			#QS.log componentInfo
+			model = params.model
+			owner = params.owner
+			vn = "#{name}-#{model.id?()}"
+			new_view = new view_class(vn, owner, model, params)
+			new_view.element = componentInfo.element if componentInfo?
+			return new_view
+		template: {element: template}
 
 class @Host
 	constructor : (url)->
@@ -998,6 +1041,9 @@ QuickScript.initialize = (opts)->
 		if this.href.includes(History.getRootUrl())
 			History.pushState null, null, this.href
 			return false
+		else if (path = this.getAttribute('path'))?
+			app.redirectTo(path)
+			return true
 		else
 			return true
 

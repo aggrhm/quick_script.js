@@ -1,5 +1,11 @@
 # CHANGELOG
 
+- v2.5.0
+	- Updated to Knockout.js v.3.2.0
+	- Separated ViewCollection from Collection. Must now use @includeViewCollection if want full View functionality
+	- Added `registerComponent` function for defining components for use with Collections
+	- Added support for `path` attribute with `<a>` elements for routing
+	
 - v2.4.0
 	- Added 'ensure' method for postponing initializations
 	- Updated view filters and sorting
