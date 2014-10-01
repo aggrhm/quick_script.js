@@ -16,6 +16,8 @@ More coming soon...
 
 ## Libraries
 
-More coming soon...
+* KnockoutJS - Version 3.2
+* HistoryJS
+* Lawnchair
 
 [getting_started]: guides/getting_started

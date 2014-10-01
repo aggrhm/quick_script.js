@@ -435,6 +435,34 @@ QuickScript.initKO = ->
 			else
 				$(element).removeAttr('disabled')
 	
+	ko.bindingHandlers.viewComponents =
+		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
+			$el = $(element)
+			opts = valueAccessor()
+			name = opts.name
+			data = opts.data
+			owner = opts.owner
+			view = opts.view || View
+			if !ko.components.isRegistered(name)
+				# component not registered, add it
+				#tpl = $el.html()
+				tpl = (node.outerHTML for node in ko.virtualElements.childNodes(element)).join(" ")
+				tpl_name = "component-#{name}"
+				ko.addTemplate tpl_name, tpl
+				view.registerComponent(name, tpl_name)
+			bindingContext.componentOwner = owner || viewModel
+			bindingContext.componentData = data
+			$tpl = $("
+				<!-- ko component : {name: '#{name}', params: {model: $data, owner: $parentContext.componentOwner}} -->
+				<!-- /ko -->
+			")
+			ko.virtualElements.setDomNodeChildren(element, $tpl)
+			ko.applyBindingsToNode(element, {foreach: data}, bindingContext)
+			return {controlsDescendantBindings: true}
+	ko.virtualElements.allowedBindings.viewComponents = true
+
+	## EXTENDERS
+	
 	ko.extenders.usd = (target) ->
 		target.usd = ko.computed
 			read : ->
@@ -478,6 +506,24 @@ QuickScript.initKO = ->
 			, target
 		return target
 
+	## PREPROCESSORS
+	
+	ko.punches.utils.setNodePreprocessor (node)->
+		# only for <a> links
+		if node.nodeType == 1 && node.nodeName == "A" && node.getAttribute('iref') != null
+			iref = node.getAttribute('iref')
+			click_db = "click : function() { App.redirectTo('#{iref}'); }"
+			ko.utils.appendNodeDataBind(node, click_db)
+
+
+	## UTILS
+	
+	ko.utils.appendNodeDataBind = (node, bind)->
+		db = node.getAttribute('data-bind')
+		if db?
+			node.setAttribute('data-bind', "#{db}, #{bind}")
+		else
+			node.setAttribute('data-bind', bind)
 				
 	
 	ko.absorbModel = (data, self) ->

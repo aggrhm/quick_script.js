@@ -24,13 +24,39 @@ Every `View` instance has access to a few variables that help it do its job:
 `@owner` - the view that owns the current view  
 `@name` - the name of the current view  
 
-## Methods
+## Class Methods
+
+### registerComponent
+
+`MyView.registerComponent(component_name, template_name)`
+
+This function allows you to register a view component with KnockoutJS, so that it can be reused throughtout your application. This is especially helpful when combined with a `Collection` as it allows you to render collection items while automatically binding them to a `View`. You can register as many components as you want to a `View`.
+
+* `component_name` - the id for this component
+* `template_name` - the name of the template to attach to this component
+
+**Defining**
+```coffeescript
+class @TodoItemView extends @View
+	@registerComponent 'todo-item', 'view-todo_item-row'
+	...
+end
+```
+
+**Usage**
+```html
+<div class="todo_items" data-bind="viewComponents : {name: 'todo-item', data: todos.items}">
+	<!-- view will render here for all todo items -->
+</div>
+```
+
+## Instance Methods
 
 ### init
 
 `init : =>`
 
-Initializes view by setting up observables.
+Initializes view by setting up observables. You should override this when subclassing the `View` class.
 
 **It is important that anything bound to view templates (in a data-bind tag) be defined in `init` only, and preferably defined as an observable**. Otherwise weird things tend to happen.
 
