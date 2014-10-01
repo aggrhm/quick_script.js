@@ -35,7 +35,8 @@ This function allows you to register a view component with KnockoutJS, so that i
 * `component_name` - the id for this component
 * `template_name` - the name of the template to attach to this component
 
-**Defining**
+Defining:
+
 ```coffeescript
 class @TodoItemView extends @View
 	@registerComponent 'todo-item', 'view-todo_item-row'
@@ -43,11 +44,11 @@ class @TodoItemView extends @View
 end
 ```
 
-**Usage**
-```html
-<div class="todo_items" data-bind="viewComponents : {name: 'todo-item', data: todos.items}">
-	<!-- view will render here for all todo items -->
-</div>
+Usage:
+
+```haml
+.todo-items(data-bind="viewComponents : {name: 'todo-item', data: todos.items}")
+	// views will render here for all todo items
 ```
 
 ## Instance Methods
