@@ -725,6 +725,8 @@ class @View
 		obj
 View.registerComponent = (name, template, view_class)->
 	view_class ||= this
+	QS.registered_components ||= {}
+	QS.registered_components[name] = {template_id: template, view: view_class}
 	ko.components.register name,
 		viewModel : (params, componentInfo)->
 			#QS.log componentInfo

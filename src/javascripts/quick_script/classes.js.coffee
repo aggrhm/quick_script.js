@@ -254,9 +254,3 @@ link_to_span = (text) ->
 fadeInElement = (elem) ->
 	$(elem).hide().fadeIn()
 
-@getElementPosition = (el)->
-	ret = $(el).offset()
-	ret.width = el.offsetWidth
-	ret.height = el.offsetHeight
-	return ret
-

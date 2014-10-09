@@ -43,6 +43,11 @@ QuickScript.utils =
 			return {x: (coords.x / ts.w) * 100, y: (coords.y / ts.h) * 100}
 		else
 			return coords
+	getElementPosition : (el)->
+		ret = $(el).offset()
+		ret.width = el.offsetWidth
+		ret.height = el.offsetHeight
+		return ret
 	isBlank : (val)->
 		return true if !val?
 		return val == ""
