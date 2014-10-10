@@ -57,8 +57,16 @@ QuickScript.utils =
 	preventDefault : (view, ev)=>
 		ev.preventDefault?()
 	getURLPath : (url)=>
+		ms = []
 		i = url.indexOf("?")
-		if i == -1 then url else url.substring(0, i)
+		ms.push(i) if i != -1
+		j = url.indexOf("#")
+		ms.push(j) if j != -1
+		if ms.length == 0
+			return url
+		else
+			x = Math.min.apply(null, ms)
+			url.substring(0, x)
 	getURLParams : (url)=>
 		i = url.indexOf("?")
 		return {} if i == -1

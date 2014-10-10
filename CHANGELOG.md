@@ -1,5 +1,10 @@
 # CHANGELOG
 
+- v2.5.2
+	- Added registered_components to App
+	- Updated History API support with https://github.com/devote/HTML5-History-API
+	- Added @path_anchor param to App, now all browser state changes should call App.route()
+
 - v2.5.1
 	- Added `view` option to params for components
 	- `Model.save` now accepts data hash

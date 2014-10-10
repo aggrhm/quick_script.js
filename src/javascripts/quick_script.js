@@ -1,4 +1,4 @@
-//= require ./jquery.history
+//= require ./history.min
 //= require ./knockout
 //= require ./knockout.punches
 //= require ./date

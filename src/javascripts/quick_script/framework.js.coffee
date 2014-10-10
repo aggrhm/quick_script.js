@@ -923,10 +923,12 @@ LocalStore.get = (key, callback)->
 class @Application extends @View
 	constructor : (user_model)->
 		@app = this
+		@location = window.history.location || window.location
 		@path = ko.observable(null)
 		@previous_path = ko.observable(null)
+		@path_anchor = ko.observable('')
+		@path_params = ko.observable({})
 		@path_parts = []
-		@path_params = {}
 		@title = ko.observable('')
 		@redirect_on_login = ko.observable(null)
 		@auth_method = 'session'
@@ -969,15 +971,15 @@ class @Application extends @View
 		super('app', null)
 	configure : ->
 	route : ->
-		full_path = History.getRelativeUrl()
-		path = QS.utils.getURLPath(full_path)
+		path = @location.pathname
 		console.log("Loading path '#{path}'")
 		@setTitle(@name, true)
 		@previous_path(@path())
 		@path_parts = path.split('/')
-		@path_params = QS.utils.getURLParams(full_path)
 		@path_parts.push('') unless @path_parts[@path_parts.length-1] == ''
 		@path(path)
+		@path_params(QS.utils.getURLParams(@location.href))
+		@path_anchor(@location.hash.substring(1))
 		@handlePath(path)
 	handlePath : (path) ->
 	setUser : (data)->
@@ -1000,9 +1002,10 @@ class @Application extends @View
 		opts ||= {}
 		@redirect_on_login(opts.on_login) if opts.on_login?
 		if replace? && replace == true
-			History.replaceState(null, null, path)
+			history.replaceState(null, null, path)
 		else
-			History.pushState(null, null, path)
+			history.pushState(null, null, path)
+		@route()
 	loginTo : (path, opts)->
 		opts ||= {}
 		@setUser(opts.user) if opts.user?
@@ -1039,7 +1042,8 @@ QuickScript.initialize = (opts)->
 	app.setUser(current_user) if current_user?
 
 	# navigation
-	History.Adapter.bind window, 'statechange', ->
+	window.onpopstate = ->
+		#QS.log 'handling state change'
 		app.route()
 
 	# layout bindings
@@ -1048,8 +1052,8 @@ QuickScript.initialize = (opts)->
 
 	# override links
 	$('body').on 'click', 'a', ->
-		if this.href.includes(History.getRootUrl())
-			History.pushState null, null, this.href
+		if this.href.includes(window.location.host)
+			app.redirectTo(this.href)
 			return false
 		else if (path = this.getAttribute('path'))?
 			app.redirectTo(path)
