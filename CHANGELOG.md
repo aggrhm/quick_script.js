@@ -1,5 +1,10 @@
 # CHANGELOG
 
+- v2.5.3
+	- Updated Collection to default to Collection.UPDATE in handleData
+	- Prevent id from being set in Model load function
+	- Changed radioClick binding to use 'active' class
+
 - v2.5.2
 	- Added registered_components to App
 	- Updated History API support with https://github.com/devote/HTML5-History-API

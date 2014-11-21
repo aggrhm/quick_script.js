@@ -48,7 +48,7 @@ class @Model
 		ko.absorbModel(resp, this)
 		@db_state(@toJS())
 	load : (opts, callback)->
-		@handleData(opts)
+		#@id(opts.id) if opts.id?
 		@adapter.load
 			data : opts
 			success : (resp)=>
@@ -325,7 +325,7 @@ class @Collection
 		return if !data?
 		#QS.log "COLLECTION::HANDLE_DATA : Starting (#{QS.time()}).", 3
 		models = []
-		op ||= Collection.REPLACE
+		op ||= Collection.UPDATE
 		curr_a = @items()
 		# build temp id hash
 		id_h = {}

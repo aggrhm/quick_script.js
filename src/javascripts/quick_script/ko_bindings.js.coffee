@@ -431,9 +431,9 @@ QuickScript.initKO = ->
 			obs = valueAccessor()[0]
 			val = valueAccessor()[1]
 			if obs() == val
-				$(element).attr('disabled', true)
+				$(element).addClass('active')
 			else
-				$(element).removeAttr('disabled')
+				$(element).removeClass('active')
 	
 	ko.bindingHandlers.viewComponents =
 		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->

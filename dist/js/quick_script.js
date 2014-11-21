@@ -2002,7 +2002,6 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Model.prototype.load = function(opts, callback) {
-      this.handleData(opts);
       this.adapter.load({
         data: opts,
         success: (function(_this) {
@@ -2514,7 +2513,7 @@ Lawnchair.adapter('dom', (function() {
         return;
       }
       models = [];
-      op || (op = Collection.REPLACE);
+      op || (op = Collection.UPDATE);
       curr_a = this.items();
       id_h = {};
       for (_i = 0, _len = curr_a.length; _i < _len; _i++) {
@@ -4336,9 +4335,9 @@ Lawnchair.adapter('dom', (function() {
         obs = valueAccessor()[0];
         val = valueAccessor()[1];
         if (obs() === val) {
-          return $(element).attr('disabled', true);
+          return $(element).addClass('active');
         } else {
-          return $(element).removeAttr('disabled');
+          return $(element).removeClass('active');
         }
       }
     };
