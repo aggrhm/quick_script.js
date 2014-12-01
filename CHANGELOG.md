@@ -1,5 +1,9 @@
 # CHANGELOG
 
+- v2.5.4
+	- Moved tooltip binding to Overlay.js
+	- Removed old bindings
+
 - v2.5.3
 	- Updated Collection to default to Collection.UPDATE in handleData
 	- Prevent id from being set in Model load function

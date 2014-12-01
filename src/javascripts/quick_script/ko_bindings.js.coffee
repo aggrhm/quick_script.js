@@ -360,10 +360,6 @@ QuickScript.initKO = ->
 			viewModel.task.subscribe(fn)
 			viewModel.is_visible.subscribe(fn)
 
-	ko.bindingHandlers.progressbar =
-		update: (element, valueAccessor) ->
-			$(element).progressbar({value : ko.utils.unwrapObservable(valueAccessor())})
-
 	ko.bindingHandlers.placeholder =
 		init: (element, valueAccessor) ->
 			fn = ->
@@ -378,42 +374,6 @@ QuickScript.initKO = ->
 			else
 				$(element).siblings('label').show()
 
-	ko.bindingHandlers.tip =
-		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
-			opts = ko.unwrap(valueAccessor())
-			html = ko.bindingHandlers.tip.getContent(element, opts, viewModel)
-			$(element).tooltip
-				placement: opts.placement || 'bottom'
-				delay: opts.delay || 0
-				html: opts.html || opts.template? || false
-				title: html
-			#if opts.template?
-				#$inner_tip = ko.bindingHandlers.tip.tipContentElement(element)
-				#$inner_tip.koBind(viewModel, opts.template)
-				#console.log $inner_tip
-			#ko.applyBindingsToNode(inner_tip, {template : opts.template}, bindingContext)
-		update : (element, valueAccessor, bindingsAccessor, viewModel) ->
-			opts = ko.utils.unwrapObservable(valueAccessor())
-			html = ko.bindingHandlers.tip.getContent(element, opts, viewModel)
-			tip = $(element).data('tooltip') || $(element).data('bs.tooltip')
-			tip.options.title = html
-		getContent : (element, opts, viewModel) ->
-			if opts.content?
-				return opts.content
-			else if opts.template?
-				return QuickScript.utils.renderToString(opts.template, viewModel)
-				#return "<div data-bind=\"template : '#{opts.template}'\">loading...</div>"
-				#return ko.bindingHandlers.tip.tipContentElement(element)[0].innerHTML
-		tipContentElement : (element) ->
-				return $(element).data('bs.tooltip').tip().find('.tooltip-inner')
-
-	ko.bindingHandlers.datepicker =
-		init : (element, valueAccessor) ->
-			obs = valueAccessor()
-			$(element).datepicker
-				onClose : (dateText, inst)->
-					obs(dateText)
-	
 	ko.bindingHandlers.linkify =
 		update : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
 			text = ko.utils.unwrapObservable(valueAccessor())

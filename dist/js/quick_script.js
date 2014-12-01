@@ -4245,13 +4245,6 @@ Lawnchair.adapter('dom', (function() {
         return viewModel.is_visible.subscribe(fn);
       }
     };
-    ko.bindingHandlers.progressbar = {
-      update: function(element, valueAccessor) {
-        return $(element).progressbar({
-          value: ko.utils.unwrapObservable(valueAccessor())
-        });
-      }
-    };
     ko.bindingHandlers.placeholder = {
       init: function(element, valueAccessor) {
         var fn;
@@ -4270,47 +4263,6 @@ Lawnchair.adapter('dom', (function() {
         } else {
           return $(element).siblings('label').show();
         }
-      }
-    };
-    ko.bindingHandlers.tip = {
-      init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
-        var html, opts;
-        opts = ko.unwrap(valueAccessor());
-        html = ko.bindingHandlers.tip.getContent(element, opts, viewModel);
-        return $(element).tooltip({
-          placement: opts.placement || 'bottom',
-          delay: opts.delay || 0,
-          html: opts.html || (opts.template != null) || false,
-          title: html
-        });
-      },
-      update: function(element, valueAccessor, bindingsAccessor, viewModel) {
-        var html, opts, tip;
-        opts = ko.utils.unwrapObservable(valueAccessor());
-        html = ko.bindingHandlers.tip.getContent(element, opts, viewModel);
-        tip = $(element).data('tooltip') || $(element).data('bs.tooltip');
-        return tip.options.title = html;
-      },
-      getContent: function(element, opts, viewModel) {
-        if (opts.content != null) {
-          return opts.content;
-        } else if (opts.template != null) {
-          return QuickScript.utils.renderToString(opts.template, viewModel);
-        }
-      },
-      tipContentElement: function(element) {
-        return $(element).data('bs.tooltip').tip().find('.tooltip-inner');
-      }
-    };
-    ko.bindingHandlers.datepicker = {
-      init: function(element, valueAccessor) {
-        var obs;
-        obs = valueAccessor();
-        return $(element).datepicker({
-          onClose: function(dateText, inst) {
-            return obs(dateText);
-          }
-        });
       }
     };
     ko.bindingHandlers.linkify = {
