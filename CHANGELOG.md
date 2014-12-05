@@ -1,5 +1,10 @@
 # CHANGELOG
 
+- v2.6.0
+	- Updated LocalStorage to use store.js
+	- Changed current_user_token functionality to store and read from LocalStorage
+	- Added process_request to Host
+
 - v2.5.4
 	- Moved tooltip binding to Overlay.js
 	- Removed old bindings

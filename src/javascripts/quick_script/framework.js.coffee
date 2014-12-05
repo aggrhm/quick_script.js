@@ -749,10 +749,12 @@ class @Host
 		@requests = []
 		@state = Host.READY
 		@before_request = null
-		@process_response = (resp, status)->
-			return resp
+		@process_request = (req)-> return req
+		@process_response = (resp, status)-> return resp
 	request : (req)=>
 		#QS.log "#{req.method || "POST"} #{req.url} (#{@state})"
+		# prepare request
+		req.headers ||= {}
 		@before_request?(req)
 
 		if @state == Host.PAUSED
@@ -761,31 +763,31 @@ class @Host
 			req.loading?(true)
 		else
 			@executeRequest(req)
-	processRequests : =>
+	executeQueuedRequests : =>
 		while @requests.length > 0
 			req = @requests.shift()
 			#QS.log "Processing #{req.url}"
 			@executeRequest(req)
-	executeRequest : (opts)=>
-		resp_fn = opts.callback || opts.success
+	executeRequest : (req)=>
+		req = @process_request(req)
+		resp_fn = req.callback || req.success
 		callback_fn = (resp, status)=>
 			#QS.log "response : #{status}"
 			resp = @process_response(resp, status)
 			resp_fn?(resp, status)
-		opts.type = 'POST' if !opts.type?
-		opts.url = @url + opts.url
-		opts.success = callback_fn
-		opts.error = callback_fn if !opts.error?
-		opts.headers ||= {}
+		req.type = 'POST' if !req.type?
+		req.url = @url + req.url
+		req.success = callback_fn
+		req.error = callback_fn if !req.error?
 		for key, val of @headers
-			opts.headers[key] = val
-		QS.ajax opts
+			req.headers[key] ||= val
+		QS.ajax req
 	pauseRequests : =>
 		@state = Host.PAUSED
 	resumeRequests : =>
 		#QS.log "Resuming #{@requests.length} requests"
 		@state = Host.READY
-		@processRequests()
+		@executeQueuedRequests()
 Host.READY = 1
 Host.PAUSED = 2
 Host.process_api_response = (resp, status)->
@@ -907,18 +909,8 @@ class @AccountAdapter
 			opts.type = http_m
 			@send opts
 
-class @LocalStore
-LocalStore.save = (key, val, exp_days, callback)->
-	Lawnchair ->
-		@save {key : key, val : val}, callback
-LocalStore.get = (key, callback)->
-	Lawnchair ->
-		@get key, (data)->
-			if data?
-				callback(data.val)
-			else
-				callback(null)
 
+@LocalStore = store
 
 class @Application extends @View
 	constructor : (user_model)->
@@ -932,10 +924,9 @@ class @Application extends @View
 		@title = ko.observable('')
 		@redirect_on_login = ko.observable(null)
 		@auth_method = 'session'
-		LocalStore.get 'app.redirect_on_login', (val)=>
-			@redirect_on_login(val)
-			@redirect_on_login.subscribe (val)=>
-				LocalStore.save 'app.redirect_on_login', val
+		@redirect_on_login(LocalStore.get('app.redirect_on_login'))
+		@redirect_on_login.subscribe (val)=>
+			LocalStore.set('app.redirect_on_login', val)
 		ko.addTemplate "viewbox", """
 				<div data-bind='foreach : viewList()'>
 					<div data-bind="fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true"></div>
@@ -951,14 +942,7 @@ class @Application extends @View
 		@configure()
 		@account_model ||= Model
 		@current_user = new @account_model()
-		@current_user_token = ko.observable(null)
-		LocalStore.get 'app.current_user_token', (val)=>
-			@setUserToken(JSON.parse(val)) if val?
-			@current_user_token.subscribe (val)=>
-				if val?
-					LocalStore.save 'app.current_user_token', val.toJSON()
-				else
-					LocalStore.save 'app.current_user_token', null
+		@current_user_token = ko.observable(null)	# NOTE: always use getUserToken()
 
 		@is_logged_in = ko.computed ->
 			if @auth_method == 'session'
@@ -987,7 +971,24 @@ class @Application extends @View
 		if data? then @current_user.handleData(data) else @current_user.reset()
 	setUserToken : (data)->
 		QS.log(data, 2)
-		if data? then @current_user_token(new AuthToken(data)) else @current_user_token(null)
+		if data?
+			token = new AuthToken(data)
+			LocalStore.set('app.current_user_token', token.data)
+			@current_user_token(token)
+		else
+			LocalStore.set('app.current_user_token', null)
+			@current_user_token(null)
+	getUserToken : =>
+		data = LocalStore.get('app.current_user_token')
+		token = if data? then new AuthToken(data) else null
+		# cache new token
+		old_token = @current_user_token()
+		if token? && old_token?
+			if token.access_token != old_token.access_token
+				@current_user_token(token)
+		else if token != old_token
+			@current_user_token(token)
+		return token
 	loadUser : (adapter)->
 		adapter.load
 			loading : @is_loading
@@ -1016,8 +1017,8 @@ class @Application extends @View
 		else
 			@redirectTo(path)
 	logoutTo : (path, opts)->
-		@current_user.reset()
-		@current_user_token(null)
+		@setUser(null)
+		@setUserToken(null)
 		@redirectTo(path)
 	runLater : (callback)->
 		setTimeout callback, 10

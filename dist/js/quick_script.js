@@ -780,339 +780,10 @@ Date.prototype.format = function (mask, utc) {
 	return dateFormat(this, mask, utc);
 };
 
-/**
- * Lawnchair!
- * --- 
- * clientside json store 
- *
- */
+/* Copyright (c) 2010-2013 Marcus Westin */
 
-var Lawnchair = function (options, callback) {
-    // ensure Lawnchair was called as a constructor
-    if (!(this instanceof Lawnchair)) return new Lawnchair(options, callback);
-
-    // lawnchair requires json 
-    if (!JSON) throw 'JSON unavailable! Include http://www.json.org/json2.js to fix.'
-    // options are optional; callback is not
-    if (arguments.length <= 2 && arguments.length > 0) {
-        callback = (typeof arguments[0] === 'function') ? arguments[0] : arguments[1];
-        options  = (typeof arguments[0] === 'function') ? {} : arguments[0];
-    } else {
-        throw 'Incorrect # of ctor args!'
-    }
-    // TODO perhaps allow for pub/sub instead?
-    if (typeof callback !== 'function') throw 'No callback was provided';
-    
-    // default configuration 
-    this.record = options.record || 'record'  // default for records
-    this.name   = options.name   || 'records' // default name for underlying store
-    
-    // mixin first valid  adapter
-    var adapter
-    // if the adapter is passed in we try to load that only
-    if (options.adapter) {
-        for (var i = 0, l = Lawnchair.adapters.length; i < l; i++) {
-            if (Lawnchair.adapters[i].adapter === options.adapter) {
-              adapter = Lawnchair.adapters[i].valid() ? Lawnchair.adapters[i] : undefined;
-              break;
-            }
-        }
-    // otherwise find the first valid adapter for this env
-    } 
-    else {
-        for (var i = 0, l = Lawnchair.adapters.length; i < l; i++) {
-            adapter = Lawnchair.adapters[i].valid() ? Lawnchair.adapters[i] : undefined
-            if (adapter) break 
-        }
-    } 
-    
-    // we have failed 
-    if (!adapter) throw 'No valid adapter.' 
-    
-    // yay! mixin the adapter 
-    for (var j in adapter)  
-        this[j] = adapter[j]
-    
-    // call init for each mixed in plugin
-    for (var i = 0, l = Lawnchair.plugins.length; i < l; i++) 
-        Lawnchair.plugins[i].call(this)
-
-    // init the adapter 
-    this.init(options, callback)
-}
-
-Lawnchair.adapters = [] 
-
-/** 
- * queues an adapter for mixin
- * ===
- * - ensures an adapter conforms to a specific interface
- *
- */
-Lawnchair.adapter = function (id, obj) {
-    // add the adapter id to the adapter obj
-    // ugly here for a  cleaner dsl for implementing adapters
-    obj['adapter'] = id
-    // methods required to implement a lawnchair adapter 
-    var implementing = 'adapter valid init keys save batch get exists all remove nuke'.split(' ')
-    ,   indexOf = this.prototype.indexOf
-    // mix in the adapter   
-    for (var i in obj) {
-        if (indexOf(implementing, i) === -1) throw 'Invalid adapter! Nonstandard method: ' + i
-    }
-    // if we made it this far the adapter interface is valid 
-	// insert the new adapter as the preferred adapter
-	Lawnchair.adapters.splice(0,0,obj)
-}
-
-Lawnchair.plugins = []
-
-/**
- * generic shallow extension for plugins
- * ===
- * - if an init method is found it registers it to be called when the lawnchair is inited 
- * - yes we could use hasOwnProp but nobody here is an asshole
- */ 
-Lawnchair.plugin = function (obj) {
-    for (var i in obj) 
-        i === 'init' ? Lawnchair.plugins.push(obj[i]) : this.prototype[i] = obj[i]
-}
-
-/**
- * helpers
- *
- */
-Lawnchair.prototype = {
-
-    isArray: Array.isArray || function(o) { return Object.prototype.toString.call(o) === '[object Array]' },
-    
-    /**
-     * this code exists for ie8... for more background see:
-     * http://www.flickr.com/photos/westcoastlogic/5955365742/in/photostream
-     */
-    indexOf: function(ary, item, i, l) {
-        if (ary.indexOf) return ary.indexOf(item)
-        for (i = 0, l = ary.length; i < l; i++) if (ary[i] === item) return i
-        return -1
-    },
-
-    // awesome shorthand callbacks as strings. this is shameless theft from dojo.
-    lambda: function (callback) {
-        return this.fn(this.record, callback)
-    },
-
-    // first stab at named parameters for terse callbacks; dojo: first != best // ;D
-    fn: function (name, callback) {
-        return typeof callback == 'string' ? new Function(name, callback) : callback
-    },
-
-    // returns a unique identifier (by way of Backbone.localStorage.js)
-    // TODO investigate smaller UUIDs to cut on storage cost
-    uuid: function () {
-        var S4 = function () {
-            return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-        }
-        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-    },
-
-    // a classic iterator
-    each: function (callback) {
-        var cb = this.lambda(callback)
-        // iterate from chain
-        if (this.__results) {
-            for (var i = 0, l = this.__results.length; i < l; i++) cb.call(this, this.__results[i], i) 
-        }  
-        // otherwise iterate the entire collection 
-        else {
-            this.all(function(r) {
-                for (var i = 0, l = r.length; i < l; i++) cb.call(this, r[i], i)
-            })
-        }
-        return this
-    }
-// --
-};
-
-/**
- * dom storage adapter 
- * === 
- * - originally authored by Joseph Pecoraro
- *
- */ 
-//
-// TODO does it make sense to be chainable all over the place?
-// chainable: nuke, remove, all, get, save, all    
-// not chainable: valid, keys
-//
-Lawnchair.adapter('dom', (function() {
-    var storage = window.localStorage
-    // the indexer is an encapsulation of the helpers needed to keep an ordered index of the keys
-    var indexer = function(name) {
-        return {
-            // the key
-            key: name + '._index_',
-            // returns the index
-            all: function() {
-				var a  = storage.getItem(this.key)
-				if (a) {
-					a = JSON.parse(a)
-				}
-                if (a === null) storage.setItem(this.key, JSON.stringify([])) // lazy init
-                return JSON.parse(storage.getItem(this.key))
-            },
-            // adds a key to the index
-            add: function (key) {
-                var a = this.all()
-                a.push(key)
-                storage.setItem(this.key, JSON.stringify(a))
-            },
-            // deletes a key from the index
-            del: function (key) {
-                var a = this.all(), r = []
-                // FIXME this is crazy inefficient but I'm in a strata meeting and half concentrating
-                for (var i = 0, l = a.length; i < l; i++) {
-                    if (a[i] != key) r.push(a[i])
-                }
-                storage.setItem(this.key, JSON.stringify(r))
-            },
-            // returns index for a key
-            find: function (key) {
-                var a = this.all()
-                for (var i = 0, l = a.length; i < l; i++) {
-                    if (key === a[i]) return i 
-                }
-                return false
-            }
-        }
-    }
-    
-    // adapter api 
-    return {
-    
-        // ensure we are in an env with localStorage 
-        valid: function () {
-            return !!storage && function() {
-              // in mobile safari if safe browsing is enabled, window.storage
-              // is defined but setItem calls throw exceptions.
-              var success = true
-              var value = Math.random()
-              try {
-                storage.setItem(value, value)
-              } catch (e) {
-                success = false
-              }
-              storage.removeItem(value)
-              return success
-            }()
-        },
-
-        init: function (options, callback) {
-            this.indexer = indexer(this.name)
-            if (callback) this.fn(this.name, callback).call(this, this)  
-        },
-        
-        save: function (obj, callback) {
-            var key = obj.key ? this.name + '.' + obj.key : this.name + '.' + this.uuid()
-            // if the key is not in the index push it on
-            if (this.indexer.find(key) === false) this.indexer.add(key)
-            // now we kil the key and use it in the store colleciton    
-            delete obj.key;
-            storage.setItem(key, JSON.stringify(obj))
-            obj.key = key.slice(this.name.length + 1)
-            if (callback) {
-                this.lambda(callback).call(this, obj)
-            }
-            return this
-        },
-
-        batch: function (ary, callback) {
-            var saved = []
-            // not particularily efficient but this is more for sqlite situations
-            for (var i = 0, l = ary.length; i < l; i++) {
-                this.save(ary[i], function(r){
-                    saved.push(r)
-                })
-            }
-            if (callback) this.lambda(callback).call(this, saved)
-            return this
-        },
-       
-        // accepts [options], callback
-        keys: function(callback) {
-            if (callback) { 
-                var name = this.name
-                ,   keys = this.indexer.all().map(function(r){ return r.replace(name + '.', '') })
-                this.fn('keys', callback).call(this, keys)
-            }
-            return this // TODO options for limit/offset, return promise
-        },
-        
-        get: function (key, callback) {
-            if (this.isArray(key)) {
-                var r = []
-                for (var i = 0, l = key.length; i < l; i++) {
-                    var k = this.name + '.' + key[i]
-                    var obj = storage.getItem(k)
-                    if (obj) {
-						obj = JSON.parse(obj)
-                        obj.key = key[i]
-                        r.push(obj)
-                    } 
-                }
-                if (callback) this.lambda(callback).call(this, r)
-            } else {
-                var k = this.name + '.' + key
-                var  obj = storage.getItem(k)
-                if (obj) {
-					obj = JSON.parse(obj)
-					obj.key = key
-				}
-                if (callback) this.lambda(callback).call(this, obj)
-            }
-            return this
-        },
-
-        exists: function (key, cb) {
-            var exists = this.indexer.find(this.name+'.'+key) === false ? false : true ;
-            this.lambda(cb).call(this, exists);
-            return this;
-        },
-        // NOTE adapters cannot set this.__results but plugins do
-        // this probably should be reviewed
-        all: function (callback) {
-            var idx = this.indexer.all()
-            ,   r   = []
-            ,   o
-            ,   k
-            for (var i = 0, l = idx.length; i < l; i++) {
-                k     = idx[i] //v
-                o     = JSON.parse(storage.getItem(k))
-                o.key = k.replace(this.name + '.', '')
-                r.push(o)
-            }
-            if (callback) this.fn(this.name, callback).call(this, r)
-            return this
-        },
-        
-        remove: function (keyOrObj, callback) {
-            var key = this.name + '.' + ((keyOrObj.key) ? keyOrObj.key : keyOrObj)
-            this.indexer.del(key)
-            storage.removeItem(key)
-            if (callback) this.lambda(callback).call(this)
-            return this
-        },
-        
-        nuke: function (callback) {
-            this.all(function(r) {
-                for (var i = 0, l = r.length; i < l; i++) {
-                    this.remove(r[i]);
-                }
-                if (callback) this.lambda(callback).call(this)
-            })
-            return this 
-        }
-}})());
-
+(function(e){function o(){try{return r in e&&e[r]}catch(t){return!1}}var t={},n=e.document,r="localStorage",i="script",s;t.disabled=!1,t.version="1.3.17",t.set=function(e,t){},t.get=function(e,t){},t.has=function(e){return t.get(e)!==undefined},t.remove=function(e){},t.clear=function(){},t.transact=function(e,n,r){r==null&&(r=n,n=null),n==null&&(n={});var i=t.get(e,n);r(i),t.set(e,i)},t.getAll=function(){},t.forEach=function(){},t.serialize=function(e){return JSON.stringify(e)},t.deserialize=function(e){if(typeof e!="string")return undefined;try{return JSON.parse(e)}catch(t){return e||undefined}};if(o())s=e[r],t.set=function(e,n){return n===undefined?t.remove(e):(s.setItem(e,t.serialize(n)),n)},t.get=function(e,n){var r=t.deserialize(s.getItem(e));return r===undefined?n:r},t.remove=function(e){s.removeItem(e)},t.clear=function(){s.clear()},t.getAll=function(){var e={};return t.forEach(function(t,n){e[t]=n}),e},t.forEach=function(e){for(var n=0;n<s.length;n++){var r=s.key(n);e(r,t.get(r))}};else if(n.documentElement.addBehavior){var u,a;try{a=new ActiveXObject("htmlfile"),a.open(),a.write("<"+i+">document.w=window</"+i+'><iframe src="/favicon.ico"></iframe>'),a.close(),u=a.w.frames[0].document,s=u.createElement("div")}catch(f){s=n.createElement("div"),u=n.body}var l=function(e){return function(){var n=Array.prototype.slice.call(arguments,0);n.unshift(s),u.appendChild(s),s.addBehavior("#default#userData"),s.load(r);var i=e.apply(t,n);return u.removeChild(s),i}},c=new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]","g");function h(e){return e.replace(/^d/,"___$&").replace(c,"___")}t.set=l(function(e,n,i){return n=h(n),i===undefined?t.remove(n):(e.setAttribute(n,t.serialize(i)),e.save(r),i)}),t.get=l(function(e,n,r){n=h(n);var i=t.deserialize(e.getAttribute(n));return i===undefined?r:i}),t.remove=l(function(e,t){t=h(t),e.removeAttribute(t),e.save(r)}),t.clear=l(function(e){var t=e.XMLDocument.documentElement.attributes;e.load(r);for(var n=0,i;i=t[n];n++)e.removeAttribute(i.name);e.save(r)}),t.getAll=function(e){var n={};return t.forEach(function(e,t){n[e]=t}),n},t.forEach=l(function(e,n){var r=e.XMLDocument.documentElement.attributes;for(var i=0,s;s=r[i];++i)n(s.name,t.deserialize(e.getAttribute(s.name)))})}try{var p="__storejs__";t.set(p,p),t.get(p)!=p&&(t.disabled=!0),t.remove(p)}catch(f){t.disabled=!0}t.enabled=!t.disabled,typeof module!="undefined"&&module.exports&&this.module!==module?module.exports=t:typeof define=="function"&&define.amd?define(t):e.store=t})(Function("return this")())
+;
 (function() {
   var cropImage, fadeInElement, link_to, link_to_rel, link_to_span, loadScript, timeFromUnix,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -3216,19 +2887,23 @@ Lawnchair.adapter('dom', (function() {
       this.resumeRequests = __bind(this.resumeRequests, this);
       this.pauseRequests = __bind(this.pauseRequests, this);
       this.executeRequest = __bind(this.executeRequest, this);
-      this.processRequests = __bind(this.processRequests, this);
+      this.executeQueuedRequests = __bind(this.executeQueuedRequests, this);
       this.request = __bind(this.request, this);
       this.url = url;
       this.headers = {};
       this.requests = [];
       this.state = Host.READY;
       this.before_request = null;
+      this.process_request = function(req) {
+        return req;
+      };
       this.process_response = function(resp, status) {
         return resp;
       };
     }
 
     Host.prototype.request = function(req) {
+      req.headers || (req.headers = {});
       if (typeof this.before_request === "function") {
         this.before_request(req);
       }
@@ -3240,7 +2915,7 @@ Lawnchair.adapter('dom', (function() {
       }
     };
 
-    Host.prototype.processRequests = function() {
+    Host.prototype.executeQueuedRequests = function() {
       var req, _results;
       _results = [];
       while (this.requests.length > 0) {
@@ -3250,30 +2925,30 @@ Lawnchair.adapter('dom', (function() {
       return _results;
     };
 
-    Host.prototype.executeRequest = function(opts) {
-      var callback_fn, key, resp_fn, val, _ref;
-      resp_fn = opts.callback || opts.success;
+    Host.prototype.executeRequest = function(req) {
+      var callback_fn, key, resp_fn, val, _base, _ref;
+      req = this.process_request(req);
+      resp_fn = req.callback || req.success;
       callback_fn = (function(_this) {
         return function(resp, status) {
           resp = _this.process_response(resp, status);
           return typeof resp_fn === "function" ? resp_fn(resp, status) : void 0;
         };
       })(this);
-      if (opts.type == null) {
-        opts.type = 'POST';
+      if (req.type == null) {
+        req.type = 'POST';
       }
-      opts.url = this.url + opts.url;
-      opts.success = callback_fn;
-      if (opts.error == null) {
-        opts.error = callback_fn;
+      req.url = this.url + req.url;
+      req.success = callback_fn;
+      if (req.error == null) {
+        req.error = callback_fn;
       }
-      opts.headers || (opts.headers = {});
       _ref = this.headers;
       for (key in _ref) {
         val = _ref[key];
-        opts.headers[key] = val;
+        (_base = req.headers)[key] || (_base[key] = val);
       }
-      return QS.ajax(opts);
+      return QS.ajax(req);
     };
 
     Host.prototype.pauseRequests = function() {
@@ -3282,7 +2957,7 @@ Lawnchair.adapter('dom', (function() {
 
     Host.prototype.resumeRequests = function() {
       this.state = Host.READY;
-      return this.processRequests();
+      return this.executeQueuedRequests();
     };
 
     return Host;
@@ -3485,39 +3160,14 @@ Lawnchair.adapter('dom', (function() {
 
   })();
 
-  this.LocalStore = (function() {
-    function LocalStore() {}
-
-    return LocalStore;
-
-  })();
-
-  LocalStore.save = function(key, val, exp_days, callback) {
-    return Lawnchair(function() {
-      return this.save({
-        key: key,
-        val: val
-      }, callback);
-    });
-  };
-
-  LocalStore.get = function(key, callback) {
-    return Lawnchair(function() {
-      return this.get(key, function(data) {
-        if (data != null) {
-          return callback(data.val);
-        } else {
-          return callback(null);
-        }
-      });
-    });
-  };
+  this.LocalStore = store;
 
   this.Application = (function(_super) {
     __extends(Application, _super);
 
     function Application(user_model) {
       this.host = __bind(this.host, this);
+      this.getUserToken = __bind(this.getUserToken, this);
       this.app = this;
       this.location = window.history.location || window.location;
       this.path = ko.observable(null);
@@ -3528,12 +3178,10 @@ Lawnchair.adapter('dom', (function() {
       this.title = ko.observable('');
       this.redirect_on_login = ko.observable(null);
       this.auth_method = 'session';
-      LocalStore.get('app.redirect_on_login', (function(_this) {
+      this.redirect_on_login(LocalStore.get('app.redirect_on_login'));
+      this.redirect_on_login.subscribe((function(_this) {
         return function(val) {
-          _this.redirect_on_login(val);
-          return _this.redirect_on_login.subscribe(function(val) {
-            return LocalStore.save('app.redirect_on_login', val);
-          });
+          return LocalStore.set('app.redirect_on_login', val);
         };
       })(this));
       ko.addTemplate("viewbox", "<div data-bind='foreach : viewList()'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
@@ -3542,20 +3190,6 @@ Lawnchair.adapter('dom', (function() {
       this.account_model || (this.account_model = Model);
       this.current_user = new this.account_model();
       this.current_user_token = ko.observable(null);
-      LocalStore.get('app.current_user_token', (function(_this) {
-        return function(val) {
-          if (val != null) {
-            _this.setUserToken(JSON.parse(val));
-          }
-          return _this.current_user_token.subscribe(function(val) {
-            if (val != null) {
-              return LocalStore.save('app.current_user_token', val.toJSON());
-            } else {
-              return LocalStore.save('app.current_user_token', null);
-            }
-          });
-        };
-      })(this));
       this.is_logged_in = ko.computed(function() {
         if (this.auth_method === 'session') {
           return !this.current_user.is_new();
@@ -3598,12 +3232,31 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Application.prototype.setUserToken = function(data) {
+      var token;
       QS.log(data, 2);
       if (data != null) {
-        return this.current_user_token(new AuthToken(data));
+        token = new AuthToken(data);
+        LocalStore.set('app.current_user_token', token.data);
+        return this.current_user_token(token);
       } else {
+        LocalStore.set('app.current_user_token', null);
         return this.current_user_token(null);
       }
+    };
+
+    Application.prototype.getUserToken = function() {
+      var data, old_token, token;
+      data = LocalStore.get('app.current_user_token');
+      token = data != null ? new AuthToken(data) : null;
+      old_token = this.current_user_token();
+      if ((token != null) && (old_token != null)) {
+        if (token.access_token !== old_token.access_token) {
+          this.current_user_token(token);
+        }
+      } else if (token !== old_token) {
+        this.current_user_token(token);
+      }
+      return token;
     };
 
     Application.prototype.loadUser = function(adapter) {
@@ -3662,8 +3315,8 @@ Lawnchair.adapter('dom', (function() {
     };
 
     Application.prototype.logoutTo = function(path, opts) {
-      this.current_user.reset();
-      this.current_user_token(null);
+      this.setUser(null);
+      this.setUserToken(null);
       return this.redirectTo(path);
     };
 

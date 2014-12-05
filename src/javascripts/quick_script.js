@@ -2,7 +2,7 @@
 //= require ./knockout
 //= require ./knockout.punches
 //= require ./date
-//= require ./lawnchair
+//= require ./store.min
 //= require ./quick_script/classes
 //= require ./quick_script/core
 //= require ./quick_script/framework
