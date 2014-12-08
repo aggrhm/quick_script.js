@@ -3287,15 +3287,19 @@ Date.prototype.format = function (mask, utc) {
 
     Application.prototype.redirectTo = function(path, replace, opts) {
       opts || (opts = {});
-      if (opts.on_login != null) {
-        this.redirect_on_login(opts.on_login);
-      }
-      if ((replace != null) && replace === true) {
-        history.replaceState(null, null, path);
-      } else {
-        history.pushState(null, null, path);
-      }
-      return this.route();
+      return setTimeout((function(_this) {
+        return function() {
+          if (opts.on_login != null) {
+            _this.redirect_on_login(opts.on_login);
+          }
+          if ((replace != null) && replace === true) {
+            history.replaceState(null, null, path);
+          } else {
+            history.pushState(null, null, path);
+          }
+          return _this.route();
+        };
+      })(this), 100);
     };
 
     Application.prototype.loginTo = function(path, opts) {

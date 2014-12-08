@@ -1001,12 +1001,14 @@ class @Application extends @View
 				@setUser(resp.data) if resp.meta == 200
 	redirectTo : (path, replace, opts) ->
 		opts ||= {}
-		@redirect_on_login(opts.on_login) if opts.on_login?
-		if replace? && replace == true
-			history.replaceState(null, null, path)
-		else
-			history.pushState(null, null, path)
-		@route()
+		setTimeout =>
+			@redirect_on_login(opts.on_login) if opts.on_login?
+			if replace? && replace == true
+				history.replaceState(null, null, path)
+			else
+				history.pushState(null, null, path)
+			@route()
+		, 100
 	loginTo : (path, opts)->
 		opts ||= {}
 		@setUser(opts.user) if opts.user?
