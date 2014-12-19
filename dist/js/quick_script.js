@@ -1260,8 +1260,8 @@ Date.prototype.format = function (mask, utc) {
     },
     renderToString: function(tmpl, vm) {
       var $el, html;
-      $el = $('<div>');
-      $el.koBind(vm, tmpl);
+      $el = $("<div data-bind='template: " + tmpl + "'>");
+      $el.koBind(vm);
       html = $el[0].innerHTML;
       $el.koClean();
       return html;
@@ -3184,7 +3184,7 @@ Date.prototype.format = function (mask, utc) {
           return LocalStore.set('app.redirect_on_login', val);
         };
       })(this));
-      ko.addTemplate("viewbox", "<div data-bind='foreach : viewList()'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
+      ko.addTemplate("viewbox", "<div data-bind='foreach : {data: viewList(), as: \"$view\"}'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
       ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n	<div data-bind='foreach : viewList()'>\n		<div class=\"slide-item\" data-bind=\"template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n	</div>\n</div>");
       this.configure();
       this.account_model || (this.account_model = Model);
@@ -3987,6 +3987,18 @@ Date.prototype.format = function (mask, utc) {
       }
     };
     ko.virtualElements.allowedBindings.viewComponents = true;
+    ko.bindingHandlers.updateContext = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
+        var prop, props, val, _results;
+        props = valueAccessor();
+        _results = [];
+        for (prop in props) {
+          val = props[prop];
+          _results.push(bindingContext[prop] = val);
+        }
+        return _results;
+      }
+    };
     ko.extenders.usd = function(target) {
       target.usd = ko.computed({
         read: function() {
@@ -4247,18 +4259,14 @@ Date.prototype.format = function (mask, utc) {
       this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px");
       return this;
     },
-    koBind: function(viewModel, tmpl) {
+    koBind: function(viewModel) {
       return this.each(function() {
         $(this).koClean();
-        if (tmpl != null) {
-          $(this).attr('data-bind', "template : '" + tmpl + "'");
-        }
         return ko.applyBindings(viewModel, this);
       });
     },
     koClean: function() {
       return this.each(function() {
-        $(this).removeAttr('data-bind');
         return ko.cleanNode(this);
       });
     }

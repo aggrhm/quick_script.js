@@ -421,6 +421,12 @@ QuickScript.initKO = ->
 			return {controlsDescendantBindings: true}
 	ko.virtualElements.allowedBindings.viewComponents = true
 
+	ko.bindingHandlers.updateContext =
+		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
+			props = valueAccessor()
+			for prop, val of props
+				bindingContext[prop] = val
+
 	## EXTENDERS
 	
 	ko.extenders.usd = (target) ->
@@ -610,13 +616,13 @@ jQuery.fn.extend
     this.css("top", (($(window).height() - this.outerHeight(true)) / 2) + $(window).scrollTop() + "px")
     this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px")
     return this
-	koBind : (viewModel, tmpl) ->
+	koBind : (viewModel) ->
 		this.each ->
 			$(this).koClean()
-			$(this).attr('data-bind', "template : '#{tmpl}'") if tmpl?
+			#$(this).attr('data-bind', "template : '#{tmpl}'") if tmpl?
 			ko.applyBindings(viewModel, this)
 	koClean : ->
 		this.each ->
-			$(this).removeAttr('data-bind')
+			#$(this).removeAttr('data-bind')
 			ko.cleanNode(this)
 

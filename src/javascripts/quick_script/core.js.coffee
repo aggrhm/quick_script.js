@@ -8,8 +8,8 @@ QuickScript.utils =
 			ret.push {value: key, text: val}
 		return ret
 	renderToString : (tmpl, vm)->
-		$el = $('<div>')
-		$el.koBind(vm, tmpl)
+		$el = $("<div data-bind='template: #{tmpl}'>")
+		$el.koBind(vm)
 		html = $el[0].innerHTML
 		$el.koClean()
 		return html

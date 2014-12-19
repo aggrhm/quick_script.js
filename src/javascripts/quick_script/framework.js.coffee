@@ -928,7 +928,7 @@ class @Application extends @View
 		@redirect_on_login.subscribe (val)=>
 			LocalStore.set('app.redirect_on_login', val)
 		ko.addTemplate "viewbox", """
-				<div data-bind='foreach : viewList()'>
+				<div data-bind='foreach : {data: viewList(), as: \"$view\"}'>
 					<div data-bind="fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true"></div>
 				</div>
 			"""

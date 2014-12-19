@@ -1,5 +1,10 @@
 # CHANGELOG
 
+- v2.6.1
+	- Updated ko.Bind to not clear data-bind attributes
+	- Added updateContext binding
+	- Added $view to context for views rendered with 'viewbox' template
+
 - v2.6.0
 	- Updated LocalStorage to use store.js
 	- Changed current_user_token functionality to store and read from LocalStorage
