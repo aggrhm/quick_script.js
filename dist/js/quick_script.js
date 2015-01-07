@@ -1608,7 +1608,7 @@ Date.prototype.format = function (mask, utc) {
       this.reloadOpts = __bind(this.reloadOpts, this);
       this._uuid = QS.utils.uuid();
       this.fields = [];
-      this.submodels = [];
+      this.submodels = {};
       this.is_submodel = false;
       this.addFields(['id'], '');
       this.adapter = this.initAdapter != null ? this.initAdapter() : null;
@@ -2868,7 +2868,7 @@ Date.prototype.format = function (mask, utc) {
         } else {
           model = params.model;
           owner = params.owner;
-          vn = "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0);
+          vn = model != null ? "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
           new_view = new view_class(vn, owner, model, params);
         }
         if (componentInfo != null) {
@@ -3401,7 +3401,9 @@ Date.prototype.format = function (mask, utc) {
         var shouldDisplay;
         shouldDisplay = value();
         if (shouldDisplay) {
-          return $(element).fadeIn('slow');
+          return setTimeout(function() {
+            return $(element).fadeIn('slow');
+          }, 50);
         } else {
           return $(element).hide();
         }
@@ -3991,12 +3993,24 @@ Date.prototype.format = function (mask, utc) {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
         var prop, props, val, _results;
         props = valueAccessor();
-        _results = [];
-        for (prop in props) {
-          val = props[prop];
-          _results.push(bindingContext[prop] = val);
+        if (typeof props === "string") {
+          return bindingContext[props] = viewModel;
+        } else {
+          _results = [];
+          for (prop in props) {
+            val = props[prop];
+            _results.push(bindingContext[prop] = val);
+          }
+          return _results;
         }
-        return _results;
+      }
+    };
+    ko.bindingHandlers.context = ko.bindingHandlers.updateContext;
+    ko.bindingHandlers.scopeAs = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
+        var props;
+        props = valueAccessor();
+        return bindingContext[props] = viewModel;
       }
     };
     ko.extenders.usd = function(target) {

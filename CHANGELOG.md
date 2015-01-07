@@ -1,5 +1,10 @@
 # CHANGELOG
 
+Pending
+- Various model fixes
+- Added 'scopeAs' binding for declaring view model scope within template
+
+
 - v2.6.1
 	- Updated ko.Bind to not clear data-bind attributes
 	- Added updateContext binding

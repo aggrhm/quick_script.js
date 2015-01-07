@@ -13,7 +13,12 @@ QuickScript.initKO = ->
 			if shouldDisplay then $(element).show() else $(element).hide()
 		update : (element, value) ->
 			shouldDisplay = value()
-			if shouldDisplay then $(element).fadeIn('slow') else $(element).hide()
+			if shouldDisplay
+				setTimeout ->
+					$(element).fadeIn('slow')
+				, 50
+			else
+				$(element).hide()
 
 	ko.bindingHandlers.slideVisible =
 		init : (element, valueAccessor) ->
@@ -424,8 +429,16 @@ QuickScript.initKO = ->
 	ko.bindingHandlers.updateContext =
 		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
 			props = valueAccessor()
-			for prop, val of props
-				bindingContext[prop] = val
+			if typeof(props) == "string"
+				bindingContext[props] = viewModel
+			else
+				for prop, val of props
+					bindingContext[prop] = val
+	ko.bindingHandlers.context = ko.bindingHandlers.updateContext
+	ko.bindingHandlers.scopeAs =
+		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
+			props = valueAccessor()
+			bindingContext[props] = viewModel
 
 	## EXTENDERS
 	

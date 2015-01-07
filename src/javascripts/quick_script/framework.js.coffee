@@ -5,7 +5,7 @@ class @Model
 	constructor: (data, collection, opts) ->
 		@_uuid = QS.utils.uuid()
 		@fields = []
-		@submodels = []
+		@submodels = {}
 		@is_submodel = false
 		@addFields(['id'], '')
 		#@events = {}
@@ -736,7 +736,7 @@ View.registerComponent = (name, template, view_class)->
 			else
 				model = params.model
 				owner = params.owner
-				vn = "#{name}-#{model.id?()}"
+				vn = if model? then "#{name}-#{model.id?()}" else name
 				new_view = new view_class(vn, owner, model, params)
 			new_view.element = componentInfo.element if componentInfo?
 			return new_view
