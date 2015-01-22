@@ -659,15 +659,16 @@ class @View
 		view = @views[view_name]
 		if (last_view != view)
 			QS.log("View [#{view.name}] selected.", 2)
+			last_view.hide() if last_view?
+			view.load.apply(view, args[1..])
+			window.onbeforeunload = view.events.before_unload
+			view.show()
 			@view = view
 			@prev_task(@task())
 			@task(view.name)
-			last_view.hide() if last_view?
-			view.load.apply(view, args[1..])
-			window.onbeforeunload = @view.events.before_unload
 		else
 			@view.reload.apply(@view, args[1..])
-		view.show()
+			view.show()
 	isTask : (task) ->
 		@task() == task
 	getViewName : (view) ->

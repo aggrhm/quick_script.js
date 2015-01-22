@@ -18,6 +18,20 @@ Array.prototype.first = ->
 	this[0]
 Array.prototype.last = ->
 	this[this.length-1]
+Array.prototype.findAndMap = (params, field, def)->
+	res = this.filter (itm)->
+		for key, val of params
+			return false if itm[key] != val
+		return true
+	result = res[0]
+	if result?
+		if typeof(field) == 'function'
+			return field(result)
+		else
+			result[field]
+	else
+		return def
+	
 Date.from_utc = (utc) ->
 	new Date(utc * 1000)
 Date.from_now = ->

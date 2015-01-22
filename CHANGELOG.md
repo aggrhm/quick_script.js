@@ -3,6 +3,8 @@
 Pending
 - Various model fixes
 - Added 'scopeAs' binding for declaring view model scope within template
+- Added Array findAndMap prototype function
+- Updated 'selectView' to not set task until new view is loaded
 
 
 - v2.6.1

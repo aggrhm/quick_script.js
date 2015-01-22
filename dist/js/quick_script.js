@@ -828,6 +828,30 @@ Date.prototype.format = function (mask, utc) {
     return this[this.length - 1];
   };
 
+  Array.prototype.findAndMap = function(params, field, def) {
+    var res, result;
+    res = this.filter(function(itm) {
+      var key, val;
+      for (key in params) {
+        val = params[key];
+        if (itm[key] !== val) {
+          return false;
+        }
+      }
+      return true;
+    });
+    result = res[0];
+    if (result != null) {
+      if (typeof field === 'function') {
+        return field(result);
+      } else {
+        return result[field];
+      }
+    } else {
+      return def;
+    }
+  };
+
   Date.from_utc = function(utc) {
     return new Date(utc * 1000);
   };
@@ -2747,18 +2771,19 @@ Date.prototype.format = function (mask, utc) {
       view = this.views[view_name];
       if (last_view !== view) {
         QS.log("View [" + view.name + "] selected.", 2);
-        this.view = view;
-        this.prev_task(this.task());
-        this.task(view.name);
         if (last_view != null) {
           last_view.hide();
         }
         view.load.apply(view, args.slice(1));
-        window.onbeforeunload = this.view.events.before_unload;
+        window.onbeforeunload = view.events.before_unload;
+        view.show();
+        this.view = view;
+        this.prev_task(this.task());
+        return this.task(view.name);
       } else {
         this.view.reload.apply(this.view, args.slice(1));
+        return view.show();
       }
-      return view.show();
     };
 
     View.prototype.isTask = function(task) {
