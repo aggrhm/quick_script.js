@@ -14,9 +14,7 @@ QuickScript.initKO = ->
 		update : (element, value) ->
 			shouldDisplay = value()
 			if shouldDisplay
-				setTimeout ->
-					$(element).fadeIn('slow')
-				, 50
+				$(element).fadeIn('slow')
 			else
 				$(element).hide()
 

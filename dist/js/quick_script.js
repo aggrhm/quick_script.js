@@ -2774,12 +2774,16 @@ Date.prototype.format = function (mask, utc) {
         if (last_view != null) {
           last_view.hide();
         }
-        view.load.apply(view, args.slice(1));
-        window.onbeforeunload = view.events.before_unload;
-        view.show();
-        this.view = view;
-        this.prev_task(this.task());
-        return this.task(view.name);
+        return setTimeout((function(_this) {
+          return function() {
+            view.load.apply(view, args.slice(1));
+            window.onbeforeunload = view.events.before_unload;
+            view.show();
+            _this.view = view;
+            _this.prev_task(_this.task());
+            return _this.task(view.name);
+          };
+        })(this), 50);
       } else {
         this.view.reload.apply(this.view, args.slice(1));
         return view.show();
@@ -3426,9 +3430,7 @@ Date.prototype.format = function (mask, utc) {
         var shouldDisplay;
         shouldDisplay = value();
         if (shouldDisplay) {
-          return setTimeout(function() {
-            return $(element).fadeIn('slow');
-          }, 50);
+          return $(element).fadeIn('slow');
         } else {
           return $(element).hide();
         }
