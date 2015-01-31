@@ -844,8 +844,10 @@ Date.prototype.format = function (mask, utc) {
     if (result != null) {
       if (typeof field === 'function') {
         return field(result);
-      } else {
+      } else if (typeof field === 'string') {
         return result[field];
+      } else {
+        return result;
       }
     } else {
       return def;
@@ -1197,6 +1199,9 @@ Date.prototype.format = function (mask, utc) {
     };
 
     AuthToken.prototype.is_expired = function() {
+      if (this.expires_at == null) {
+        return true;
+      }
       return this.timeLeft() <= 0;
     };
 
@@ -1413,6 +1418,30 @@ Date.prototype.format = function (mask, utc) {
           if (!QS.utils.isBlank(kv[0])) {
             ret[kv[0]] = kv[1];
           }
+        }
+        return ret;
+      };
+    })(this),
+    prepareAPIParam: (function(_this) {
+      return function(val) {
+        if (val instanceof File) {
+          return val;
+        } else if (val === null) {
+          return '';
+        } else if (typeof val === 'object') {
+          return JSON.stringify(val);
+        } else {
+          return val;
+        }
+      };
+    })(this),
+    prepareAPIData: (function(_this) {
+      return function(data) {
+        var key, ret, val;
+        ret = {};
+        for (key in data) {
+          val = data[key];
+          ret[key] = _this.prepareAPIParam(val);
         }
         return ret;
       };
@@ -1962,13 +1991,28 @@ Date.prototype.format = function (mask, utc) {
 
     function FileModel() {
       this.toAPI = __bind(this.toAPI, this);
+      this.toJS = __bind(this.toJS, this);
       this.reset = __bind(this.reset, this);
       return FileModel.__super__.constructor.apply(this, arguments);
     }
 
     FileModel.prototype.extend = function() {
       this.input = {};
+      this.input.url = ko.observable('');
+      this.input.has_url = ko.computed(function() {
+        return !QS.utils.isBlank(this.input.url());
+      }, this);
       this.input.files = ko.observable([]);
+      this.input.file = ko.computed(function() {
+        if (this.input.files().length > 0) {
+          return this.input.files()[0];
+        } else {
+          return null;
+        }
+      }, this);
+      this.input.has_file = ko.computed(function() {
+        return this.input.file() != null;
+      }, this);
       this.input.file_uri = ko.observable('');
       this.input.files.subscribe((function(_this) {
         return function(val) {
@@ -1984,32 +2028,35 @@ Date.prototype.format = function (mask, utc) {
           }
         };
       })(this), this);
-      this.input.present = ko.computed(function() {
-        return this.input.files().length > 0;
-      }, this);
-      this.input.file = ko.computed(function() {
-        if (this.input.present()) {
-          return this.input.files()[0];
-        } else {
-          return null;
-        }
-      }, this);
       this.input.filename = ko.computed(function() {
-        if (this.input.present()) {
+        if (this.input.has_file()) {
           return this.input.file().name;
         } else {
           return "";
         }
       }, this);
+      this.input.display_uri = ko.computed(function() {
+        if (this.input.has_file()) {
+          return this.input.file_uri();
+        } else {
+          return this.input.url();
+        }
+      }, this);
+      this.input.present = ko.computed(function() {
+        return this.input.has_url() || this.input.has_file();
+      }, this);
       this.input.is_image = ko.computed(function() {
-        if (this.input.present() && (this.input.file().type != null)) {
+        if (this.input.has_file() && (this.input.file().type != null)) {
           return this.input.file().type.match('image.*');
+        } else if (this.input.has_url()) {
+          return /(jpg|gif|png|JPG|GIF|PNG|JPEG|jpeg)$/.test(this.input.url());
         } else {
           return false;
         }
       }, this);
       return this.input.clear = (function(_this) {
         return function() {
+          _this.input.url('');
           return _this.input.files([]);
         };
       })(this);
@@ -2017,11 +2064,24 @@ Date.prototype.format = function (mask, utc) {
 
     FileModel.prototype.reset = function() {
       FileModel.__super__.reset.apply(this, arguments);
-      return this.input.files([]);
+      return this.input.clear();
+    };
+
+    FileModel.prototype.toJS = function() {
+      if (this.input.has_file()) {
+        return this.input.file();
+      } else if (this.input.has_url()) {
+        return {
+          type: 'url',
+          data: this.input.url()
+        };
+      } else {
+        return null;
+      }
     };
 
     FileModel.prototype.toAPI = function() {
-      return this.input.file();
+      return QS.utils.prepareAPIParam(this.toJS());
     };
 
     return FileModel;

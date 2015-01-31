@@ -27,8 +27,10 @@ Array.prototype.findAndMap = (params, field, def)->
 	if result?
 		if typeof(field) == 'function'
 			return field(result)
-		else
+		else if typeof(field) == 'string'
 			result[field]
+		else
+			result
 	else
 		return def
 	
@@ -228,6 +230,7 @@ class @AuthToken
 	timeLeft : =>
 		return @expires_at - Date.now_utc()
 	is_expired : =>
+		return true if !@expires_at?
 		return @timeLeft() <= 0
 	toJSON : =>
 		JSON.stringify(@data)

@@ -5,6 +5,8 @@ Pending
 - Added 'scopeAs' binding for declaring view model scope within template
 - Added Array findAndMap prototype function
 - Updated 'selectView' to not set task until new view is loaded
+- Added QS.utils.prepareAPIParams
+- Added support for url uploads in FileModel
 
 
 - v2.6.1

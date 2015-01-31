@@ -76,6 +76,20 @@ QuickScript.utils =
 			kv = pair.split("=")
 			ret[kv[0]] = kv[1] unless QS.utils.isBlank(kv[0])
 		return ret
+	prepareAPIParam : (val)=>
+		if val instanceof File
+			return val
+		else if val == null
+			return ''
+		else if typeof(val) == 'object'
+			return JSON.stringify(val)
+		else
+			return val
+	prepareAPIData : (data)=>
+		ret = {}
+		for key, val of data
+			ret[key] = @prepareAPIParam(val)
+		return ret
 
 
 

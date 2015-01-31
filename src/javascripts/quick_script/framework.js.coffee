@@ -125,6 +125,7 @@ class @Model
 				obj[prop] = @[prop]()
 		obj
 	toAPI : (flds)=>
+		# TODO: possibly also add toAPIParam which generates stringified version
 		flds ||= @fields
 		obj = {}
 		for prop in flds
@@ -185,7 +186,19 @@ Model.includeAdapter = (adapter, self)->
 class @FileModel extends Model
 	extend : ->
 		@input = {}
+		# url
+		@input.url = ko.observable('')
+		@input.has_url = ko.computed ->
+			!QS.utils.isBlank(@input.url())
+		, this
+		# file
 		@input.files = ko.observable([])
+		@input.file = ko.computed ->
+			if @input.files().length > 0 then @input.files()[0] else null
+		, this
+		@input.has_file = ko.computed ->
+			@input.file()?
+		, this
 		@input.file_uri = ko.observable('')
 		@input.files.subscribe (val)=>
 			if val.length > 0 && FileReader?
@@ -196,24 +209,43 @@ class @FileModel extends Model
 					@input.file_uri(ev.target.result)
 				reader.readAsDataURL(val[0])
 		, this
-		@input.present = ko.computed ->
-				@input.files().length > 0
-			, this
-		@input.file = ko.computed ->
-				if @input.present() then @input.files()[0] else null
-			, this
 		@input.filename = ko.computed ->
-				if @input.present() then @input.file().name else ""
-			, this
+			if @input.has_file() then @input.file().name else ""
+		, this
+
+		# helpers
+		@input.display_uri = ko.computed ->
+			if @input.has_file()
+				@input.file_uri()
+			else
+				@input.url()
+		, this
+		@input.present = ko.computed ->
+			@input.has_url() || @input.has_file()
+		, this
 		@input.is_image = ko.computed ->
-				if (@input.present() && @input.file().type?) then @input.file().type.match('image.*') else false
-			, this
-		@input.clear = => @input.files([])
+			if (@input.has_file() && @input.file().type?)
+				return @input.file().type.match('image.*')
+			else if @input.has_url()
+				return /(jpg|gif|png|JPG|GIF|PNG|JPEG|jpeg)$/.test(@input.url())
+			else
+				return false
+		, this
+		@input.clear = =>
+			@input.url('')
+			@input.files([])
 	reset : =>
 		super
-		@input.files([])
+		@input.clear()
+	toJS : =>
+		if @input.has_file()
+			@input.file()
+		else if @input.has_url()
+			{type: 'url', data: @input.url()}
+		else
+			null
 	toAPI : =>
-		@input.file()
+		QS.utils.prepareAPIParam(@toJS())
 
 class @Collection
 	init : ->
