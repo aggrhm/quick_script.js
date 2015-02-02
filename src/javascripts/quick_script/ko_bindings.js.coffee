@@ -492,6 +492,42 @@ QuickScript.initKO = ->
 			click_db = "click : function() { App.redirectTo('#{iref}'); }"
 			ko.utils.appendNodeDataBind(node, click_db)
 
+	## COMPONENT LOADER
+
+	ko.components.loaders.unshift
+		loadTemplate : (name, config, callback)->
+			callback(null) if config.loader != 'QuickScript'
+
+			errorCallback = (msg)->
+				throw new Error("Component '#{name}': #{msg}.")
+			applyStyles = (el)->
+				if config.style?
+					if typeof(config.style) == 'string'
+						$('head').append("<style>#{config.style}</style>")
+						callback(el)
+					else
+						$el = $(el)
+						for sel, props of config.style
+							$el.filter(sel).add($el.find(sel)).css(props)
+						callback($el.toArray())
+				else
+					callback(el)
+			if config.element_id?
+				# specifies id, load from element
+				el = document.getElementById(config.element_id)
+				if el?
+					applyStyles(ko.utils.parseHtmlFragment(el.text))
+				else
+					errorCallback("Template with id '#{config.element_id}' not found")
+			else if config.html?
+				applyStyles(ko.utils.parseHtmlFragment(config.html))
+			else if config.haml?
+				errorCallback("You must include haml-js for haml support") if !Haml?
+				html = Haml.render(config.haml.replace(/\t/g, "  "))
+				applyStyles(ko.utils.parseHtmlFragment(html))
+			else
+				errorCallback("You must specify an element id or a markup")
+
 
 	## UTILS
 	
@@ -623,10 +659,10 @@ jQuery.fn.extend
 	to_s : ->
 		$('<div>').append(this.clone()).remove().html()
 	center : ->
-    this.css("position","absolute")
-    this.css("top", (($(window).height() - this.outerHeight(true)) / 2) + $(window).scrollTop() + "px")
-    this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px")
-    return this
+		this.css("position","absolute")
+		this.css("top", (($(window).height() - this.outerHeight(true)) / 2) + $(window).scrollTop() + "px")
+		this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px")
+		return this
 	koBind : (viewModel) ->
 		this.each ->
 			$(this).koClean()

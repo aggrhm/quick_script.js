@@ -148,6 +148,8 @@ class @Model
 					else
 						obj[prop] = ''
 		obj
+	toAPIParam : (flds)=>
+		QS.utils.prepareAPIParam(@toAPI(flds))
 	toJSON : (flds)=>
 		JSON.stringify(@toJS(flds))
 	getClass : =>
@@ -220,9 +222,10 @@ class @FileModel extends Model
 			else
 				@input.url()
 		, this
-		@input.present = ko.computed ->
+		@input.is_present = ko.computed ->
 			@input.has_url() || @input.has_file()
 		, this
+		@input.present = @input.is_present
 		@input.is_image = ko.computed ->
 			if (@input.has_file() && @input.file().type?)
 				return @input.file().type.match('image.*')
@@ -246,6 +249,8 @@ class @FileModel extends Model
 			null
 	toAPI : =>
 		QS.utils.prepareAPIParam(@toJS())
+	toAPIParam : =>
+		@toAPI()
 
 class @Collection
 	init : ->
@@ -512,6 +517,8 @@ class @Collection
 			objs.push(item.toAPI())
 		objs
 		JSON.stringify(objs)
+	toAPIParam : =>
+		@toAPI()
 
 Collection.REPLACE = 0
 Collection.INSERT = 1
@@ -758,24 +765,33 @@ class @View
 				else
 					obj[prop] = val if val != null
 		obj
-View.registerComponent = (name, template, view_class)->
+	toAPIParam : (flds)=>
+		QS.utils.prepareAPIParam(@toAPI(flds))
+View.registerComponent = (name, template_opts, view_class)->
 	view_class ||= this
 	QS.registered_components ||= {}
-	QS.registered_components[name] = {template_id: template, view: view_class}
+
+	if typeof(template_opts) == 'string'
+		topts = {element_id: template_opts}
+	else
+		topts = template_opts
+	topts.loader = 'QuickScript'
+	QS.registered_components[name] = {template_opts: topts, view_class: view_class}
 	ko.components.register name,
-		viewModel : (params, componentInfo)->
-			#QS.log componentInfo
-			view = params.view
-			if view?
-				new_view = view
-			else
-				model = params.model
-				owner = params.owner
-				vn = if model? then "#{name}-#{model.id?()}" else name
-				new_view = new view_class(vn, owner, model, params)
-			new_view.element = componentInfo.element if componentInfo?
-			return new_view
-		template: {element: template}
+		viewModel :
+			createViewModel : (params, componentInfo)->
+				context = ko.contextFor(componentInfo.element)
+				view = params.view
+				if view?
+					new_view = view
+				else
+					model = params.model
+					owner = params.owner || context['$view']
+					vn = if model? then "#{name}-#{model.id?()}" else name
+					new_view = new view_class(vn, owner, model, params)
+				new_view.element = componentInfo.element if componentInfo?
+				return new_view
+		template: topts
 
 class @Host
 	constructor : (url)->

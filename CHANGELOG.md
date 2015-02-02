@@ -1,13 +1,13 @@
 # CHANGELOG
 
-Pending
-- Various model fixes
-- Added 'scopeAs' binding for declaring view model scope within template
-- Added Array findAndMap prototype function
-- Updated 'selectView' to not set task until new view is loaded
-- Added QS.utils.prepareAPIParams
-- Added support for url uploads in FileModel
-
+- v2.7.0
+	- Various model fixes
+	- Added 'scopeAs' binding for declaring view model scope within template
+	- Added Array findAndMap prototype function
+	- Updated 'selectView' to not set task until new view is loaded
+	- Added QS.utils.prepareAPIParams
+	- Added support for url uploads in FileModel
+	- Added support for components with inline html and styles
 
 - v2.6.1
 	- Updated ko.Bind to not clear data-bind attributes

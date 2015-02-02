@@ -1654,6 +1654,7 @@ Date.prototype.format = function (mask, utc) {
       this.toClone = __bind(this.toClone, this);
       this.getClass = __bind(this.getClass, this);
       this.toJSON = __bind(this.toJSON, this);
+      this.toAPIParam = __bind(this.toAPIParam, this);
       this.toAPI = __bind(this.toAPI, this);
       this.toJS = __bind(this.toJS, this);
       this.removeFromCollection = __bind(this.removeFromCollection, this);
@@ -1912,6 +1913,10 @@ Date.prototype.format = function (mask, utc) {
       return obj;
     };
 
+    Model.prototype.toAPIParam = function(flds) {
+      return QS.utils.prepareAPIParam(this.toAPI(flds));
+    };
+
     Model.prototype.toJSON = function(flds) {
       return JSON.stringify(this.toJS(flds));
     };
@@ -1990,6 +1995,7 @@ Date.prototype.format = function (mask, utc) {
     __extends(FileModel, _super);
 
     function FileModel() {
+      this.toAPIParam = __bind(this.toAPIParam, this);
       this.toAPI = __bind(this.toAPI, this);
       this.toJS = __bind(this.toJS, this);
       this.reset = __bind(this.reset, this);
@@ -2042,9 +2048,10 @@ Date.prototype.format = function (mask, utc) {
           return this.input.url();
         }
       }, this);
-      this.input.present = ko.computed(function() {
+      this.input.is_present = ko.computed(function() {
         return this.input.has_url() || this.input.has_file();
       }, this);
+      this.input.present = this.input.is_present;
       this.input.is_image = ko.computed(function() {
         if (this.input.has_file() && (this.input.file().type != null)) {
           return this.input.file().type.match('image.*');
@@ -2084,6 +2091,10 @@ Date.prototype.format = function (mask, utc) {
       return QS.utils.prepareAPIParam(this.toJS());
     };
 
+    FileModel.prototype.toAPIParam = function() {
+      return this.toAPI();
+    };
+
     return FileModel;
 
   })(Model);
@@ -2092,6 +2103,7 @@ Date.prototype.format = function (mask, utc) {
     Collection.prototype.init = function() {};
 
     function Collection(opts) {
+      this.toAPIParam = __bind(this.toAPIParam, this);
       this.toAPI = __bind(this.toAPI, this);
       this.toJS = __bind(this.toJS, this);
       this.absorb = __bind(this.absorb, this);
@@ -2518,6 +2530,10 @@ Date.prototype.format = function (mask, utc) {
       return JSON.stringify(objs);
     };
 
+    Collection.prototype.toAPIParam = function() {
+      return this.toAPI();
+    };
+
     return Collection;
 
   })();
@@ -2664,6 +2680,7 @@ Date.prototype.format = function (mask, utc) {
       this.owner = owner;
       this.model = model;
       this.opts = opts;
+      this.toAPIParam = __bind(this.toAPIParam, this);
       this.toAPI = __bind(this.toAPI, this);
       this.ensure = __bind(this.ensure, this);
       this.afterRender = __bind(this.afterRender, this);
@@ -2937,37 +2954,51 @@ Date.prototype.format = function (mask, utc) {
       return obj;
     };
 
+    View.prototype.toAPIParam = function(flds) {
+      return QS.utils.prepareAPIParam(this.toAPI(flds));
+    };
+
     return View;
 
   })();
 
-  View.registerComponent = function(name, template, view_class) {
+  View.registerComponent = function(name, template_opts, view_class) {
+    var topts;
     view_class || (view_class = this);
     QS.registered_components || (QS.registered_components = {});
+    if (typeof template_opts === 'string') {
+      topts = {
+        element_id: template_opts
+      };
+    } else {
+      topts = template_opts;
+    }
+    topts.loader = 'QuickScript';
     QS.registered_components[name] = {
-      template_id: template,
-      view: view_class
+      template_opts: topts,
+      view_class: view_class
     };
     return ko.components.register(name, {
-      viewModel: function(params, componentInfo) {
-        var model, new_view, owner, view, vn;
-        view = params.view;
-        if (view != null) {
-          new_view = view;
-        } else {
-          model = params.model;
-          owner = params.owner;
-          vn = model != null ? "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
-          new_view = new view_class(vn, owner, model, params);
+      viewModel: {
+        createViewModel: function(params, componentInfo) {
+          var context, model, new_view, owner, view, vn;
+          context = ko.contextFor(componentInfo.element);
+          view = params.view;
+          if (view != null) {
+            new_view = view;
+          } else {
+            model = params.model;
+            owner = params.owner || context['$view'];
+            vn = model != null ? "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
+            new_view = new view_class(vn, owner, model, params);
+          }
+          if (componentInfo != null) {
+            new_view.element = componentInfo.element;
+          }
+          return new_view;
         }
-        if (componentInfo != null) {
-          new_view.element = componentInfo.element;
-        }
-        return new_view;
       },
-      template: {
-        element: template
-      }
+      template: topts
     });
   };
 
@@ -4170,6 +4201,54 @@ Date.prototype.format = function (mask, utc) {
         iref = node.getAttribute('iref');
         click_db = "click : function() { App.redirectTo('" + iref + "'); }";
         return ko.utils.appendNodeDataBind(node, click_db);
+      }
+    });
+    ko.components.loaders.unshift({
+      loadTemplate: function(name, config, callback) {
+        var applyStyles, el, errorCallback, html;
+        if (config.loader !== 'QuickScript') {
+          callback(null);
+        }
+        errorCallback = function(msg) {
+          throw new Error("Component '" + name + "': " + msg + ".");
+        };
+        applyStyles = function(el) {
+          var $el, props, sel, _ref;
+          if (config.style != null) {
+            if (typeof config.style === 'string') {
+              $('head').append("<style>" + config.style + "</style>");
+              return callback(el);
+            } else {
+              $el = $(el);
+              _ref = config.style;
+              for (sel in _ref) {
+                props = _ref[sel];
+                $el.filter(sel).add($el.find(sel)).css(props);
+              }
+              return callback($el.toArray());
+            }
+          } else {
+            return callback(el);
+          }
+        };
+        if (config.element_id != null) {
+          el = document.getElementById(config.element_id);
+          if (el != null) {
+            return applyStyles(ko.utils.parseHtmlFragment(el.text));
+          } else {
+            return errorCallback("Template with id '" + config.element_id + "' not found");
+          }
+        } else if (config.html != null) {
+          return applyStyles(ko.utils.parseHtmlFragment(config.html));
+        } else if (config.haml != null) {
+          if (typeof Haml === "undefined" || Haml === null) {
+            errorCallback("You must include haml-js for haml support");
+          }
+          html = Haml.render(config.haml.replace(/\t/g, "  "));
+          return applyStyles(ko.utils.parseHtmlFragment(html));
+        } else {
+          return errorCallback("You must specify an element id or a markup");
+        }
       }
     });
     ko.utils.appendNodeDataBind = function(node, bind) {
