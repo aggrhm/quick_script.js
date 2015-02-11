@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- Pending Changes
+	- Fixed prepareAPIData, added option to convert arrays
+
 - v2.7.0
 	- Various model fixes
 	- Added 'scopeAs' binding for declaring view model scope within template

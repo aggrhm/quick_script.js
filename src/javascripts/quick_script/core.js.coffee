@@ -76,8 +76,11 @@ QuickScript.utils =
 			kv = pair.split("=")
 			ret[kv[0]] = kv[1] unless QS.utils.isBlank(kv[0])
 		return ret
-	prepareAPIParam : (val)=>
+	prepareAPIParam : (val, opts)=>
+		opts ||= {allowArrays: true}
 		if val instanceof File
+			return val
+		else if (val instanceof Array) && opts.allowArrays == true
 			return val
 		else if val == null
 			return ''
@@ -85,10 +88,11 @@ QuickScript.utils =
 			return JSON.stringify(val)
 		else
 			return val
-	prepareAPIData : (data)=>
+	prepareAPIData : (data, opts)=>
+		return null if !data?
 		ret = {}
 		for key, val of data
-			ret[key] = @prepareAPIParam(val)
+			ret[key] = QS.utils.prepareAPIParam(val, opts)
 		return ret
 
 

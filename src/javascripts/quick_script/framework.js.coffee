@@ -709,7 +709,7 @@ class @View
 			, 50
 		else
 			@view.reload.apply(@view, args[1..])
-			view.show()
+			view.show() if view.is_visible() != true
 	isTask : (task) ->
 		@task() == task
 	getViewName : (view) ->

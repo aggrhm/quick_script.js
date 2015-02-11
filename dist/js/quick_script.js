@@ -1423,8 +1423,13 @@ Date.prototype.format = function (mask, utc) {
       };
     })(this),
     prepareAPIParam: (function(_this) {
-      return function(val) {
+      return function(val, opts) {
+        opts || (opts = {
+          allowArrays: true
+        });
         if (val instanceof File) {
+          return val;
+        } else if ((val instanceof Array) && opts.allowArrays === true) {
           return val;
         } else if (val === null) {
           return '';
@@ -1436,12 +1441,15 @@ Date.prototype.format = function (mask, utc) {
       };
     })(this),
     prepareAPIData: (function(_this) {
-      return function(data) {
+      return function(data, opts) {
         var key, ret, val;
+        if (data == null) {
+          return null;
+        }
         ret = {};
         for (key in data) {
           val = data[key];
-          ret[key] = _this.prepareAPIParam(val);
+          ret[key] = QS.utils.prepareAPIParam(val, opts);
         }
         return ret;
       };
@@ -2863,7 +2871,9 @@ Date.prototype.format = function (mask, utc) {
         })(this), 50);
       } else {
         this.view.reload.apply(this.view, args.slice(1));
-        return view.show();
+        if (view.is_visible() !== true) {
+          return view.show();
+        }
       }
     };
 
