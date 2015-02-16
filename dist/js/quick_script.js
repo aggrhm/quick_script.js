@@ -1793,25 +1793,14 @@ Date.prototype.format = function (mask, utc) {
         success: (function(_this) {
           return function(resp) {
             _this.handleData(resp.data);
-            if (callback != null) {
-              return callback(resp);
-            }
+            return typeof callback === "function" ? callback(resp) : void 0;
           };
         })(this),
         error: (function(_this) {
-          return function(err) {
-            err = err || 'unknown';
-            console.log("Save error encountered [" + err + "]");
+          return function(resp) {
+            QS.log("Save error encountered");
             _this.model_state(ko.modelStates.READY);
-            if (callback != null) {
-              return callback({
-                meta: 500,
-                error: 'An error occurred',
-                data: {
-                  errors: ['An error occurred']
-                }
-              });
-            }
+            return typeof callback === "function" ? callback(resp) : void 0;
           };
         })(this)
       });
@@ -1840,27 +1829,17 @@ Date.prototype.format = function (mask, utc) {
         success: (function(_this) {
           return function(resp) {
             _this.handleData(resp.data);
-            if (callback != null) {
-              callback(resp);
-            }
             if ((resp.meta === 200) && (_this.collection != null)) {
-              return _this.collection.removeItemById(_this.id());
+              _this.collection.handleItemDelete(resp.data);
             }
+            return typeof callback === "function" ? callback(resp) : void 0;
           };
         })(this),
         error: (function(_this) {
-          return function() {
-            console.log("Delete error encountered");
+          return function(resp) {
+            QS.log("Delete error encountered");
             _this.model_state(ko.modelStates.READY);
-            if (callback != null) {
-              return callback({
-                meta: 500,
-                error: 'An error occurred',
-                data: {
-                  errors: ['An error occurred']
-                }
-              });
-            }
+            return typeof callback === "function" ? callback(resp) : void 0;
           };
         })(this)
       });
@@ -2122,6 +2101,7 @@ Date.prototype.format = function (mask, utc) {
       this.computeFilteredItems = __bind(this.computeFilteredItems, this);
       this.addNamedSort = __bind(this.addNamedSort, this);
       this.addNamedFilter = __bind(this.addNamedFilter, this);
+      this.handleItemDelete = __bind(this.handleItemDelete, this);
       this.handleItemData = __bind(this.handleItemData, this);
       this.handleData = __bind(this.handleData, this);
       this.update = __bind(this.update, this);
@@ -2365,6 +2345,10 @@ Date.prototype.format = function (mask, utc) {
         item.handleData(data);
       }
       return item;
+    };
+
+    Collection.prototype.handleItemDelete = function(data) {
+      return this.removeItemById(data.id);
     };
 
     Collection.prototype.addNamedFilter = function(name, fn) {

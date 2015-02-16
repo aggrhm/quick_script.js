@@ -81,12 +81,11 @@ class @Model
 				@save_progress( prog )
 			success : (resp)=>
 				@handleData(resp.data)
-				callback(resp) if callback?
-			error : (err)=>
-				err = err || 'unknown'
-				console.log("Save error encountered [" + err + "]")
+				callback?(resp)
+			error : (resp)=>
+				QS.log("Save error encountered")
 				@model_state(ko.modelStates.READY)
-				callback({meta : 500, error : 'An error occurred', data : {errors : ['An error occurred']}}) if callback?
+				callback?(resp)
 		@model_state(ko.modelStates.SAVING)
 	reset : ->
 		#@model_state(ko.modelStates.LOADING)
@@ -106,12 +105,12 @@ class @Model
 			data : opts
 			success : (resp)=>
 				@handleData(resp.data)
-				callback(resp) if callback?
-				@collection.removeItemById(@id()) if ((resp.meta == 200) && @collection?)
-			error : =>
-				console.log("Delete error encountered")
+				@collection.handleItemDelete(resp.data) if ((resp.meta == 200) && @collection?)
+				callback?(resp)
+			error : (resp)=>
+				QS.log("Delete error encountered")
 				@model_state(ko.modelStates.READY)
-				callback({meta : 500, error : 'An error occurred', data : {errors : ['An error occurred']}}) if callback?
+				callback?(resp)
 		@model_state(ko.modelStates.SAVING)
 	removeFromCollection : =>
 		@collection.removeItemById(@id()) if @collection?
@@ -430,6 +429,8 @@ class @Collection
 		item = @getItemById(data.id)
 		item.handleData(data) if item?
 		return item
+	handleItemDelete : (data)=>
+		@removeItemById(data.id)
 	addNamedFilter : (name, fn)=>
 		@named_filters[name] = fn
 		@["filter_#{name}"] = ko.computed ->
