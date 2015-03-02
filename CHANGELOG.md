@@ -3,6 +3,7 @@
 - Pending Changes
 	- Fixed prepareAPIData, added option to convert arrays
 	- Removed logic from model save and delete error handlers
+	- Updated initialize logic to pass options
 
 - v2.7.0
 	- Various model fixes

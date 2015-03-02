@@ -965,8 +965,9 @@ class @AccountAdapter
 @LocalStore = store
 
 class @Application extends @View
-	constructor : (user_model)->
+	constructor : (opts)->
 		@app = this
+		@opts = opts
 		@location = window.history.location || window.location
 		@path = ko.observable(null)
 		@previous_path = ko.observable(null)
@@ -1004,7 +1005,7 @@ class @Application extends @View
 			else
 				false
 		, this
-		super('app', null)
+		super('app', null, null, @opts)
 	configure : ->
 	route : ->
 		path = @location.pathname
@@ -1085,36 +1086,36 @@ class @Application extends @View
 			$('title').text(title)
 		else
 			$('title').text("#{@name} - #{title}")
+	bindToBody : =>
+		# layout bindings
+		$('body').koBind(this)
+		@afterRender()
+
+		# override links
+		app = this
+		$('body').on 'click', 'a', ->
+			if this.href.includes(window.location.host)
+				app.redirectTo(this.href)
+				return false
+			else if (path = this.getAttribute('path'))?
+				app.redirectTo(path)
+				return true
+			else
+				return true
+
 
 QuickScript.initialize = (opts)->
-	# parse options
-	app_class = opts.view || 'AppView'
-	current_user = opts.user || null
 
 	# initialization
 	QuickScript.initKO()
-	app = new window[app_class]()
-	app.setUser(current_user) if current_user?
+	app = new opts.app_class(opts)
 
 	# navigation
 	window.onpopstate = ->
 		#QS.log 'handling state change'
 		app.route()
 
-	# layout bindings
-	$('body').koBind(app)
-	app.afterRender()
-
-	# override links
-	$('body').on 'click', 'a', ->
-		if this.href.includes(window.location.host)
-			app.redirectTo(this.href)
-			return false
-		else if (path = this.getAttribute('path'))?
-			app.redirectTo(path)
-			return true
-		else
-			return true
+	app.bindToBody()
 
 	app.route()
 	return app

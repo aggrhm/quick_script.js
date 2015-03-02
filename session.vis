@@ -65,7 +65,6 @@ set softtabstop=2
 set tabstop=2
 set tags=/osi/common/vob/tags,./tags
 set termencoding=utf-8
-set window=53
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
@@ -76,17 +75,17 @@ endif
 set shortmess=aoO
 badd +1 session.vis
 badd +3 bower.json
-badd +51 src/javascripts/quick_script/framework.js.coffee
+badd +116 src/javascripts/quick_script/framework.js.coffee
 badd +504 src/javascripts/quick_script/ko_bindings.js.coffee
 badd +1 src/javascripts/quick_script/core.js.coffee
 badd +1 README.md
 badd +1 CHANGELOG.md
 badd +74 src/javascripts/quick_script/classes.js.coffee
 badd +5 src/javascripts/quick_script.js
-badd +0 src/javascripts/date.js
+badd +1 src/javascripts/date.js
 args bower.json
-set lines=54 columns=80
-winpos 1367 272
+set lines=51 columns=80
+winpos 573 218
 edit bower.json
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -97,8 +96,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 19 + 27) / 54)
-exe '2resize ' . ((&lines * 31 + 27) / 54)
+exe '1resize ' . ((&lines * 20 + 25) / 51)
+exe '2resize ' . ((&lines * 27 + 25) / 51)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -202,12 +201,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 6 - ((5 * winheight(0) + 9) / 19)
+let s:l = 3 - ((2 * winheight(0) + 10) / 20)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-6
-normal! 04|
+3
+normal! 019|
 wincmd w
 argglobal
 edit README.md
@@ -313,15 +312,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 13 - ((10 * winheight(0) + 15) / 31)
+let s:l = 18 - ((11 * winheight(0) + 13) / 27)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-13
-normal! 030|
+18
+normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 19 + 27) / 54)
-exe '2resize ' . ((&lines * 31 + 27) / 54)
+exe '1resize ' . ((&lines * 20 + 25) / 51)
+exe '2resize ' . ((&lines * 27 + 25) / 51)
 tabedit CHANGELOG.md
 set splitbelow splitright
 set nosplitbelow
@@ -431,12 +430,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 9 - ((8 * winheight(0) + 26) / 52)
+let s:l = 6 - ((5 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-9
-normal! 044|
+6
+normal! 0
 tabedit src/javascripts/quick_script/framework.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -546,12 +545,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 768 - ((30 * winheight(0) + 26) / 52)
+let s:l = 1002 - ((42 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-768
-normal! 016|
+1002
+normal! 018|
 tabedit src/javascripts/quick_script/ko_bindings.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -661,12 +660,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 507 - ((25 * winheight(0) + 26) / 52)
+let s:l = 660 - ((31 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-507
-normal! 024|
+660
+normal! 013|
 tabedit src/javascripts/quick_script/classes.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -776,7 +775,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 37 - ((19 * winheight(0) + 26) / 52)
+let s:l = 37 - ((36 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -849,7 +848,7 @@ setlocal nolinebreak
 setlocal nolisp
 setlocal nolist
 setlocal nomacmeta
-setlocal makeprg=coffee\ -c\ \ \ $*\ ~/Projects/lib/quick_script.js/src/javascripts/quick_script/core.js.coffee
+setlocal makeprg=coffee\ -c\ \ \ $*\ core.js.coffee
 setlocal matchpairs=(:),{:},[:]
 setlocal modeline
 setlocal modifiable
@@ -891,12 +890,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 89 - ((0 * winheight(0) + 26) / 52)
+let s:l = 122 - ((0 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-89
-normal! 09|
+122
+normal! 0
 tabedit src/javascripts/date.js
 set splitbelow splitright
 set nosplitbelow
@@ -1012,7 +1011,7 @@ exe s:l
 normal! zt
 115
 normal! 0
-tabnext 4
+tabnext 3
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
 endif

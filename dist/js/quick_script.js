@@ -3279,10 +3279,12 @@ Date.prototype.format = function (mask, utc) {
   this.Application = (function(_super) {
     __extends(Application, _super);
 
-    function Application(user_model) {
+    function Application(opts) {
+      this.bindToBody = __bind(this.bindToBody, this);
       this.host = __bind(this.host, this);
       this.getUserToken = __bind(this.getUserToken, this);
       this.app = this;
+      this.opts = opts;
       this.location = window.history.location || window.location;
       this.path = ko.observable(null);
       this.previous_path = ko.observable(null);
@@ -3313,7 +3315,7 @@ Date.prototype.format = function (mask, utc) {
           return false;
         }
       }, this);
-      Application.__super__.constructor.call(this, 'app', null);
+      Application.__super__.constructor.call(this, 'app', null, null, this.opts);
     }
 
     Application.prototype.configure = function() {};
@@ -3456,36 +3458,37 @@ Date.prototype.format = function (mask, utc) {
       }
     };
 
+    Application.prototype.bindToBody = function() {
+      var app;
+      $('body').koBind(this);
+      this.afterRender();
+      app = this;
+      return $('body').on('click', 'a', function() {
+        var path;
+        if (this.href.includes(window.location.host)) {
+          app.redirectTo(this.href);
+          return false;
+        } else if ((path = this.getAttribute('path')) != null) {
+          app.redirectTo(path);
+          return true;
+        } else {
+          return true;
+        }
+      });
+    };
+
     return Application;
 
   })(this.View);
 
   QuickScript.initialize = function(opts) {
-    var app, app_class, current_user;
-    app_class = opts.view || 'AppView';
-    current_user = opts.user || null;
+    var app;
     QuickScript.initKO();
-    app = new window[app_class]();
-    if (current_user != null) {
-      app.setUser(current_user);
-    }
+    app = new opts.app_class(opts);
     window.onpopstate = function() {
       return app.route();
     };
-    $('body').koBind(app);
-    app.afterRender();
-    $('body').on('click', 'a', function() {
-      var path;
-      if (this.href.includes(window.location.host)) {
-        app.redirectTo(this.href);
-        return false;
-      } else if ((path = this.getAttribute('path')) != null) {
-        app.redirectTo(path);
-        return true;
-      } else {
-        return true;
-      }
-    });
+    app.bindToBody();
     app.route();
     return app;
   };
