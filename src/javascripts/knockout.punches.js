@@ -3,19 +3,24 @@
  * Enhanced binding syntaxes for Knockout 3+
  * (c) Michael Best
  * License: MIT (http://www.opensource.org/licenses/mit-license.php)
- * Version 0.3.0
+ * Version 0.5.1
  */
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
         define(['knockout'], factory);
+    } else if (typeof module === "object") {
+        // CommonJS module
+        var ko = require("knockout");
+        factory(ko);
     } else {
         // Browser globals
-        factory(ko);
+        factory(window.ko);
     }
 }(function(ko) {
-// Add a preprocess funtion to a binding handler.
-function setBindingPreprocessor(bindingKeyOrHandler, preprocessFn) {
+
+// Add a preprocess function to a binding handler.
+function addBindingPreprocessor(bindingKeyOrHandler, preprocessFn) {
     return chainPreprocessor(getOrCreateHandler(bindingKeyOrHandler), 'preprocess', preprocessFn);
 }
 
@@ -50,7 +55,7 @@ function chainPreprocessor(obj, prop, fn) {
 // function already exists, chain the new one after it. This calls
 // each function in the chain until one modifies the node. This
 // method allows only one function to modify the node.
-function setNodePreprocessor(preprocessFn) {
+function addNodePreprocessor(preprocessFn) {
     var provider = ko.bindingProvider.instance;
     if (provider.preprocessNode) {
         var previousPreprocessFn = provider.preprocessNode;
@@ -65,7 +70,7 @@ function setNodePreprocessor(preprocessFn) {
     }
 }
 
-function setBindingHandlerCreator(matchRegex, callbackFn) {
+function addBindingHandlerCreator(matchRegex, callbackFn) {
     var oldGetHandler = ko.getBindingHandler;
     ko.getBindingHandler = function(bindingKey) {
         var match;
@@ -73,19 +78,26 @@ function setBindingHandlerCreator(matchRegex, callbackFn) {
     };
 }
 
+// Create shortcuts to commonly used ko functions
+var ko_unwrap = ko.unwrap;
+
 // Create "punches" object and export utility functions
 var ko_punches = ko.punches = {
     utils: {
-        setBindingPreprocessor: setBindingPreprocessor,
-        setNodePreprocessor: setNodePreprocessor,
-        setBindingHandlerCreator: setBindingHandlerCreator
+        addBindingPreprocessor: addBindingPreprocessor,
+        addNodePreprocessor: addNodePreprocessor,
+        addBindingHandlerCreator: addBindingHandlerCreator,
+
+        // previous names retained for backwards compitibility
+        setBindingPreprocessor: addBindingPreprocessor,
+        setNodePreprocessor: addNodePreprocessor
     }
 };
 
 ko_punches.enableAll = function () {
     // Enable interpolation markup
     enableInterpolationMarkup();
-		enableAttributeInterpolationMarkup();
+    enableAttributeInterpolationMarkup();
 
     // Enable auto-namspacing of attr, css, event, and style
     enableAutoNamespacedSyntax('attr');
@@ -93,18 +105,22 @@ ko_punches.enableAll = function () {
     enableAutoNamespacedSyntax('event');
     enableAutoNamespacedSyntax('style');
 
-    // Enable filter syntax for text and attr
+    // Make sure that Knockout knows to bind checked after attr.value (see #40)
+    ko.bindingHandlers.checked.after.push('attr.value');
+
+    // Enable filter syntax for text, html, and attr
     enableTextFilter('text');
-    setDefaultNamespacedBindingPreprocessor('attr', filterPreprocessor);
+    enableTextFilter('html');
+    addDefaultNamespacedBindingPreprocessor('attr', filterPreprocessor);
 
     // Enable wrapped callbacks for click, submit, event, optionsAfterRender, and template options
     enableWrappedCallback('click');
     enableWrappedCallback('submit');
     enableWrappedCallback('optionsAfterRender');
-    setDefaultNamespacedBindingPreprocessor('event', wrappedCallbackPreprocessor);
-    setBindingPropertyPreprocessor('template', 'beforeRemove', wrappedCallbackPreprocessor);
-    setBindingPropertyPreprocessor('template', 'afterAdd', wrappedCallbackPreprocessor);
-    setBindingPropertyPreprocessor('template', 'afterRender', wrappedCallbackPreprocessor);
+    addDefaultNamespacedBindingPreprocessor('event', wrappedCallbackPreprocessor);
+    addBindingPropertyPreprocessor('template', 'beforeRemove', wrappedCallbackPreprocessor);
+    addBindingPropertyPreprocessor('template', 'afterAdd', wrappedCallbackPreprocessor);
+    addBindingPropertyPreprocessor('template', 'afterRender', wrappedCallbackPreprocessor);
 };
 // Convert input in the form of `expression | filter1 | filter2:arg1:arg2` to a function call format
 // with filters accessed as ko.filters.filter1, etc.
@@ -149,32 +165,40 @@ function filterPreprocessor(input) {
 
 // Set the filter preprocessor for a specific binding
 function enableTextFilter(bindingKeyOrHandler) {
-    setBindingPreprocessor(bindingKeyOrHandler, filterPreprocessor);
+    addBindingPreprocessor(bindingKeyOrHandler, filterPreprocessor);
 }
 
 var filters = {};
 
 // Convert value to uppercase
 filters.uppercase = function(value) {
-    return String.prototype.toUpperCase.call(value);
+    return String.prototype.toUpperCase.call(ko_unwrap(value));
 };
 
 // Convert value to lowercase
 filters.lowercase = function(value) {
-    return String.prototype.toLowerCase.call(value);
+    return String.prototype.toLowerCase.call(ko_unwrap(value));
 };
 
-// Return default value if the input value is blank or null
-filters['default'] = function(value, defaultValue) {
-    return (value === '' || value == null) ? defaultValue : value;
+// Return default value if the input value is empty or null
+filters['default'] = function (value, defaultValue) {
+    value = ko_unwrap(value);
+    if (typeof value === "function") {
+        return value;
+    }
+    if (typeof value === "string") {
+        return trim(value) === '' ? defaultValue : value;
+    }
+    return value == null || value.length == 0 ? defaultValue : value;
 };
 
 // Return the value with the search string replaced with the replacement string
 filters.replace = function(value, search, replace) {
-    return String.prototype.replace.call(value, search, replace);
+    return String.prototype.replace.call(ko_unwrap(value), search, replace);
 };
 
 filters.fit = function(value, length, replacement, trimWhere) {
+    value = ko_unwrap(value);
     if (length && ('' + value).length > length) {
         replacement = '' + (replacement || '...');
         length = length - replacement.length;
@@ -200,7 +224,7 @@ filters.json = function(rootObject, space, replacer) {     // replacer and space
 
 // Format a number using the browser's toLocaleString
 filters.number = function(value) {
-    return (+value).toLocaleString();
+    return (+ko_unwrap(value)).toLocaleString();
 };
 
 // Export the filters object for general access
@@ -217,7 +241,7 @@ ko_punches.textFilter = {
 // the same way, but just set a different named value, such as for element
 // attributes or CSS classes.
 var namespacedBindingMatch = /([^\.]+)\.(.+)/, namespaceDivider = '.';
-setBindingHandlerCreator(namespacedBindingMatch, function (match, bindingKey) {
+addBindingHandlerCreator(namespacedBindingMatch, function (match, bindingKey) {
     var namespace = match[1],
         namespaceHandler = ko.bindingHandlers[namespace];
     if (namespaceHandler) {
@@ -260,16 +284,16 @@ function defaultGetNamespacedHandler(name, namespace, namespacedName) {
     return handler;
 }
 
-// Sets a preprocess function for every generated namespace.x binding. This can
+// Adds a preprocess function for every generated namespace.x binding. This can
 // be called multiple times for the same binding, and the preprocess functions will
 // be chained. If the binding has a custom getNamespacedHandler method, make sure that
 // it's set before this function is used.
-function setDefaultNamespacedBindingPreprocessor(namespace, preprocessFn) {
+function addDefaultNamespacedBindingPreprocessor(namespace, preprocessFn) {
     var handler = ko.getBindingHandler(namespace);
     if (handler) {
         var previousHandlerFn = handler.getNamespacedHandler || defaultGetNamespacedHandler;
         handler.getNamespacedHandler = function() {
-            return setBindingPreprocessor(previousHandlerFn.apply(this, arguments), preprocessFn);
+            return addBindingPreprocessor(previousHandlerFn.apply(this, arguments), preprocessFn);
         };
     }
 }
@@ -288,13 +312,14 @@ function autoNamespacedPreprocessor(value, binding, addBinding) {
 
 // Set the namespaced preprocessor for a specific binding
 function enableAutoNamespacedSyntax(bindingKeyOrHandler) {
-    setBindingPreprocessor(bindingKeyOrHandler, autoNamespacedPreprocessor);
+    addBindingPreprocessor(bindingKeyOrHandler, autoNamespacedPreprocessor);
 }
 
 // Export the preprocessor functions
 ko_punches.namespacedBinding = {
     defaultGetHandler: defaultGetNamespacedHandler,
-    setDefaultBindingPreprocessor: setDefaultNamespacedBindingPreprocessor,
+    setDefaultBindingPreprocessor: addDefaultNamespacedBindingPreprocessor,    // for backwards compat.
+    addDefaultBindingPreprocessor: addDefaultNamespacedBindingPreprocessor,
     preprocessor: autoNamespacedPreprocessor,
     enableForBinding: enableAutoNamespacedSyntax
 };
@@ -311,7 +336,7 @@ function wrappedCallbackPreprocessor(val) {
 
 // Set the wrappedCallback preprocessor for a specific binding
 function enableWrappedCallback(bindingKeyOrHandler) {
-    setBindingPreprocessor(bindingKeyOrHandler, wrappedCallbackPreprocessor);
+    addBindingPreprocessor(bindingKeyOrHandler, wrappedCallbackPreprocessor);
 }
 
 // Export the preprocessor functions
@@ -321,7 +346,7 @@ ko_punches.wrappedCallback = {
 };
 // Attach a preprocess function to a specific property of a binding. This allows you to
 // preprocess binding "options" using the same preprocess functions that work for bindings.
-function setBindingPropertyPreprocessor(bindingKeyOrHandler, property, preprocessFn) {
+function addBindingPropertyPreprocessor(bindingKeyOrHandler, property, preprocessFn) {
     var handler = getOrCreateHandler(bindingKeyOrHandler);
     if (!handler._propertyPreprocessors) {
         // Initialize the binding preprocessor
@@ -356,7 +381,8 @@ function propertyPreprocessor(value, binding, addBinding) {
 
 // Export the preprocessor functions
 ko_punches.preprocessBindingProperty = {
-    setPreprocessor: setBindingPropertyPreprocessor
+    setPreprocessor: addBindingPropertyPreprocessor,     // for backwards compat.
+    addPreprocessor: addBindingPropertyPreprocessor
 };
 // Wrap an expression in an anonymous function so that it is called when the event happens
 function makeExpressionCallbackPreprocessor(args) {
@@ -370,7 +396,7 @@ var eventExpressionPreprocessor = makeExpressionCallbackPreprocessor("$data,$eve
 // Set the expressionCallback preprocessor for a specific binding
 function enableExpressionCallback(bindingKeyOrHandler, args) {
     var args = Array.prototype.slice.call(arguments, 1).join();
-    setBindingPreprocessor(bindingKeyOrHandler, makeExpressionCallbackPreprocessor(args));
+    addBindingPreprocessor(bindingKeyOrHandler, makeExpressionCallbackPreprocessor(args));
 }
 
 // Export the preprocessor functions
@@ -384,37 +410,39 @@ ko_punches.expressionCallback = {
 ko.bindingHandlers.on = {
     getNamespacedHandler: function(eventName) {
         var handler = ko.getBindingHandler('event' + namespaceDivider + eventName);
-        return setBindingPreprocessor(handler, eventExpressionPreprocessor);
+        return addBindingPreprocessor(handler, eventExpressionPreprocessor);
     }
 };
 // Performance comparison at http://jsperf.com/markup-interpolation-comparison
 function parseInterpolationMarkup(textToParse, outerTextCallback, expressionCallback) {
     function innerParse(text) {
-        var innerMatch = text.match(/^([\s\S]*?)}}([\s\S]*)\{\{([\s\S]*)$/);
+        var innerMatch = text.match(/^([\s\S]*)}}([\s\S]*?)\{\{([\s\S]*)$/);
         if (innerMatch) {
-            expressionCallback(innerMatch[1]);
-            outerParse(innerMatch[2]);
+            innerParse(innerMatch[1]);
+            outerTextCallback(innerMatch[2]);
             expressionCallback(innerMatch[3]);
         } else {
             expressionCallback(text);
         }
     }
-    function outerParse(text) {
-        var outerMatch = text.match(/^([\s\S]*?)\{\{([\s\S]*)}}([\s\S]*)$/);
-        if (outerMatch) {
-            outerTextCallback(outerMatch[1]);
-            innerParse(outerMatch[2]);
-            outerTextCallback(outerMatch[3]);
-        } else {
-            outerTextCallback(text);
-        }
+    var outerMatch = textToParse.match(/^([\s\S]*?)\{\{([\s\S]*)}}([\s\S]*)$/);
+    if (outerMatch) {
+        outerTextCallback(outerMatch[1]);
+        innerParse(outerMatch[2]);
+        outerTextCallback(outerMatch[3]);
     }
-    outerParse(textToParse);
+}
+
+function trim(string) {
+    return string == null ? '' :
+        string.trim ?
+            string.trim() :
+            string.toString().replace(/^[\s\xa0]+|[\s\xa0]+$/g, '');
 }
 
 function interpolationMarkupPreprocessor(node) {
     // only needs to work with text nodes
-    if (node.nodeType === 3 && node.nodeValue && node.nodeValue.indexOf('{{') !== -1) {
+    if (node.nodeType === 3 && node.nodeValue && node.nodeValue.indexOf('{{') !== -1 && (node.parentNode || {}).nodeName != "TEXTAREA") {
         var nodes = [];
         function addTextNode(text) {
             if (text)
@@ -422,38 +450,86 @@ function interpolationMarkupPreprocessor(node) {
         }
         function wrapExpr(expressionText) {
             if (expressionText)
-                nodes.push.apply(nodes, ko_punches_interpolationMarkup.wrapExpresssion(expressionText));
+                nodes.push.apply(nodes, ko_punches_interpolationMarkup.wrapExpression(expressionText, node));
         }
         parseInterpolationMarkup(node.nodeValue, addTextNode, wrapExpr)
 
-        if (nodes.length > 1) {
+        if (nodes.length) {
             if (node.parentNode) {
-                for (var i = 0; i < nodes.length; i++) {
-                    node.parentNode.insertBefore(nodes[i], node);
+                for (var i = 0, n = nodes.length, parent = node.parentNode; i < n; ++i) {
+                    parent.insertBefore(nodes[i], node);
                 }
-                node.parentNode.removeChild(node);
+                parent.removeChild(node);
             }
             return nodes;
         }
     }
 }
 
-function wrapExpresssion(expressionText) {
-    return [
-        document.createComment("ko text:" + expressionText),
-        document.createComment("/ko")
-    ];
+if (!ko.virtualElements.allowedBindings.html) {
+    // Virtual html binding
+    // SO Question: http://stackoverflow.com/a/15348139
+    var overridden = ko.bindingHandlers.html.update;
+    ko.bindingHandlers.html.update = function (element, valueAccessor) {
+        if (element.nodeType === 8) {
+            var html = ko_unwrap(valueAccessor());
+            if (html != null) {
+                var parsedNodes = ko.utils.parseHtmlFragment('' + html);
+                ko.virtualElements.setDomNodeChildren(element, parsedNodes);
+            } else {
+                ko.virtualElements.emptyNode(element);
+            }
+        } else {
+            overridden(element, valueAccessor);
+        }
+    };
+    ko.virtualElements.allowedBindings.html = true;
+}
+
+function wrapExpression(expressionText, node) {
+    var ownerDocument = node ? node.ownerDocument : document,
+        closeComment = true,
+        binding,
+        expressionText = trim(expressionText),
+        firstChar = expressionText[0],
+        lastChar = expressionText[expressionText.length - 1],
+        result = [],
+        matches;
+
+    if (firstChar === '#') {
+        if (lastChar === '/') {
+            binding = expressionText.slice(1, -1);
+        } else {
+            binding = expressionText.slice(1);
+            closeComment = false;
+        }
+        if (matches = binding.match(/^([^,"'{}()\/:[\]\s]+)\s+([^\s:].*)/)) {
+            binding = matches[1] + ':' + matches[2];
+        }
+    } else if (firstChar === '/') {
+        // replace only with a closing comment
+    } else if (firstChar === '{' && lastChar === '}') {
+        binding = "html:" + trim(expressionText.slice(1, -1));
+    } else {
+        binding = "text:" + trim(expressionText);
+    }
+
+    if (binding)
+        result.push(ownerDocument.createComment("ko " + binding));
+    if (closeComment)
+        result.push(ownerDocument.createComment("/ko"));
+    return result;
 };
 
 function enableInterpolationMarkup() {
-    setNodePreprocessor(interpolationMarkupPreprocessor);
+    addNodePreprocessor(interpolationMarkupPreprocessor);
 }
 
 // Export the preprocessor functions
 var ko_punches_interpolationMarkup = ko_punches.interpolationMarkup = {
     preprocessor: interpolationMarkupPreprocessor,
     enable: enableInterpolationMarkup,
-    wrapExpresssion: wrapExpresssion
+    wrapExpression: wrapExpression
 };
 
 
@@ -461,47 +537,61 @@ var dataBind = 'data-bind';
 function attributeInterpolationMarkerPreprocessor(node) {
     if (node.nodeType === 1 && node.attributes.length) {
         var dataBindAttribute = node.getAttribute(dataBind);
-        for (var attrs = node.attributes, i = attrs.length-1; i >= 0; --i) {
+        for (var attrs = ko.utils.arrayPushAll([], node.attributes), n = attrs.length, i = 0; i < n; ++i) {
             var attr = attrs[i];
             if (attr.specified && attr.name != dataBind && attr.value.indexOf('{{') !== -1) {
-                var parts = [], attrBinding = 0;
+                var parts = [], attrValue = '';
                 function addText(text) {
                     if (text)
                         parts.push('"' + text.replace(/"/g, '\\"') + '"');
                 }
                 function addExpr(expressionText) {
                     if (expressionText) {
-                        attrBinding = expressionText;
+                        attrValue = expressionText;
                         parts.push('ko.unwrap(' + expressionText + ')');
                     }
                 }
                 parseInterpolationMarkup(attr.value, addText, addExpr);
 
                 if (parts.length > 1) {
-                    attrBinding = '""+' + parts.join('+');
+                    attrValue = '""+' + parts.join('+');
                 }
 
-                if (attrBinding) {
-                    attrBinding = 'attr.' + attr.name + ':' + attrBinding;
+                if (attrValue) {
+                    var attrName = attr.name.toLowerCase();
+                    var attrBinding = ko_punches_attributeInterpolationMarkup.attributeBinding(attrName, attrValue, node) || attributeBinding(attrName, attrValue, node);
                     if (!dataBindAttribute) {
                         dataBindAttribute = attrBinding
                     } else {
                         dataBindAttribute += ',' + attrBinding;
                     }
                     node.setAttribute(dataBind, dataBindAttribute);
-                    node.removeAttributeNode(attr);
+                    // Using removeAttribute instead of removeAttributeNode because IE clears the
+                    // class if you use removeAttributeNode to remove the id.
+                    node.removeAttribute(attr.name);
                 }
             }
         }
     }
 }
 
+function attributeBinding(name, value, node) {
+    if (ko.getBindingHandler(name)) {
+        return name + ':' + value;
+    } else {
+        return 'attr.' + name + ':' + value;
+    }
+}
+
 function enableAttributeInterpolationMarkup() {
-    setNodePreprocessor(attributeInterpolationMarkerPreprocessor);
+    addNodePreprocessor(attributeInterpolationMarkerPreprocessor);
 }
 
 var ko_punches_attributeInterpolationMarkup = ko_punches.attributeInterpolationMarkup = {
     preprocessor: attributeInterpolationMarkerPreprocessor,
-    enable: enableAttributeInterpolationMarkup
+    enable: enableAttributeInterpolationMarkup,
+    attributeBinding: attributeBinding
 };
+
+    return ko_punches;
 }));

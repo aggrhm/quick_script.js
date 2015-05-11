@@ -44,8 +44,9 @@ class @Model
 		if nested == true || @is_submodel == false
 			ko.addSubModel field_name, class_name, this
 		@submodels[field_name] = class_name if typeof(field_name) == "string"
-	handleData : (resp) ->
-		ko.absorbModel(resp, this)
+	handleData : (data) ->
+		ko.absorbModel(data, this) if data?
+		@model_state(ko.modelStates.READY)
 		@db_state(@toJS())
 	load : (opts, callback)->
 		#@id(opts.id) if opts.id?
@@ -79,13 +80,9 @@ class @Model
 			data: opts
 			progress : (ev, prog)=>
 				@save_progress( prog )
-			success : (resp)=>
+			callback : (resp, status)=>
 				@handleData(resp.data)
-				callback?(resp)
-			error : (resp)=>
-				QS.log("Save error encountered")
-				@model_state(ko.modelStates.READY)
-				callback?(resp)
+				callback?(resp, status)
 		@model_state(ko.modelStates.SAVING)
 	reset : ->
 		#@model_state(ko.modelStates.LOADING)
@@ -114,6 +111,8 @@ class @Model
 		@model_state(ko.modelStates.SAVING)
 	removeFromCollection : =>
 		@collection.removeItemById(@id()) if @collection?
+	##
+	#	Convert this model into a basic javascript object.
 	toJS : (flds)=>
 		flds ||= @fields
 		obj = {}
@@ -123,8 +122,10 @@ class @Model
 			else
 				obj[prop] = @[prop]()
 		obj
+	##
+	#	Convert this model into an object that can be passed to AJAX request
+	#	to be handled by server.
 	toAPI : (flds)=>
-		# TODO: possibly also add toAPIParam which generates stringified version
 		flds ||= @fields
 		obj = {}
 		for prop in flds
@@ -134,7 +135,7 @@ class @Model
 					if val instanceof File
 						obj[prop] = val
 					else
-						obj[prop] = JSON.stringify val
+						obj[prop] = JSON.stringify(val)
 			else if typeof(@[prop].toJS) == 'function'
 				obj[prop] = @[prop].toJS()
 			else
@@ -146,7 +147,7 @@ class @Model
 						obj[prop] = val
 					else
 						obj[prop] = ''
-		obj
+		return QS.utils.prepareAPIData(obj)
 	toAPIParam : (flds)=>
 		QS.utils.prepareAPIParam(@toAPI(flds))
 	toJSON : (flds)=>
@@ -236,20 +237,34 @@ class @FileModel extends Model
 		@input.clear = =>
 			@input.url('')
 			@input.files([])
+		@input.reset = @input.clear
+		@input.handleData = (data)=>
+			return if !data?
+			@input.files(data.files) if data.files?
+			@input.url(data.url) if data.url?
+		@input.toJS = =>
+			ret = {}
+			ret.files = @input.files()
+			ret.url = @input.url()
+			return ret
+		@input.toAPI = =>
+			if @input.has_file()
+				@input.file()
+			else if @input.has_url()
+				{type: 'url', data: @input.url()}
+			else
+				null
 	reset : =>
-		super
+		super()
 		@input.clear()
 	toJS : =>
-		if @input.has_file()
-			@input.file()
-		else if @input.has_url()
-			{type: 'url', data: @input.url()}
-		else
-			null
+		ret = super()
+		ret.input = @input.toJS()
+		return ret
 	toAPI : =>
-		QS.utils.prepareAPIParam(@toJS())
+		@input.toAPI()
 	toAPIParam : =>
-		@toAPI()
+		QS.utils.prepareAPIParam(@toAPI())
 
 class @Collection
 	init : ->
@@ -629,6 +644,7 @@ class @View
 		@view = null
 		@task = ko.observable(null)
 		@prev_task = ko.observable(null)
+		@layout_attr = ko.observable({})
 		@transition = {type : 'fade', opts : {'slide_pos' : ko.observable(0), 'slide_index' : ko.observable(0)}}
 		@transition.has_slide_css = (css, idx)=>
 			@transition.opts['slide_css' + css]().includes? idx
@@ -1094,7 +1110,7 @@ class @Application extends @View
 		# override links
 		app = this
 		$('body').on 'click', 'a', ->
-			if this.href.includes(window.location.host)
+			if this.origin == window.location.origin
 				app.redirectTo(this.href)
 				return false
 			else if (path = this.getAttribute('path'))?

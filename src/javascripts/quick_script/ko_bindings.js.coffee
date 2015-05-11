@@ -549,13 +549,13 @@ QuickScript.initKO = ->
 					self[prop].handleData(val)
 				else
 					# add regular observable
-					self[prop] = ko.observable(val)
+					#self[prop] = ko.observable(val)
+					ko.addField(prop, val, self)
 			else if (typeof(self[prop].handleData) == "function")
 				self[prop].handleData(val)
 			else
 				self[prop](val)
 			self.fields.pushOnce(prop)
-		self.model_state(ko.modelStates.READY)
 
 	ko.addFields = (fields, val, self) ->
 		for prop in fields

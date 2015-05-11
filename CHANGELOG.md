@@ -1,9 +1,13 @@
 # CHANGELOG
 
-- Pending Changes
+- v2.8.0
 	- Fixed prepareAPIData, added option to convert arrays
 	- Removed logic from model save and delete error handlers
 	- Updated initialize logic to pass options
+	- Added layout_attr observable to View
+	- Upgraded Knockout.Punches to 0.5.1
+	- Updated data handling within Model
+	- Fixed toAPI and toJS in Model and FileModel. toAPI is for sending data to server, while toJS is for converting model back to basic javascript object (useful for checking in object is dirty and passing to another object).
 
 - v2.7.0
 	- Various model fixes
