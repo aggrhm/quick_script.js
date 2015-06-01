@@ -1,5 +1,13 @@
 # CHANGELOG
 
+- Pending Changes
+	- TODO: Add @location observable to Application, which keeps hash of path, path_parts, href, hash, and params
+
+- v2.9.0
+	- Added support for JST templates
+	- Improved FileModel input object for versatile sources
+	- Updated Knockout.js to v3.3.0
+
 - v2.8.0
 	- Fixed prepareAPIData, added option to convert arrays
 	- Removed logic from model save and delete error handlers
