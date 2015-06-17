@@ -2,6 +2,9 @@
 
 - Pending Changes
 	- TODO: Add @location observable to Application, which keeps hash of path, path_parts, href, hash, and params
+	- TODO: Move classes into QS namespace and add install method to install into window
+	- Improved filters and sorting in collections
+	- Improved option handling in Application
 
 - v2.9.0
 	- Added support for JST templates

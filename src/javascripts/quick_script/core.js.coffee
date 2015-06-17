@@ -120,6 +120,15 @@ QuickScript.includeEventable = (self)->
 			cbs.forEach (callback)->
 				callback(data)
 
+QuickScript.STATES = {}
+QuickScript.STATES.READY = 1
+QuickScript.STATES.LOADING = 2
+QuickScript.STATES.SAVING = 3
+QuickScript.STATES.EDITING = 4
+QuickScript.STATES.INSERTING = 5
+QuickScript.STATES.APPENDING = 6
+QuickScript.STATES.UPDATING = 7
+
 
 if SupportManager.hasFormData()
 	QuickScript.ajax = (opts)->

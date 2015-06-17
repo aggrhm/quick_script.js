@@ -59,7 +59,7 @@ QuickScript.initKO = ->
 	ko.bindingHandlers.listStatus =
 		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
 			opts = ko.utils.unwrapObservable(valueAccessor())
-			opts = {collection : opts[0], empty_str : opts[1], loading_str : opts[2], list : opts[3] || opts[0].views} if opts instanceof Array
+			opts = {collection : opts[0], empty_str : opts[1], loading_str : opts[2], list : opts[3] || opts[0].items} if opts instanceof Array
 			ko.computed ->
 				if opts.collection.is_loading()
 					if opts.loading_img?
@@ -695,21 +695,34 @@ QuickScript.initKO = ->
 	ko.modelStates.UPDATING = 7
 	ko.editors = {}
 
-jQuery.fn.extend
-	to_s : ->
-		$('<div>').append(this.clone()).remove().html()
-	center : ->
-		this.css("position","absolute")
-		this.css("top", (($(window).height() - this.outerHeight(true)) / 2) + $(window).scrollTop() + "px")
-		this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px")
-		return this
-	koBind : (viewModel) ->
-		this.each ->
-			$(this).koClean()
-			#$(this).attr('data-bind', "template : '#{tmpl}'") if tmpl?
-			ko.applyBindings(viewModel, this)
-	koClean : ->
-		this.each ->
-			#$(this).removeAttr('data-bind')
-			ko.cleanNode(this)
+	jQuery.fn.extend
+		to_s : ->
+			$('<div>').append(this.clone()).remove().html()
+		center : ->
+			this.css("position","absolute")
+			this.css("top", (($(window).height() - this.outerHeight(true)) / 2) + $(window).scrollTop() + "px")
+			this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px")
+			return this
+		koBind : (viewModel) ->
+			this.each ->
+				$(this).koClean()
+				#$(this).attr('data-bind', "template : '#{tmpl}'") if tmpl?
+				ko.applyBindings(viewModel, this)
+		koClean : ->
+			this.each ->
+				#$(this).removeAttr('data-bind')
+				ko.cleanNode(this)
 
+
+	ko.addTemplate "viewbox", """
+			<div data-bind='foreach : {data: viewList(), as: \"$view\"}'>
+				<div data-bind="fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true"></div>
+			</div>
+		"""
+	ko.addTemplate "viewbox-slide", """
+			<div class="view-slider" data-bind="style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task">
+				<div data-bind='foreach : viewList()'>
+					<div class="slide-item" data-bind="template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true"></div>
+				</div>
+			</div>
+		"""

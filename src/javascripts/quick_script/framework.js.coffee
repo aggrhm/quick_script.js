@@ -473,11 +473,14 @@ class @Collection
 		@removeItemById(data.id)
 	addNamedFilter : (name, fn)=>
 		@named_filters[name] = fn
-		@["filter_#{name}"] = ko.computed ->
+		@["filter_#{name}"] = ko.pureComputed ->
 			@items().filter(fn)
 		, this
 	addNamedSort : (name, fn)=>
 		@named_sorts[name] = fn
+		@["sort_#{name}"] = ko.pureComputed ->
+			@items().sort(fn)
+		, this
 	computeFilteredItems : (filter)=>
 		ko.computed ->
 			fo = ko.unwrap(filter)
@@ -828,7 +831,7 @@ View.registerComponent = (name, template_opts, view_class)->
 					new_view = view
 				else
 					model = params.model
-					owner = params.owner || context['$view']
+					owner = params.owner || context['$view'] || context['$parents'][0]
 					vn = if model? then "#{name}-#{model.id?()}" else name
 					new_view = new view_class(vn, owner, model, params)
 				new_view.element = componentInfo.element if componentInfo?
@@ -1017,24 +1020,12 @@ class @Application extends @View
 		@path_parts = []
 		@title = ko.observable('')
 		@redirect_on_login = ko.observable(null)
-		@auth_method = 'session'
+		@auth_method = @opts.auth_method || 'session'
 		@redirect_on_login(LocalStore.get('app.redirect_on_login'))
 		@redirect_on_login.subscribe (val)=>
 			LocalStore.set('app.redirect_on_login', val)
-		ko.addTemplate "viewbox", """
-				<div data-bind='foreach : {data: viewList(), as: \"$view\"}'>
-					<div data-bind="fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true"></div>
-				</div>
-			"""
-		ko.addTemplate "viewbox-slide", """
-				<div class="view-slider" data-bind="style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task">
-					<div data-bind='foreach : viewList()'>
-						<div class="slide-item" data-bind="template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true"></div>
-					</div>
-				</div>
-			"""
 		@configure()
-		@account_model ||= Model
+		@account_model ||= (@opts.account_model || Model)
 		@current_user = new @account_model()
 		@current_user_token = ko.observable(null)	# NOTE: always use getUserToken()
 

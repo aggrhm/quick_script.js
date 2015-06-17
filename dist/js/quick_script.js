@@ -1589,6 +1589,22 @@ Date.prototype.format = function (mask, utc) {
     };
   };
 
+  QuickScript.STATES = {};
+
+  QuickScript.STATES.READY = 1;
+
+  QuickScript.STATES.LOADING = 2;
+
+  QuickScript.STATES.SAVING = 3;
+
+  QuickScript.STATES.EDITING = 4;
+
+  QuickScript.STATES.INSERTING = 5;
+
+  QuickScript.STATES.APPENDING = 6;
+
+  QuickScript.STATES.UPDATING = 7;
+
   if (SupportManager.hasFormData()) {
     QuickScript.ajax = function(opts) {
       var aval, data, first, key, req, url, val, _i, _len, _ref, _ref1, _ref2;
@@ -2509,13 +2525,16 @@ Date.prototype.format = function (mask, utc) {
 
     Collection.prototype.addNamedFilter = function(name, fn) {
       this.named_filters[name] = fn;
-      return this["filter_" + name] = ko.computed(function() {
+      return this["filter_" + name] = ko.pureComputed(function() {
         return this.items().filter(fn);
       }, this);
     };
 
     Collection.prototype.addNamedSort = function(name, fn) {
-      return this.named_sorts[name] = fn;
+      this.named_sorts[name] = fn;
+      return this["sort_" + name] = ko.pureComputed(function() {
+        return this.items().sort(fn);
+      }, this);
     };
 
     Collection.prototype.computeFilteredItems = function(filter) {
@@ -3139,7 +3158,7 @@ Date.prototype.format = function (mask, utc) {
             new_view = view;
           } else {
             model = params.model;
-            owner = params.owner || context['$view'];
+            owner = params.owner || context['$view'] || context['$parents'][0];
             vn = model != null ? "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
             new_view = new view_class(vn, owner, model, params);
           }
@@ -3450,17 +3469,15 @@ Date.prototype.format = function (mask, utc) {
       this.path_parts = [];
       this.title = ko.observable('');
       this.redirect_on_login = ko.observable(null);
-      this.auth_method = 'session';
+      this.auth_method = this.opts.auth_method || 'session';
       this.redirect_on_login(LocalStore.get('app.redirect_on_login'));
       this.redirect_on_login.subscribe((function(_this) {
         return function(val) {
           return LocalStore.set('app.redirect_on_login', val);
         };
       })(this));
-      ko.addTemplate("viewbox", "<div data-bind='foreach : {data: viewList(), as: \"$view\"}'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
-      ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n	<div data-bind='foreach : viewList()'>\n		<div class=\"slide-item\" data-bind=\"template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n	</div>\n</div>");
       this.configure();
-      this.account_model || (this.account_model = Model);
+      this.account_model || (this.account_model = this.opts.account_model || Model);
       this.current_user = new this.account_model();
       this.current_user_token = ko.observable(null);
       this.is_logged_in = ko.computed(function() {
@@ -3769,7 +3786,7 @@ Date.prototype.format = function (mask, utc) {
             collection: opts[0],
             empty_str: opts[1],
             loading_str: opts[2],
-            list: opts[3] || opts[0].views
+            list: opts[3] || opts[0].items
           };
         }
         return ko.computed(function() {
@@ -4637,31 +4654,32 @@ Date.prototype.format = function (mask, utc) {
     ko.modelStates.INSERTING = 5;
     ko.modelStates.APPENDING = 6;
     ko.modelStates.UPDATING = 7;
-    return ko.editors = {};
+    ko.editors = {};
+    jQuery.fn.extend({
+      to_s: function() {
+        return $('<div>').append(this.clone()).remove().html();
+      },
+      center: function() {
+        this.css("position", "absolute");
+        this.css("top", (($(window).height() - this.outerHeight(true)) / 2) + $(window).scrollTop() + "px");
+        this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px");
+        return this;
+      },
+      koBind: function(viewModel) {
+        return this.each(function() {
+          $(this).koClean();
+          return ko.applyBindings(viewModel, this);
+        });
+      },
+      koClean: function() {
+        return this.each(function() {
+          return ko.cleanNode(this);
+        });
+      }
+    });
+    ko.addTemplate("viewbox", "<div data-bind='foreach : {data: viewList(), as: \"$view\"}'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
+    return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n	<div data-bind='foreach : viewList()'>\n		<div class=\"slide-item\" data-bind=\"template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n	</div>\n</div>");
   };
-
-  jQuery.fn.extend({
-    to_s: function() {
-      return $('<div>').append(this.clone()).remove().html();
-    },
-    center: function() {
-      this.css("position", "absolute");
-      this.css("top", (($(window).height() - this.outerHeight(true)) / 2) + $(window).scrollTop() + "px");
-      this.css("left", (($(window).width() - this.outerWidth(true)) / 2) + $(window).scrollLeft() + "px");
-      return this;
-    },
-    koBind: function(viewModel) {
-      return this.each(function() {
-        $(this).koClean();
-        return ko.applyBindings(viewModel, this);
-      });
-    },
-    koClean: function() {
-      return this.each(function() {
-        return ko.cleanNode(this);
-      });
-    }
-  });
 
 }).call(this);
 
