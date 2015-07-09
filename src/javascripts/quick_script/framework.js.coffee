@@ -299,7 +299,7 @@ class @Collection
 			@opts[key] = val
 		@events = {}
 		@_reqid = 0
-		@scope = ko.observable(@opts.scope || [])
+		@scope = ko.observable(@opts.scope || null)
 		@items = ko.observableArray([])
 		@page = ko.observable(1)
 		@limit = ko.observable(@opts.limit || 100)
@@ -544,8 +544,11 @@ class @Collection
 		@removeIf (item)=>
 			item.id() == id
 	reset : ->
+		@clear()
 		@_reqid = 0
 		@page(1)
+		@scope(null)
+	clear : ->
 		@items([])
 	absorb : (model) =>
 		@reset()
@@ -656,7 +659,8 @@ class @View
 	init : ->
 	constructor : (@name, @owner, @model, @opts)->
 		@app = @owner.app if @owner?
-		@views = {}
+		@views = ko.observableArray([])
+		@views.name_map = {}
 		@events = {}
 		@opts ||= {}
 		@templateID = "view-#{@name}"
@@ -682,7 +686,7 @@ class @View
 		@is_visible(true)
 		@onShown() if @onShown?
 	hide : ->
-		for name, view of @views
+		for view in @views()
 			view.hide()
 		@is_visible(false)
 		@onHidden() if @onHidden?
@@ -716,9 +720,11 @@ class @View
 	reload : =>
 		@load.apply(this, arguments)
 	addView : (name, view_class, tpl) ->
-		return if @views[name]?
-		@views[name] = new view_class(name, this)
-		@views[name].templateID = tpl
+		return if @views.name_map[name]?
+		view = new view_class(name, this)
+		view.templateID = tpl
+		@views.push(view)
+		@views[name] = @views.name_map[name] = view
 		@["is_task_#{name}"] = ko.computed ->
 				@task() == name
 			, this
@@ -733,14 +739,13 @@ class @View
 	validate_fields : (fields, fn) =>
 		ko.validate_fields(fields, fn, this)
 	viewCount : ->
-		Object.keys(@views).length
+		@views().length
 	viewList : ->
-		list = for name, view of @views
-			view
+		@views()
 	selectView : (view_name) ->
 		args = Array.prototype.slice.call(arguments)
 		last_view = @view
-		view = @views[view_name]
+		view = @views.name_map[view_name]
 		if (last_view != view)
 			QS.log("View [#{view.name}] selected.", 2)
 			last_view.hide() if last_view?
@@ -766,11 +771,10 @@ class @View
 			else
 				'viewbox'
 	getViewBoxIndex : (view_name) ->
-		arr = Object.keys(@views)
-		arr.indexAt(view_name)
+		view = @views.name_map[view_name]
+		arr.indexAt(view)
 	getViewByIndex : (idx) ->
-		keys = Object.keys(@views)
-		@views[keys[idx]]
+		@views()[idx]
 	afterRender : =>
 		if @transition.type == 'slide'
 			return

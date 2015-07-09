@@ -5,6 +5,8 @@
 	- TODO: Move classes into QS namespace and add install method to install into window
 	- Improved filters and sorting in collections
 	- Improved option handling in Application
+	- Added ability to pass in scope to Collection
+	- Added ability to add subviews to view dynamically
 
 - v2.9.0
 	- Added support for JST templates

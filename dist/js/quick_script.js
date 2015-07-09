@@ -2288,7 +2288,7 @@ Date.prototype.format = function (mask, utc) {
       }
       this.events = {};
       this._reqid = 0;
-      this.scope = ko.observable(this.opts.scope || []);
+      this.scope = ko.observable(this.opts.scope || null);
       this.items = ko.observableArray([]);
       this.page = ko.observable(1);
       this.limit = ko.observable(this.opts.limit || 100);
@@ -2664,8 +2664,13 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Collection.prototype.reset = function() {
+      this.clear();
       this._reqid = 0;
       this.page(1);
+      return this.scope(null);
+    };
+
+    Collection.prototype.clear = function() {
       return this.items([]);
     };
 
@@ -2858,7 +2863,8 @@ Date.prototype.format = function (mask, utc) {
       if (this.owner != null) {
         this.app = this.owner.app;
       }
-      this.views = {};
+      this.views = ko.observableArray([]);
+      this.views.name_map = {};
       this.events = {};
       this.opts || (this.opts = {});
       this.templateID = "view-" + this.name;
@@ -2902,10 +2908,10 @@ Date.prototype.format = function (mask, utc) {
     };
 
     View.prototype.hide = function() {
-      var name, view, _ref;
-      _ref = this.views;
-      for (name in _ref) {
-        view = _ref[name];
+      var view, _i, _len, _ref;
+      _ref = this.views();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        view = _ref[_i];
         view.hide();
       }
       this.is_visible(false);
@@ -2960,11 +2966,14 @@ Date.prototype.format = function (mask, utc) {
     };
 
     View.prototype.addView = function(name, view_class, tpl) {
-      if (this.views[name] != null) {
+      var view;
+      if (this.views.name_map[name] != null) {
         return;
       }
-      this.views[name] = new view_class(name, this);
-      this.views[name].templateID = tpl;
+      view = new view_class(name, this);
+      view.templateID = tpl;
+      this.views.push(view);
+      this.views[name] = this.views.name_map[name] = view;
       this["is_task_" + name] = ko.computed(function() {
         return this.task() === name;
       }, this);
@@ -2992,28 +3001,18 @@ Date.prototype.format = function (mask, utc) {
     };
 
     View.prototype.viewCount = function() {
-      return Object.keys(this.views).length;
+      return this.views().length;
     };
 
     View.prototype.viewList = function() {
-      var list, name, view;
-      return list = (function() {
-        var _ref, _results;
-        _ref = this.views;
-        _results = [];
-        for (name in _ref) {
-          view = _ref[name];
-          _results.push(view);
-        }
-        return _results;
-      }).call(this);
+      return this.views();
     };
 
     View.prototype.selectView = function(view_name) {
       var args, last_view, view;
       args = Array.prototype.slice.call(arguments);
       last_view = this.view;
-      view = this.views[view_name];
+      view = this.views.name_map[view_name];
       if (last_view !== view) {
         QS.log("View [" + view.name + "] selected.", 2);
         if (last_view != null) {
@@ -3055,15 +3054,13 @@ Date.prototype.format = function (mask, utc) {
     };
 
     View.prototype.getViewBoxIndex = function(view_name) {
-      var arr;
-      arr = Object.keys(this.views);
-      return arr.indexAt(view_name);
+      var view;
+      view = this.views.name_map[view_name];
+      return arr.indexAt(view);
     };
 
     View.prototype.getViewByIndex = function(idx) {
-      var keys;
-      keys = Object.keys(this.views);
-      return this.views[keys[idx]];
+      return this.views()[idx];
     };
 
     View.prototype.afterRender = function() {
@@ -4677,8 +4674,8 @@ Date.prototype.format = function (mask, utc) {
         });
       }
     });
-    ko.addTemplate("viewbox", "<div data-bind='foreach : {data: viewList(), as: \"$view\"}'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
-    return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n	<div data-bind='foreach : viewList()'>\n		<div class=\"slide-item\" data-bind=\"template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n	</div>\n</div>");
+    ko.addTemplate("viewbox", "<div data-bind='foreach : {data: views(), as: \"$view\"}'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
+    return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n	<div data-bind='foreach : views()'>\n		<div class=\"slide-item\" data-bind=\"template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n	</div>\n</div>");
   };
 
 }).call(this);
