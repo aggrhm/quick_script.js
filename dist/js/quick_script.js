@@ -1570,22 +1570,35 @@ Date.prototype.format = function (mask, utc) {
   };
 
   QuickScript.includeEventable = function(self) {
-    self.prototype.handle = function(ev, callback) {
+    self.prototype.handle = function(ev, callback, opts) {
       var _base;
+      if (opts == null) {
+        opts = {};
+      }
       this._events || (this._events = {});
       (_base = this._events)[ev] || (_base[ev] = []);
-      return this._events[ev].push(callback);
+      opts.callback = callback;
+      return this._events[ev].push(opts);
     };
     return self.prototype.trigger = function(ev, data) {
-      var cbs;
+      var cbs, opts, rems, _i, _j, _len, _len1, _results;
       QS.log("EVENTABLE::TRIGGER : " + ev, 5);
       this._events || (this._events = {});
-      cbs = this._events[ev];
-      if (cbs != null) {
-        return cbs.forEach(function(callback) {
-          return callback(data);
-        });
+      cbs = this._events[ev] || [];
+      rems = [];
+      for (_i = 0, _len = cbs.length; _i < _len; _i++) {
+        opts = cbs[_i];
+        opts.callback(data);
+        if (opts.once === true) {
+          rems.push(opts);
+        }
       }
+      _results = [];
+      for (_j = 0, _len1 = rems.length; _j < _len1; _j++) {
+        opts = rems[_j];
+        _results.push(cbs.remove(opts));
+      }
+      return _results;
     };
   };
 
@@ -2270,7 +2283,8 @@ Date.prototype.format = function (mask, utc) {
       this.hasItems = __bind(this.hasItems, this);
       this.prevPage = __bind(this.prevPage, this);
       this.nextPage = __bind(this.nextPage, this);
-      this.computeFilteredItems = __bind(this.computeFilteredItems, this);
+      this.getScopedItems = __bind(this.getScopedItems, this);
+      this.getFilteredItems = __bind(this.getFilteredItems, this);
       this.addNamedSort = __bind(this.addNamedSort, this);
       this.addNamedFilter = __bind(this.addNamedFilter, this);
       this.handleItemDelete = __bind(this.handleItemDelete, this);
@@ -2300,8 +2314,11 @@ Date.prototype.format = function (mask, utc) {
       this.model_state = ko.observable(0);
       this.named_filters = {};
       this.named_sorts = {};
-      this.filter = ko.observable({});
-      this.filtered_items = this.computeFilteredItems(this.filter);
+      this.scoped_items = ko.pureComputed((function(_this) {
+        return function() {
+          return _this.getScopedItems();
+        };
+      })(this));
       this.is_ready = ko.dependentObservable(function() {
         return this.model_state() === ko.modelStates.READY;
       }, this);
@@ -2523,11 +2540,18 @@ Date.prototype.format = function (mask, utc) {
       return this.removeItemById(data.id);
     };
 
-    Collection.prototype.addNamedFilter = function(name, fn) {
+    Collection.prototype.addNamedFilter = function(name, fn, opts) {
+      if (opts == null) {
+        opts = {
+          store: false
+        };
+      }
       this.named_filters[name] = fn;
-      return this["filter_" + name] = ko.pureComputed(function() {
-        return this.items().filter(fn);
-      }, this);
+      if (opts.store === true) {
+        return this["filter_" + name] = ko.pureComputed(function() {
+          return this.items().filter(fn);
+        }, this);
+      }
     };
 
     Collection.prototype.addNamedSort = function(name, fn) {
@@ -2537,30 +2561,70 @@ Date.prototype.format = function (mask, utc) {
       }, this);
     };
 
-    Collection.prototype.computeFilteredItems = function(filter) {
-      return ko.computed(function() {
-        var fa, fo, fsv, items, sort;
-        fo = ko.unwrap(filter);
-        fsv = fo.select || [];
-        sort = fo.sort || null;
-        fa = fsv instanceof Array ? fsv : [fsv];
-        items = this.items().filter((function(_this) {
-          return function(el) {
-            var filt, filt_fn, ret, _i, _len;
-            ret = true;
-            for (_i = 0, _len = fa.length; _i < _len; _i++) {
-              filt = fa[_i];
-              filt_fn = _this.named_filters[filt];
-              ret = ret && filt_fn(el);
+    Collection.prototype.getFilteredItems = function(filter) {
+      var fa, fo, fsv, items, sort;
+      fo = ko.unwrap(filter);
+      fsv = fo.select || [];
+      sort = fo.sort || null;
+      fa = fsv instanceof Array ? fsv : [fsv];
+      items = this.items().filter((function(_this) {
+        return function(el) {
+          var filt, filt_fn, ret, _i, _len;
+          ret = true;
+          for (_i = 0, _len = fa.length; _i < _len; _i++) {
+            filt = fa[_i];
+            filt_fn = _this.named_filters[filt];
+            ret = ret && filt_fn(el);
+          }
+          return ret;
+        };
+      })(this));
+      if (sort !== null) {
+        items = items.sort(this.named_sorts[sort]);
+      }
+      return items;
+    };
+
+    Collection.prototype.getScopedItems = function() {
+      var items, scope, sort_asc, sort_key;
+      scope = this.scope();
+      items = this.items().filter((function(_this) {
+        return function(el) {
+          var filt, filt_args, filt_fn, params, ret;
+          ret = true;
+          for (filt in scope) {
+            params = scope[filt];
+            if (filt === 'sort') {
+              continue;
             }
-            return ret;
-          };
-        })(this));
-        if (sort !== null) {
-          items = items.sort(this.named_sorts[sort]);
-        }
-        return items;
-      }, this);
+            filt_fn = _this.named_filters[filt];
+            if (filt_fn == null) {
+              continue;
+            }
+            filt_args = params instanceof Array ? params.slice(0) : [params];
+            filt_args.unshift(el);
+            ret = ret && filt_fn.apply(_this, filt_args);
+          }
+          return ret;
+        };
+      })(this));
+      if (scope.sort != null) {
+        sort_key = scope.sort[0];
+        sort_asc = scope.sort[1];
+        items = items.sort(function(m1, m2) {
+          var val;
+          if (m1 === m2) {
+            return 0;
+          }
+          val = m1[sort_key]() < m2[sort_key]() ? -1 : 1;
+          if (sort_asc === false) {
+            return val * -1;
+          } else {
+            return val;
+          }
+        });
+      }
+      return items;
     };
 
     Collection.prototype.nextPage = function() {
@@ -2915,6 +2979,8 @@ Date.prototype.format = function (mask, utc) {
         view.hide();
       }
       this.is_visible(false);
+      this.view = null;
+      this.task(null);
       if (this.onHidden != null) {
         return this.onHidden();
       }
@@ -4399,7 +4465,6 @@ Date.prototype.format = function (mask, utc) {
         };
         if ((config.template_id != null) || typeof config.element === 'string') {
           tid = config.template_id || config.element;
-          QS.log("Looking for " + tid);
           if ((typeof JST !== "undefined" && JST !== null) && ((jst = JST[tid]) != null)) {
             return applyStyles(ko.utils.parseHtmlFragment(jst()));
           } else if ((el = document.getElementById(tid)) != null) {
@@ -4542,7 +4607,8 @@ Date.prototype.format = function (mask, utc) {
       opts = {};
       if (QS.utils.isFunction(fn_opts)) {
         opts = {
-          read: fn_opts
+          read: fn_opts,
+          pure: true
         };
       } else {
         opts = fn_opts;

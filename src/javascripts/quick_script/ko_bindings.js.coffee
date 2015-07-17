@@ -515,7 +515,7 @@ QuickScript.initKO = ->
 			if config.template_id? || typeof(config.element) == 'string'
 				tid = config.template_id || config.element
 				# check JST
-				QS.log "Looking for #{tid}"
+				#QS.log "Looking for #{tid}"
 				if JST? && (jst = JST[tid])?
 					return applyStyles(ko.utils.parseHtmlFragment(jst()))
 				else if (el = document.getElementById(tid))?
@@ -618,7 +618,7 @@ QuickScript.initKO = ->
 	ko.addComputed = (field, fn_opts, self) ->
 		opts = {}
 		if QS.utils.isFunction(fn_opts)
-			opts = {read: fn_opts}
+			opts = {read: fn_opts, pure: true}
 		else
 			opts = fn_opts
 		opts.owner = self

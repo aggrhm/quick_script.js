@@ -108,17 +108,22 @@ QuickScript.time = ->
 	return (now - QS.start_time) / 1000.0
 
 QuickScript.includeEventable = (self)->
-	self::handle = (ev, callback)->
+	self::handle = (ev, callback, opts={})->
 		@_events ||= {}
 		@_events[ev] ||= []
-		@_events[ev].push callback
+		opts.callback = callback
+		@_events[ev].push opts
 	self::trigger = (ev, data)->
 		QS.log "EVENTABLE::TRIGGER : #{ev}", 5
 		@_events ||= {}
-		cbs = @_events[ev]
-		if cbs?
-			cbs.forEach (callback)->
-				callback(data)
+		cbs = @_events[ev] || []
+		rems = []
+		for opts in cbs
+			opts.callback(data)
+			rems.push(opts) if opts.once == true
+		# remove any only to be ran once
+		for opts in rems
+			cbs.remove(opts)
 
 QuickScript.STATES = {}
 QuickScript.STATES.READY = 1

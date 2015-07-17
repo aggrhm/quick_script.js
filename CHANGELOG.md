@@ -7,6 +7,9 @@
 	- Improved option handling in Application
 	- Added ability to pass in scope to Collection
 	- Added ability to add subviews to view dynamically
+	- Eventable handles options
+	- View has scoped_items to filter and sort based on scope
+	- addComputed now uses pure computed observable
 
 - v2.9.0
 	- Added support for JST templates

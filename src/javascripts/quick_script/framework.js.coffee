@@ -311,8 +311,8 @@ class @Collection
 		@model_state = ko.observable(0)
 		@named_filters = {}
 		@named_sorts = {}
-		@filter = ko.observable({})
-		@filtered_items = @computeFilteredItems(@filter)
+		@scoped_items = ko.pureComputed =>
+			@getScopedItems()
 		@is_ready = ko.dependentObservable ->
 				@model_state() == ko.modelStates.READY
 			, this
@@ -471,31 +471,50 @@ class @Collection
 		return item
 	handleItemDelete : (data)=>
 		@removeItemById(data.id)
-	addNamedFilter : (name, fn)=>
+	addNamedFilter : (name, fn, opts = {store: false})=>
 		@named_filters[name] = fn
-		@["filter_#{name}"] = ko.pureComputed ->
-			@items().filter(fn)
-		, this
+		if opts.store == true
+			@["filter_#{name}"] = ko.pureComputed ->
+				@items().filter(fn)
+			, this
 	addNamedSort : (name, fn)=>
 		@named_sorts[name] = fn
 		@["sort_#{name}"] = ko.pureComputed ->
 			@items().sort(fn)
 		, this
-	computeFilteredItems : (filter)=>
-		ko.computed ->
-			fo = ko.unwrap(filter)
-			fsv = fo.select || []
-			sort = fo.sort || null
-			fa = if fsv instanceof Array then fsv else [fsv]
-			items = @items().filter (el)=>
-				ret = true
-				for filt in fa
-					filt_fn = @named_filters[filt]
-					ret = ret && filt_fn(el)
-				ret
-			items = items.sort(@named_sorts[sort]) if sort != null
-			return items
-		, this
+	getFilteredItems : (filter)=>
+		fo = ko.unwrap(filter)
+		fsv = fo.select || []
+		sort = fo.sort || null
+		fa = if fsv instanceof Array then fsv else [fsv]
+		items = @items().filter (el)=>
+			ret = true
+			for filt in fa
+				filt_fn = @named_filters[filt]
+				ret = ret && filt_fn(el)
+			ret
+		items = items.sort(@named_sorts[sort]) if sort != null
+		return items
+	getScopedItems : =>
+		scope = @scope()
+		items = @items().filter (el)=>
+			ret = true
+			for filt, params of scope
+				continue if filt == 'sort'
+				filt_fn = @named_filters[filt]
+				continue if !filt_fn?
+				filt_args = if (params instanceof Array) then params.slice(0) else [params]
+				filt_args.unshift(el)
+				ret = ret && filt_fn.apply(this, filt_args)
+			ret
+		if scope.sort?
+			sort_key = scope.sort[0]
+			sort_asc = scope.sort[1]
+			items = items.sort (m1, m2)->
+				return 0 if m1 == m2
+				val = if m1[sort_key]() < m2[sort_key]() then -1 else 1
+				if sort_asc == false then val * -1 else val
+		return items
 	nextPage : =>
 		@page(@page() + 1)
 		@update()
@@ -689,6 +708,8 @@ class @View
 		for view in @views()
 			view.hide()
 		@is_visible(false)
+		@view = null
+		@task(null)
 		@onHidden() if @onHidden?
 	setupViewBox : ->
 		if @transition.type == 'slide'
