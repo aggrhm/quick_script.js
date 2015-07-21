@@ -1047,23 +1047,32 @@ Date.prototype.format = function (mask, utc) {
   })();
 
   this.PageTimer = (function() {
-    function PageTimer(func, time) {
+    function PageTimer(func, time, self) {
       this.increasePollTime = __bind(this.increasePollTime, this);
       this.getFrequency = __bind(this.getFrequency, this);
       this.setFrequency = __bind(this.setFrequency, this);
       this.isRunning = __bind(this.isRunning, this);
       this.stop = __bind(this.stop, this);
       this.start = __bind(this.start, this);
-      this.callback = func;
+      this.self = self || this;
+      this.callback = func.bind(self);
       this.frequency = time * 1000;
       this.t_id = -1;
     }
 
-    PageTimer.prototype.start = function() {
+    PageTimer.prototype.start = function(opts) {
+      if (opts == null) {
+        opts = {
+          run_now: false
+        };
+      }
       if (this.t_id !== -1) {
         return;
       }
-      return this.t_id = setInterval(this.callback, this.frequency);
+      this.t_id = setInterval(this.callback, this.frequency);
+      if (opts.run_now === true) {
+        return this.callback();
+      }
     };
 
     PageTimer.prototype.stop = function() {
@@ -4307,13 +4316,15 @@ Date.prototype.format = function (mask, utc) {
     };
     ko.bindingHandlers.viewComponents = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
-        var $el, $tpl, data, name, node, opts, owner, tpl, tpl_name, view;
+        var $el, $tpl, data, feopts, name, node, opts, owner, tpl, tpl_name, view;
         $el = $(element);
         opts = valueAccessor();
         name = opts.name;
         data = opts.data;
         owner = opts.owner;
         view = opts.view || View;
+        feopts = opts.foreach || {};
+        feopts.data = data;
         if (!ko.components.isRegistered(name)) {
           tpl = ((function() {
             var _i, _len, _ref, _results;
@@ -4334,7 +4345,7 @@ Date.prototype.format = function (mask, utc) {
         $tpl = $("<!-- ko component : {name: '" + name + "', params: {model: $data, owner: $parentContext.componentOwner}} --> <!-- /ko -->");
         ko.virtualElements.setDomNodeChildren(element, $tpl);
         ko.applyBindingsToNode(element, {
-          foreach: data
+          foreach: feopts
         }, bindingContext);
         return {
           controlsDescendantBindings: true

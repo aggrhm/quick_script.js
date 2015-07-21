@@ -406,6 +406,8 @@ QuickScript.initKO = ->
 			data = opts.data
 			owner = opts.owner
 			view = opts.view || View
+			feopts = opts.foreach || {}
+			feopts.data = data
 			if !ko.components.isRegistered(name)
 				# component not registered, add it
 				#tpl = $el.html()
@@ -420,7 +422,7 @@ QuickScript.initKO = ->
 				<!-- /ko -->
 			")
 			ko.virtualElements.setDomNodeChildren(element, $tpl)
-			ko.applyBindingsToNode(element, {foreach: data}, bindingContext)
+			ko.applyBindingsToNode(element, {foreach: feopts}, bindingContext)
 			return {controlsDescendantBindings: true}
 	ko.virtualElements.allowedBindings.viewComponents = true
 

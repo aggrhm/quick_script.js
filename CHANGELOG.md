@@ -10,6 +10,8 @@
 	- Eventable handles options
 	- View has scoped_items to filter and sort based on scope
 	- addComputed now uses pure computed observable
+	- PageTimer now supports self argument
+	- viewComponents binding supports foreach argument
 
 - v2.9.0
 	- Added support for JST templates

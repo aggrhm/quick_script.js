@@ -88,13 +88,16 @@ class @SelectOpts
 
 ## PAGETIMER
 class @PageTimer
-	constructor: (func, time) ->
-		@callback = func
+	constructor: (func, time, self) ->
+		@self = self || this
+		@callback = func.bind(self)
 		@frequency = time * 1000
 		@t_id = -1
-	start : =>
+	start : (opts={run_now: false})=>
 		return unless @t_id == -1
 		@t_id = setInterval(@callback, @frequency)
+		if opts.run_now == true
+			@callback()
 	stop : =>
 		clearInterval(@t_id)
 		@t_id = -1
