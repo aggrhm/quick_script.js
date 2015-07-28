@@ -43,6 +43,11 @@ QuickScript.utils =
 			return {x: (coords.x / ts.w) * 100, y: (coords.y / ts.h) * 100}
 		else
 			return coords
+	elementContainsPoint : (el, point)->
+		rect = QS.utils.getElementPosition(el)
+		in_x = (point.x >= rect.left) && (point.x <= rect.left + rect.width)
+		in_y = (point.y >= rect.top) && (point.y <= rect.top + rect.height)
+		return in_x && in_y
 	getElementPosition : (el)->
 		ret = $(el).offset()
 		ret.width = el.offsetWidth

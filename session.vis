@@ -74,20 +74,20 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +3 session.vis
+badd +1 session.vis
 badd +3 bower.json
 badd +116 src/javascripts/quick_script/framework.js.coffee
 badd +504 src/javascripts/quick_script/ko_bindings.js.coffee
-badd +1 src/javascripts/quick_script/core.js.coffee
+badd +7 src/javascripts/quick_script/core.js.coffee
 badd +1 README.md
 badd +1 CHANGELOG.md
-badd +74 src/javascripts/quick_script/classes.js.coffee
+badd +273 src/javascripts/quick_script/classes.js.coffee
 badd +1 src/javascripts/quick_script.js
-badd +115 src/javascripts/date.js
+badd +99 src/javascripts/date.js
 badd +1 src/javascripts/knockout.js
 args bower.json
 set lines=51 columns=80
-winpos 792 464
+winpos 1440 468
 edit bower.json
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -98,8 +98,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 21 + 25) / 51)
-exe '2resize ' . ((&lines * 26 + 25) / 51)
+exe '1resize ' . ((&lines * 22 + 25) / 51)
+exe '2resize ' . ((&lines * 25 + 25) / 51)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -203,7 +203,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 3 - ((2 * winheight(0) + 10) / 21)
+let s:l = 3 - ((2 * winheight(0) + 11) / 22)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -314,15 +314,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 13 - ((12 * winheight(0) + 13) / 26)
+let s:l = 13 - ((6 * winheight(0) + 12) / 25)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 13
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 21 + 25) / 51)
-exe '2resize ' . ((&lines * 26 + 25) / 51)
+exe '1resize ' . ((&lines * 22 + 25) / 51)
+exe '2resize ' . ((&lines * 25 + 25) / 51)
 tabedit CHANGELOG.md
 set splitbelow splitright
 set nosplitbelow
@@ -432,12 +432,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 8 - ((7 * winheight(0) + 24) / 49)
+let s:l = 17 - ((16 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-8
-normal! 03|
+17
+normal! 035|
 tabedit src/javascripts/quick_script/framework.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -547,12 +547,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1051 - ((48 * winheight(0) + 24) / 49)
+let s:l = 761 - ((11 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1051
-normal! 06|
+761
+normal! 015|
 tabedit src/javascripts/quick_script/ko_bindings.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -662,12 +662,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 401 - ((15 * winheight(0) + 24) / 49)
+let s:l = 402 - ((18 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-401
-normal! 030|
+402
+normal! 083|
 tabedit src/javascripts/quick_script/classes.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -777,12 +777,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 97 - ((31 * winheight(0) + 24) / 49)
+let s:l = 93 - ((24 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-97
-normal! 08|
+93
+normal! 024|
 tabedit src/javascripts/quick_script/core.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -892,12 +892,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 121 - ((19 * winheight(0) + 24) / 49)
+let s:l = 11 - ((10 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-121
-normal! 022|
+11
+normal! 026|
 tabedit src/javascripts
 set splitbelow splitright
 set nosplitbelow
@@ -907,24 +907,24 @@ set winheight=1 winwidth=1
 argglobal
 let s:cpo_save=&cpo
 set cpo&vim
-imap <buffer> <S-LeftMouse> <Plug>ISLeftmouse
-imap <buffer> <MiddleMouse> <Plug>IMiddlemouse
-imap <buffer> <LeftMouse> <Plug>ILeftmouse
-inoremap <buffer> <silent> <S-Up> :Pexplore
 inoremap <buffer> <silent> <S-Down> :Nexplore
+inoremap <buffer> <silent> <S-Up> :Pexplore
+imap <buffer> <LeftMouse> <Plug>ILeftmouse
+imap <buffer> <MiddleMouse> <Plug>IMiddlemouse
+imap <buffer> <S-LeftMouse> <Plug>ISLeftmouse
 nmap <buffer>  <Plug>NetrwHideEdit
 nmap <buffer>  <Plug>NetrwRefresh
 nnoremap <buffer> <silent> C :let g:netrw_chgwin= winnr()
 nnoremap <buffer> <silent> c :exe "keepjumps lcd ".fnameescape(b:netrw_curdir)
-nnoremap <buffer> <F1> :he netrw-quickhelp
-nmap <buffer> <silent> <Plug>Netrw2Leftmouse -
-nmap <buffer> <2-LeftMouse> <Plug>Netrw2Leftmouse
-nmap <buffer> <S-LeftMouse> <Plug>NetrwSLeftmouse
-nmap <buffer> <MiddleMouse> <Plug>NetrwMiddlemouse
-nmap <buffer> <S-RightDrag> <Plug>NetrwRightdrag
-nmap <buffer> <LeftMouse> <Plug>NetrwLeftmouse
-nnoremap <buffer> <silent> <S-Up> :Pexplore
 nnoremap <buffer> <silent> <S-Down> :Nexplore
+nnoremap <buffer> <silent> <S-Up> :Pexplore
+nmap <buffer> <LeftMouse> <Plug>NetrwLeftmouse
+nmap <buffer> <S-RightDrag> <Plug>NetrwRightdrag
+nmap <buffer> <MiddleMouse> <Plug>NetrwMiddlemouse
+nmap <buffer> <S-LeftMouse> <Plug>NetrwSLeftmouse
+nmap <buffer> <2-LeftMouse> <Plug>Netrw2Leftmouse
+nmap <buffer> <silent> <Plug>Netrw2Leftmouse -
+nnoremap <buffer> <F1> :he netrw-quickhelp
 imap <buffer>  <Plug>NetrwHideEdit
 imap <buffer>  <Plug>NetrwRefresh
 inoremap <buffer> <silent> C :let g:netrw_chgwin= winnr()
@@ -1033,11 +1033,11 @@ setlocal nowinfixwidth
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 15 - ((14 * winheight(0) + 24) / 49)
+let s:l = 1 - ((0 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-15
+1
 normal! 0
 lcd ~/Projects/lib/quick_script.js/src/javascripts
 tabnext 1

@@ -160,6 +160,8 @@ class @Model
 		return m
 	checkDirty : (prop)=>
 		@db_state()[prop] != @[prop]()
+	revert : =>
+		@handleData(@db_state())
 	absorb : (model) =>
 		@reset()
 		@handleData(model.toJS())
@@ -364,6 +366,7 @@ class @Collection
 		else
 			reqid = ++@_reqid
 		opts = @loadOptions()
+		$.extend(opts, load_opts.data) if load_opts.data?
 		opts.scope = if (scope instanceof Array) then scope else JSON.stringify(scope)
 		@adapter.index
 			data : opts
@@ -751,6 +754,7 @@ class @View
 			, this
 		@["select_task_#{name}"] = =>
 			@selectView(name)
+		return view
 	addFields : (fields, def) =>
 		ko.addFields(fields, def, this)
 	addComputed : (field, fn_opts) ->

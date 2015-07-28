@@ -1452,6 +1452,13 @@ Date.prototype.format = function (mask, utc) {
         return coords;
       }
     },
+    elementContainsPoint: function(el, point) {
+      var in_x, in_y, rect;
+      rect = QS.utils.getElementPosition(el);
+      in_x = (point.x >= rect.left) && (point.x <= rect.left + rect.width);
+      in_y = (point.y >= rect.top) && (point.y <= rect.top + rect.height);
+      return in_x && in_y;
+    },
     getElementPosition: function(el) {
       var ret;
       ret = $(el).offset();
@@ -1790,6 +1797,7 @@ Date.prototype.format = function (mask, utc) {
 
     function Model(data, collection, opts) {
       this.absorb = __bind(this.absorb, this);
+      this.revert = __bind(this.revert, this);
       this.checkDirty = __bind(this.checkDirty, this);
       this.toClone = __bind(this.toClone, this);
       this.getClass = __bind(this.getClass, this);
@@ -2049,6 +2057,10 @@ Date.prototype.format = function (mask, utc) {
 
     Model.prototype.checkDirty = function(prop) {
       return this.db_state()[prop] !== this[prop]();
+    };
+
+    Model.prototype.revert = function() {
+      return this.handleData(this.db_state());
     };
 
     Model.prototype.absorb = function(model) {
@@ -2384,6 +2396,9 @@ Date.prototype.format = function (mask, utc) {
         reqid = ++this._reqid;
       }
       opts = this.loadOptions();
+      if (load_opts.data != null) {
+        $.extend(opts, load_opts.data);
+      }
       opts.scope = scope instanceof Array ? scope : JSON.stringify(scope);
       this.adapter.index({
         data: opts,
@@ -3052,11 +3067,12 @@ Date.prototype.format = function (mask, utc) {
       this["is_task_" + name] = ko.computed(function() {
         return this.task() === name;
       }, this);
-      return this["select_task_" + name] = (function(_this) {
+      this["select_task_" + name] = (function(_this) {
         return function() {
           return _this.selectView(name);
         };
       })(this);
+      return view;
     };
 
     View.prototype.addFields = function(fields, def) {

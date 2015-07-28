@@ -12,6 +12,9 @@
 	- addComputed now uses pure computed observable
 	- PageTimer now supports self argument
 	- viewComponents binding supports foreach argument
+	- Added `elementContainsPoint` method in Utils
+	- Added `revert` method to Model
+	- Accept `data` argument in Collection load options
 
 - v2.9.0
 	- Added support for JST templates
