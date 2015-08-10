@@ -1,5 +1,4 @@
-@QuickScript = {}
-@QS = QuickScript
+window.QuickScript = window.QS = {}
 
 QuickScript.utils =
 	buildOptions : (hash)->
@@ -56,6 +55,8 @@ QuickScript.utils =
 	isBlank : (val)->
 		return true if !val?
 		return val == ""
+	isPresent : (val)->
+		return !QS.utils.isBlank(val)
 	objectToArray : (obj)->
 		ret = for key, val of obj
 			{'key': key, 'value': val}
@@ -130,6 +131,16 @@ QuickScript.includeEventable = (self)->
 		for opts in rems
 			cbs.remove(opts)
 
+QuickScript.install = (scope)->
+	cns = ['Application', 'View', 'Model', 'FileModel', 'Collection', 'ViewCollection', 'Host', 'ModelAdapter', 'AccountAdapter', 'LocalStore']
+	others = ['PageTimer', 'Notifier', 'AuthToken', 'TimeLength', 'SelectOpts', 'SupportManager', 'AssetsLibrary']
+	install_class = (name)->
+		scope[name] = QuickScript[name]
+	for name in cns
+		install_class(name)
+	for name in others
+		install_class(name)
+
 QuickScript.STATES = {}
 QuickScript.STATES.READY = 1
 QuickScript.STATES.LOADING = 2
@@ -139,8 +150,15 @@ QuickScript.STATES.INSERTING = 5
 QuickScript.STATES.APPENDING = 6
 QuickScript.STATES.UPDATING = 7
 
+# SUPPORTMANAGER
+class QS.SupportManager
+QS.SupportManager.hasFormData = ->
+	(window.FormData?)
+QS.SupportManager.canUpload = ->
+	QS.SupportManager.hasFormData()
 
-if SupportManager.hasFormData()
+
+if QS.SupportManager.hasFormData()
 	QuickScript.ajax = (opts)->
 		data = new FormData()
 		req = new XMLHttpRequest()

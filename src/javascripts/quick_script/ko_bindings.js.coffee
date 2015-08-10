@@ -405,7 +405,7 @@ QuickScript.initKO = ->
 			name = opts.name
 			data = opts.data
 			owner = opts.owner
-			view = opts.view || View
+			view = opts.view || QS.View
 			feopts = opts.foreach || {}
 			feopts.data = data
 			if !ko.components.isRegistered(name)

@@ -879,503 +879,7 @@ Date.prototype.format = function (mask, utc) {
 (function(e){function o(){try{return r in e&&e[r]}catch(t){return!1}}var t={},n=e.document,r="localStorage",i="script",s;t.disabled=!1,t.version="1.3.17",t.set=function(e,t){},t.get=function(e,t){},t.has=function(e){return t.get(e)!==undefined},t.remove=function(e){},t.clear=function(){},t.transact=function(e,n,r){r==null&&(r=n,n=null),n==null&&(n={});var i=t.get(e,n);r(i),t.set(e,i)},t.getAll=function(){},t.forEach=function(){},t.serialize=function(e){return JSON.stringify(e)},t.deserialize=function(e){if(typeof e!="string")return undefined;try{return JSON.parse(e)}catch(t){return e||undefined}};if(o())s=e[r],t.set=function(e,n){return n===undefined?t.remove(e):(s.setItem(e,t.serialize(n)),n)},t.get=function(e,n){var r=t.deserialize(s.getItem(e));return r===undefined?n:r},t.remove=function(e){s.removeItem(e)},t.clear=function(){s.clear()},t.getAll=function(){var e={};return t.forEach(function(t,n){e[t]=n}),e},t.forEach=function(e){for(var n=0;n<s.length;n++){var r=s.key(n);e(r,t.get(r))}};else if(n.documentElement.addBehavior){var u,a;try{a=new ActiveXObject("htmlfile"),a.open(),a.write("<"+i+">document.w=window</"+i+'><iframe src="/favicon.ico"></iframe>'),a.close(),u=a.w.frames[0].document,s=u.createElement("div")}catch(f){s=n.createElement("div"),u=n.body}var l=function(e){return function(){var n=Array.prototype.slice.call(arguments,0);n.unshift(s),u.appendChild(s),s.addBehavior("#default#userData"),s.load(r);var i=e.apply(t,n);return u.removeChild(s),i}},c=new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]","g");function h(e){return e.replace(/^d/,"___$&").replace(c,"___")}t.set=l(function(e,n,i){return n=h(n),i===undefined?t.remove(n):(e.setAttribute(n,t.serialize(i)),e.save(r),i)}),t.get=l(function(e,n,r){n=h(n);var i=t.deserialize(e.getAttribute(n));return i===undefined?r:i}),t.remove=l(function(e,t){t=h(t),e.removeAttribute(t),e.save(r)}),t.clear=l(function(e){var t=e.XMLDocument.documentElement.attributes;e.load(r);for(var n=0,i;i=t[n];n++)e.removeAttribute(i.name);e.save(r)}),t.getAll=function(e){var n={};return t.forEach(function(e,t){n[e]=t}),n},t.forEach=l(function(e,n){var r=e.XMLDocument.documentElement.attributes;for(var i=0,s;s=r[i];++i)n(s.name,t.deserialize(e.getAttribute(s.name)))})}try{var p="__storejs__";t.set(p,p),t.get(p)!=p&&(t.disabled=!0),t.remove(p)}catch(f){t.disabled=!0}t.enabled=!t.disabled,typeof module!="undefined"&&module.exports&&this.module!==module?module.exports=t:typeof define=="function"&&define.amd?define(t):e.store=t})(Function("return this")())
 ;
 (function() {
-  var cropImage, fadeInElement, link_to, link_to_rel, link_to_span, loadScript, timeFromUnix,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  Array.prototype.indexAt = function(val) {
-    var i, _i, _ref;
-    for (i = _i = 0, _ref = this.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-      if (this[i] === val) {
-        return i;
-      }
-    }
-    return -1;
-  };
-
-  Array.prototype.includes = function(val) {
-    return this.indexAt(val) !== -1;
-  };
-
-  Array.prototype.itemAt = function(val) {
-    return this.slice(val)[0];
-  };
-
-  Array.prototype.pushOnce = function(item) {
-    if (!this.includes(item)) {
-      return this.push(item);
-    }
-  };
-
-  Array.prototype.remove = function(item) {
-    var idx;
-    idx = this.indexOf(item);
-    if (idx > -1) {
-      return this.splice(idx, 1);
-    }
-  };
-
-  Array.prototype.first = function() {
-    return this[0];
-  };
-
-  Array.prototype.last = function() {
-    return this[this.length - 1];
-  };
-
-  Array.prototype.findAndMap = function(params, field, def) {
-    var res, result;
-    res = this.filter(function(itm) {
-      var key, val;
-      for (key in params) {
-        val = params[key];
-        if (itm[key] !== val) {
-          return false;
-        }
-      }
-      return true;
-    });
-    result = res[0];
-    if (result != null) {
-      if (typeof field === 'function') {
-        return field(result);
-      } else if (typeof field === 'string') {
-        return result[field];
-      } else {
-        return result;
-      }
-    } else {
-      return def;
-    }
-  };
-
-  Date.from_utc = function(utc) {
-    return new Date(utc * 1000);
-  };
-
-  Date.from_now = function() {
-    return new Date();
-  };
-
-  Date.from_str = function(str) {
-    var d;
-    str = "" + str;
-    d = new Date();
-    d.setYear(+(str.substring(0, 4)));
-    d.setMonth(+(str.substring(4, 6)) - 1);
-    d.setDate(+(str.substring(6, 8)));
-    d.remove_time();
-    return d;
-  };
-
-  Date.now_utc = function() {
-    return Math.round((new Date()).getTime() / 1000.0);
-  };
-
-  Date.prototype.to_utc = function() {
-    return Math.round(this.getTime() / 1000.0);
-  };
-
-  Date.prototype.remove_time = function() {
-    this.setHours(0);
-    this.setMinutes(0);
-    this.setSeconds(0);
-    this.setMilliseconds(0);
-    return this;
-  };
-
-  String.prototype.endsWith = function(suffix) {
-    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-  };
-
-  String.prototype.includes = function(str) {
-    return this.indexOf(str) !== -1;
-  };
-
-  String.prototype.truncate = function(val) {
-    var ret;
-    ret = this.substring(0, val);
-    if (this.length > val) {
-      ret = ret + "...";
-    }
-    return ret;
-  };
-
-  String.prototype.rjust = function(length, char) {
-    var ret;
-    ret = this;
-    while (ret.length < length) {
-      ret = char + ret;
-    }
-    return ret;
-  };
-
-  History.getRelativeUrl = function() {
-    var url;
-    url = History.getState().url;
-    return "/" + (url.replace(History.getRootUrl(), ''));
-  };
-
-  this.SelectOpts = (function() {
-    function SelectOpts() {
-      this.find = __bind(this.find, this);
-      this.add = __bind(this.add, this);
-      this.options = [];
-    }
-
-    SelectOpts.prototype.add = function(val, str) {
-      this.options.push({
-        val: val.toString(),
-        str: str
-      });
-      return this;
-    };
-
-    SelectOpts.prototype.find = function(val) {
-      var obj, _i, _len, _ref;
-      _ref = this.options;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        obj = _ref[_i];
-        if (obj.val === val.toString()) {
-          return obj.str;
-        }
-      }
-      return "";
-    };
-
-    return SelectOpts;
-
-  })();
-
-  this.PageTimer = (function() {
-    function PageTimer(func, time, self) {
-      this.increasePollTime = __bind(this.increasePollTime, this);
-      this.getFrequency = __bind(this.getFrequency, this);
-      this.setFrequency = __bind(this.setFrequency, this);
-      this.isRunning = __bind(this.isRunning, this);
-      this.stop = __bind(this.stop, this);
-      this.start = __bind(this.start, this);
-      this.self = self || this;
-      this.callback = func.bind(self);
-      this.frequency = time * 1000;
-      this.t_id = -1;
-    }
-
-    PageTimer.prototype.start = function(opts) {
-      if (opts == null) {
-        opts = {
-          run_now: false
-        };
-      }
-      if (this.t_id !== -1) {
-        return;
-      }
-      this.t_id = setInterval(this.callback, this.frequency);
-      if (opts.run_now === true) {
-        return this.callback();
-      }
-    };
-
-    PageTimer.prototype.stop = function() {
-      clearInterval(this.t_id);
-      return this.t_id = -1;
-    };
-
-    PageTimer.prototype.isRunning = function() {
-      return this.t_id !== -1;
-    };
-
-    PageTimer.prototype.setFrequency = function(time) {
-      this.stop();
-      this.frequency = time * 1000;
-      return this.start();
-    };
-
-    PageTimer.prototype.getFrequency = function() {
-      return this.frequency / 1000;
-    };
-
-    PageTimer.prototype.increasePollTime = function() {
-      return this.setFrequency(this.getFrequency() + (this.getFrequency() % 5 === 0 ? 9 : 1));
-    };
-
-    return PageTimer;
-
-  })();
-
-  this.Notifier = (function() {
-    function Notifier() {
-      this.popup = null;
-      this.tid = null;
-      this.nids = [];
-    }
-
-    Notifier.prototype.hasSupport = function() {
-      if (window.webkitNotifications) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    Notifier.prototype.hasPermission = function() {
-      return window.webkitNotifications.checkPermission() === 0;
-    };
-
-    Notifier.prototype.requestPermission = function(cb) {
-      return window.webkitNotifications.requestPermission(function() {
-        if (cb) {
-          return cb(window.webkitNotifications.checkPermission() === 0);
-        }
-      });
-    };
-
-    Notifier.prototype.notify = function(icon, title, body, opts) {
-      var delay, nid, stay;
-      if (this.hasSupport() && this.hasPermission() && !this.isActive()) {
-        if (opts == null) {
-          opts = {};
-        }
-        stay = opts["stay"];
-        delay = opts["delay"];
-        nid = opts["nid"];
-        if ((nid != null)) {
-          if (this.nids.includes(nid)) {
-            return false;
-          } else {
-            this.nids.pushOnce(nid);
-          }
-        }
-        this.popup = window.webkitNotifications.createNotification(icon, title, body);
-        if ((stay == null) || !stay) {
-          this.popup.ondisplay = function() {
-            return setTimeout('notifier.Hide()', 5000);
-          };
-        }
-        if ((delay != null)) {
-          this.tid = setTimeout('notifier.popup.show()', delay * 1000);
-        } else {
-          this.popup.show();
-        }
-        return true;
-      }
-      return false;
-    };
-
-    Notifier.prototype.hide = function() {
-      if (this.popup !== null) {
-        this.popup.cancel();
-        this.popup = null;
-      }
-      if (this.tid !== null) {
-        clearTimeout(this.tid);
-        return this.tid = null;
-      }
-    };
-
-    Notifier.prototype.isActive = function() {
-      if (this.popup !== null) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    return Notifier;
-
-  })();
-
-  this.TimeLength = (function() {
-    function TimeLength(date1, date2) {
-      this.date1 = date1;
-      this.date2 = date2;
-      if (this.date2 == null) {
-        this.date2 = new Date();
-      }
-    }
-
-    TimeLength.prototype.seconds = function() {
-      return Math.floor((this.date2.getTime() - this.date1.getTime()) / 1000);
-    };
-
-    TimeLength.prototype.minutes = function() {
-      return Math.floor(this.seconds() / 60);
-    };
-
-    TimeLength.prototype.hours = function() {
-      return Math.floor(this.seconds() / (60 * 60));
-    };
-
-    TimeLength.prototype.days = function() {
-      return Math.floor(this.seconds() / (24 * 60 * 60));
-    };
-
-    TimeLength.prototype.weeks = function() {
-      return Math.floor(this.seconds() / (24 * 60 * 60 * 7));
-    };
-
-    TimeLength.prototype.months = function() {
-      return Math.floor(this.seconds() / (24 * 60 * 60 * 31));
-    };
-
-    TimeLength.prototype.years = function() {
-      return Math.floor(this.seconds() / (24 * 60 * 60 * 365));
-    };
-
-    TimeLength.prototype.toString = function() {
-      var attr, str, val;
-      val = 0;
-      str = "";
-      if (this.years() > 0) {
-        val = this.years();
-        str = "year";
-      } else if (this.months() > 0) {
-        val = this.months();
-        str = "month";
-      } else if (this.weeks() > 0) {
-        val = this.weeks();
-        str = "week";
-      } else if (this.days() > 0) {
-        val = this.days();
-        str = "day";
-      } else if (this.hours() > 0) {
-        val = this.hours();
-        str = "hour";
-      } else if (this.minutes() > 0) {
-        val = this.minutes();
-        str = "minute";
-      } else if (this.seconds() > 0) {
-        val = this.seconds();
-        str = "second";
-      } else {
-        val = 0;
-        str = "seconds";
-      }
-      attr = str + (val > 1 ? "s" : "");
-      return "" + val + " " + attr;
-    };
-
-    return TimeLength;
-
-  })();
-
-  TimeLength.DAY = 86400;
-
-  TimeLength.YEAR = 31536000;
-
-  this.SupportManager = (function() {
-    function SupportManager() {}
-
-    return SupportManager;
-
-  })();
-
-  SupportManager.hasFormData = function() {
-    return window.FormData != null;
-  };
-
-  SupportManager.canUpload = function() {
-    return SupportManager.hasFormData();
-  };
-
-  this.AuthToken = (function() {
-    function AuthToken(data) {
-      var key, val, _ref;
-      this.data = data;
-      this.toJSON = __bind(this.toJSON, this);
-      this.is_expired = __bind(this.is_expired, this);
-      this.timeLeft = __bind(this.timeLeft, this);
-      _ref = this.data;
-      for (key in _ref) {
-        val = _ref[key];
-        this[key] = val;
-      }
-      if (this.data.received_at == null) {
-        this.received_at = this.data.received_at = Date.now_utc();
-      }
-      if (this.data.expires_at == null) {
-        this.expires_at = this.data.expires_at = this.received_at + this.expires_in;
-      }
-    }
-
-    AuthToken.prototype.timeLeft = function() {
-      return this.expires_at - Date.now_utc();
-    };
-
-    AuthToken.prototype.is_expired = function() {
-      if (this.expires_at == null) {
-        return true;
-      }
-      return this.timeLeft() <= 0;
-    };
-
-    AuthToken.prototype.toJSON = function() {
-      return JSON.stringify(this.data);
-    };
-
-    return AuthToken;
-
-  })();
-
-  this.AssetsLibrary = {};
-
-  if (window.console == null) {
-    window.console = {
-      log: function() {}
-    };
-  }
-
-  loadScript = function(u, d) {
-    var _ref;
-    d = (_ref = typeof d !== 'undefined') != null ? _ref : {
-      d: ""
-    };
-    return $.ajax({
-      type: "POST",
-      url: u,
-      data: d,
-      dataType: "script"
-    });
-  };
-
-  timeFromUnix = function(tm) {
-    var date;
-    date = new Date(tm * 1000);
-    return date.toLocaleTimeString();
-  };
-
-  cropImage = function(img_url, img_width, img_height) {
-    return $('<div>').css({
-      background: 'url(' + img_url + ')',
-      backgroundSize: 'cover',
-      'background-position': 'center',
-      backgroundColor: '#FFF',
-      width: img_width,
-      height: img_height,
-      display: 'inline-block'
-    });
-  };
-
-  link_to = function(text, url) {
-    return $('<a>').attr('href', url).html(text);
-  };
-
-  link_to_rel = function(text, url) {
-    return $('<a>').attr('href', "#" + url).html(text);
-  };
-
-  link_to_span = function(text) {
-    return $('<span>').addClass('clickable').html(text);
-  };
-
-  fadeInElement = function(elem) {
-    return $(elem).hide().fadeIn();
-  };
-
-}).call(this);
-(function() {
-  this.QuickScript = {};
-
-  this.QS = QuickScript;
+  window.QuickScript = window.QS = {};
 
   QuickScript.utils = {
     buildOptions: function(hash) {
@@ -1471,6 +975,9 @@ Date.prototype.format = function (mask, utc) {
         return true;
       }
       return val === "";
+    },
+    isPresent: function(val) {
+      return !QS.utils.isBlank(val);
     },
     objectToArray: function(obj) {
       var key, ret, val;
@@ -1618,6 +1125,25 @@ Date.prototype.format = function (mask, utc) {
     };
   };
 
+  QuickScript.install = function(scope) {
+    var cns, install_class, name, others, _i, _j, _len, _len1, _results;
+    cns = ['Application', 'View', 'Model', 'FileModel', 'Collection', 'ViewCollection', 'Host', 'ModelAdapter', 'AccountAdapter', 'LocalStore'];
+    others = ['PageTimer', 'Notifier', 'AuthToken', 'TimeLength', 'SelectOpts', 'SupportManager', 'AssetsLibrary'];
+    install_class = function(name) {
+      return scope[name] = QuickScript[name];
+    };
+    for (_i = 0, _len = cns.length; _i < _len; _i++) {
+      name = cns[_i];
+      install_class(name);
+    }
+    _results = [];
+    for (_j = 0, _len1 = others.length; _j < _len1; _j++) {
+      name = others[_j];
+      _results.push(install_class(name));
+    }
+    return _results;
+  };
+
   QuickScript.STATES = {};
 
   QuickScript.STATES.READY = 1;
@@ -1634,7 +1160,22 @@ Date.prototype.format = function (mask, utc) {
 
   QuickScript.STATES.UPDATING = 7;
 
-  if (SupportManager.hasFormData()) {
+  QS.SupportManager = (function() {
+    function SupportManager() {}
+
+    return SupportManager;
+
+  })();
+
+  QS.SupportManager.hasFormData = function() {
+    return window.FormData != null;
+  };
+
+  QS.SupportManager.canUpload = function() {
+    return QS.SupportManager.hasFormData();
+  };
+
+  if (QS.SupportManager.hasFormData()) {
     QuickScript.ajax = function(opts) {
       var aval, data, first, key, req, url, val, _i, _len, _ref, _ref1, _ref2;
       data = new FormData();
@@ -1786,11 +1327,490 @@ Date.prototype.format = function (mask, utc) {
 
 }).call(this);
 (function() {
+  var cropImage, fadeInElement, link_to, link_to_rel, link_to_span, loadScript, timeFromUnix,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  Array.prototype.indexAt = function(val) {
+    var i, _i, _ref;
+    for (i = _i = 0, _ref = this.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      if (this[i] === val) {
+        return i;
+      }
+    }
+    return -1;
+  };
+
+  Array.prototype.includes = function(val) {
+    return this.indexAt(val) !== -1;
+  };
+
+  Array.prototype.itemAt = function(val) {
+    return this.slice(val)[0];
+  };
+
+  Array.prototype.pushOnce = function(item) {
+    if (!this.includes(item)) {
+      return this.push(item);
+    }
+  };
+
+  Array.prototype.remove = function(item) {
+    var idx;
+    idx = this.indexOf(item);
+    if (idx > -1) {
+      return this.splice(idx, 1);
+    }
+  };
+
+  Array.prototype.first = function() {
+    return this[0];
+  };
+
+  Array.prototype.last = function() {
+    return this[this.length - 1];
+  };
+
+  Array.prototype.findAndMap = function(params, field, def) {
+    var res, result;
+    res = this.filter(function(itm) {
+      var key, val;
+      for (key in params) {
+        val = params[key];
+        if (itm[key] !== val) {
+          return false;
+        }
+      }
+      return true;
+    });
+    result = res[0];
+    if (result != null) {
+      if (typeof field === 'function') {
+        return field(result);
+      } else if (typeof field === 'string') {
+        return result[field];
+      } else {
+        return result;
+      }
+    } else {
+      return def;
+    }
+  };
+
+  Date.from_utc = function(utc) {
+    return new Date(utc * 1000);
+  };
+
+  Date.from_now = function() {
+    return new Date();
+  };
+
+  Date.from_str = function(str) {
+    var d;
+    str = "" + str;
+    d = new Date();
+    d.setYear(+(str.substring(0, 4)));
+    d.setMonth(+(str.substring(4, 6)) - 1);
+    d.setDate(+(str.substring(6, 8)));
+    d.remove_time();
+    return d;
+  };
+
+  Date.now_utc = function() {
+    return Math.round((new Date()).getTime() / 1000.0);
+  };
+
+  Date.prototype.to_utc = function() {
+    return Math.round(this.getTime() / 1000.0);
+  };
+
+  Date.prototype.remove_time = function() {
+    this.setHours(0);
+    this.setMinutes(0);
+    this.setSeconds(0);
+    this.setMilliseconds(0);
+    return this;
+  };
+
+  String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+  };
+
+  String.prototype.includes = function(str) {
+    return this.indexOf(str) !== -1;
+  };
+
+  String.prototype.truncate = function(val) {
+    var ret;
+    ret = this.substring(0, val);
+    if (this.length > val) {
+      ret = ret + "...";
+    }
+    return ret;
+  };
+
+  String.prototype.rjust = function(length, char) {
+    var ret;
+    ret = this;
+    while (ret.length < length) {
+      ret = char + ret;
+    }
+    return ret;
+  };
+
+  History.getRelativeUrl = function() {
+    var url;
+    url = History.getState().url;
+    return "/" + (url.replace(History.getRootUrl(), ''));
+  };
+
+  QS.SelectOpts = (function() {
+    function SelectOpts() {
+      this.find = __bind(this.find, this);
+      this.add = __bind(this.add, this);
+      this.options = [];
+    }
+
+    SelectOpts.prototype.add = function(val, str) {
+      this.options.push({
+        val: val.toString(),
+        str: str
+      });
+      return this;
+    };
+
+    SelectOpts.prototype.find = function(val) {
+      var obj, _i, _len, _ref;
+      _ref = this.options;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        obj = _ref[_i];
+        if (obj.val === val.toString()) {
+          return obj.str;
+        }
+      }
+      return "";
+    };
+
+    return SelectOpts;
+
+  })();
+
+  QS.PageTimer = (function() {
+    function PageTimer(func, time, self) {
+      this.increasePollTime = __bind(this.increasePollTime, this);
+      this.getFrequency = __bind(this.getFrequency, this);
+      this.setFrequency = __bind(this.setFrequency, this);
+      this.isRunning = __bind(this.isRunning, this);
+      this.stop = __bind(this.stop, this);
+      this.start = __bind(this.start, this);
+      this.self = self || this;
+      this.callback = func.bind(self);
+      this.frequency = time * 1000;
+      this.t_id = -1;
+    }
+
+    PageTimer.prototype.start = function(opts) {
+      if (opts == null) {
+        opts = {
+          run_now: false
+        };
+      }
+      if (this.t_id !== -1) {
+        return;
+      }
+      this.t_id = setInterval(this.callback, this.frequency);
+      if (opts.run_now === true) {
+        return this.callback();
+      }
+    };
+
+    PageTimer.prototype.stop = function() {
+      clearInterval(this.t_id);
+      return this.t_id = -1;
+    };
+
+    PageTimer.prototype.isRunning = function() {
+      return this.t_id !== -1;
+    };
+
+    PageTimer.prototype.setFrequency = function(time) {
+      this.stop();
+      this.frequency = time * 1000;
+      return this.start();
+    };
+
+    PageTimer.prototype.getFrequency = function() {
+      return this.frequency / 1000;
+    };
+
+    PageTimer.prototype.increasePollTime = function() {
+      return this.setFrequency(this.getFrequency() + (this.getFrequency() % 5 === 0 ? 9 : 1));
+    };
+
+    return PageTimer;
+
+  })();
+
+  QS.Notifier = (function() {
+    function Notifier() {
+      this.popup = null;
+      this.tid = null;
+      this.nids = [];
+    }
+
+    Notifier.prototype.hasSupport = function() {
+      if (window.webkitNotifications) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    Notifier.prototype.hasPermission = function() {
+      return window.webkitNotifications.checkPermission() === 0;
+    };
+
+    Notifier.prototype.requestPermission = function(cb) {
+      return window.webkitNotifications.requestPermission(function() {
+        if (cb) {
+          return cb(window.webkitNotifications.checkPermission() === 0);
+        }
+      });
+    };
+
+    Notifier.prototype.notify = function(icon, title, body, opts) {
+      var delay, nid, stay;
+      if (this.hasSupport() && this.hasPermission() && !this.isActive()) {
+        if (opts == null) {
+          opts = {};
+        }
+        stay = opts["stay"];
+        delay = opts["delay"];
+        nid = opts["nid"];
+        if ((nid != null)) {
+          if (this.nids.includes(nid)) {
+            return false;
+          } else {
+            this.nids.pushOnce(nid);
+          }
+        }
+        this.popup = window.webkitNotifications.createNotification(icon, title, body);
+        if ((stay == null) || !stay) {
+          this.popup.ondisplay = function() {
+            return setTimeout('notifier.Hide()', 5000);
+          };
+        }
+        if ((delay != null)) {
+          this.tid = setTimeout('notifier.popup.show()', delay * 1000);
+        } else {
+          this.popup.show();
+        }
+        return true;
+      }
+      return false;
+    };
+
+    Notifier.prototype.hide = function() {
+      if (this.popup !== null) {
+        this.popup.cancel();
+        this.popup = null;
+      }
+      if (this.tid !== null) {
+        clearTimeout(this.tid);
+        return this.tid = null;
+      }
+    };
+
+    Notifier.prototype.isActive = function() {
+      if (this.popup !== null) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    return Notifier;
+
+  })();
+
+  QS.TimeLength = (function() {
+    function TimeLength(date1, date2) {
+      this.date1 = date1;
+      this.date2 = date2;
+      if (this.date2 == null) {
+        this.date2 = new Date();
+      }
+    }
+
+    TimeLength.prototype.seconds = function() {
+      return Math.floor((this.date2.getTime() - this.date1.getTime()) / 1000);
+    };
+
+    TimeLength.prototype.minutes = function() {
+      return Math.floor(this.seconds() / 60);
+    };
+
+    TimeLength.prototype.hours = function() {
+      return Math.floor(this.seconds() / (60 * 60));
+    };
+
+    TimeLength.prototype.days = function() {
+      return Math.floor(this.seconds() / (24 * 60 * 60));
+    };
+
+    TimeLength.prototype.weeks = function() {
+      return Math.floor(this.seconds() / (24 * 60 * 60 * 7));
+    };
+
+    TimeLength.prototype.months = function() {
+      return Math.floor(this.seconds() / (24 * 60 * 60 * 31));
+    };
+
+    TimeLength.prototype.years = function() {
+      return Math.floor(this.seconds() / (24 * 60 * 60 * 365));
+    };
+
+    TimeLength.prototype.toString = function() {
+      var attr, str, val;
+      val = 0;
+      str = "";
+      if (this.years() > 0) {
+        val = this.years();
+        str = "year";
+      } else if (this.months() > 0) {
+        val = this.months();
+        str = "month";
+      } else if (this.weeks() > 0) {
+        val = this.weeks();
+        str = "week";
+      } else if (this.days() > 0) {
+        val = this.days();
+        str = "day";
+      } else if (this.hours() > 0) {
+        val = this.hours();
+        str = "hour";
+      } else if (this.minutes() > 0) {
+        val = this.minutes();
+        str = "minute";
+      } else if (this.seconds() > 0) {
+        val = this.seconds();
+        str = "second";
+      } else {
+        val = 0;
+        str = "seconds";
+      }
+      attr = str + (val > 1 ? "s" : "");
+      return "" + val + " " + attr;
+    };
+
+    return TimeLength;
+
+  })();
+
+  QS.TimeLength.DAY = 86400;
+
+  QS.TimeLength.YEAR = 31536000;
+
+  QS.AuthToken = (function() {
+    function AuthToken(data) {
+      var key, val, _ref;
+      this.data = data;
+      this.toJSON = __bind(this.toJSON, this);
+      this.is_expired = __bind(this.is_expired, this);
+      this.timeLeft = __bind(this.timeLeft, this);
+      _ref = this.data;
+      for (key in _ref) {
+        val = _ref[key];
+        this[key] = val;
+      }
+      if (this.data.received_at == null) {
+        this.received_at = this.data.received_at = Date.now_utc();
+      }
+      if (this.data.expires_at == null) {
+        this.expires_at = this.data.expires_at = this.received_at + this.expires_in;
+      }
+    }
+
+    AuthToken.prototype.timeLeft = function() {
+      return this.expires_at - Date.now_utc();
+    };
+
+    AuthToken.prototype.is_expired = function() {
+      if (this.expires_at == null) {
+        return true;
+      }
+      return this.timeLeft() <= 0;
+    };
+
+    AuthToken.prototype.toJSON = function() {
+      return JSON.stringify(this.data);
+    };
+
+    return AuthToken;
+
+  })();
+
+  QS.AssetsLibrary = {};
+
+  if (window.console == null) {
+    window.console = {
+      log: function() {}
+    };
+  }
+
+  loadScript = function(u, d) {
+    var _ref;
+    d = (_ref = typeof d !== 'undefined') != null ? _ref : {
+      d: ""
+    };
+    return $.ajax({
+      type: "POST",
+      url: u,
+      data: d,
+      dataType: "script"
+    });
+  };
+
+  timeFromUnix = function(tm) {
+    var date;
+    date = new Date(tm * 1000);
+    return date.toLocaleTimeString();
+  };
+
+  cropImage = function(img_url, img_width, img_height) {
+    return $('<div>').css({
+      background: 'url(' + img_url + ')',
+      backgroundSize: 'cover',
+      'background-position': 'center',
+      backgroundColor: '#FFF',
+      width: img_width,
+      height: img_height,
+      display: 'inline-block'
+    });
+  };
+
+  link_to = function(text, url) {
+    return $('<a>').attr('href', url).html(text);
+  };
+
+  link_to_rel = function(text, url) {
+    return $('<a>').attr('href', "#" + url).html(text);
+  };
+
+  link_to_span = function(text) {
+    return $('<span>').addClass('clickable').html(text);
+  };
+
+  fadeInElement = function(elem) {
+    return $(elem).hide().fadeIn();
+  };
+
+}).call(this);
+(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  this.Model = (function() {
+  QS.Model = (function() {
     Model.prototype.init = function() {};
 
     Model.prototype.extend = function() {};
@@ -1915,9 +1935,9 @@ Date.prototype.format = function (mask, utc) {
 
     Model.prototype.save = function(fields, callback) {
       var opts;
-      console.log("Saving fields " + fields);
+      QS.log("Saving fields " + fields);
       if (this.model_state() !== ko.modelStates.READY) {
-        console.log("Save postponed.");
+        QS.log("Save postponed.");
         return;
       }
       if (fields instanceof Array) {
@@ -1955,7 +1975,7 @@ Date.prototype.format = function (mask, utc) {
       var opts;
       fields || (fields = ['id']);
       if (this.model_state() !== ko.modelStates.READY) {
-        console.log("Delete postponed.");
+        QS.log("Delete postponed.");
         return;
       }
       opts = this.toJS(fields);
@@ -2072,7 +2092,7 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
-  Model.includeCollection = function(self) {
+  QS.Model.includeCollection = function(self) {
     self || (self = this);
     return self.Collection = (function(_super) {
       __extends(_Class, _super);
@@ -2085,10 +2105,10 @@ Date.prototype.format = function (mask, utc) {
 
       return _Class;
 
-    })(Collection);
+    })(QS.Collection);
   };
 
-  Model.includeViewCollection = function(self) {
+  QS.Model.includeViewCollection = function(self) {
     self || (self = this);
     return self.Collection = (function(_super) {
       __extends(_Class, _super);
@@ -2101,13 +2121,13 @@ Date.prototype.format = function (mask, utc) {
 
       return _Class;
 
-    })(ViewCollection);
+    })(QS.ViewCollection);
   };
 
-  Model.includeAdapter = function(adapter, self) {
+  QS.Model.includeAdapter = function(adapter, self) {
     self || (self = this);
     if ((adapter.save == null) && (adapter.load == null)) {
-      adapter.type || (adapter.type = ModelAdapter);
+      adapter.type || (adapter.type = QS.ModelAdapter);
       adapter = new adapter.type(adapter);
     }
     self.Adapter = adapter;
@@ -2118,7 +2138,7 @@ Date.prototype.format = function (mask, utc) {
     })(this));
   };
 
-  this.FileModel = (function(_super) {
+  QS.FileModel = (function(_super) {
     __extends(FileModel, _super);
 
     function FileModel() {
@@ -2179,7 +2199,7 @@ Date.prototype.format = function (mask, utc) {
             _this.input.file_uri('');
             reader = new FileReader();
             reader.onloadend = function(ev) {
-              console.log('input loaded');
+              QS.log('input loaded');
               return _this.input.file_uri(ev.target.result);
             };
             return reader.readAsDataURL(val[0]);
@@ -2207,7 +2227,7 @@ Date.prototype.format = function (mask, utc) {
         }
       }, this);
       this.input.is_present = ko.computed(function() {
-        return (this.input.source() !== null) || this.input.has_file();
+        return QS.utils.isPresent(this.input.source()) || this.input.has_file();
       }, this);
       this.input.present = this.input.is_present;
       this.input.is_image = ko.computed(function() {
@@ -2232,7 +2252,7 @@ Date.prototype.format = function (mask, utc) {
       })(this);
       this.input.clear = (function(_this) {
         return function() {
-          _this.input.source('');
+          _this.input.source(null);
           return _this.input.files([]);
         };
       })(this);
@@ -2290,9 +2310,9 @@ Date.prototype.format = function (mask, utc) {
 
     return FileModel;
 
-  })(Model);
+  })(QS.Model);
 
-  this.Collection = (function() {
+  QS.Collection = (function() {
     Collection.prototype.init = function() {};
 
     function Collection(opts) {
@@ -2323,15 +2343,15 @@ Date.prototype.format = function (mask, utc) {
       }
       this.events = {};
       this._reqid = 0;
-      this.scope = ko.observable(this.opts.scope || null);
+      this.scope = ko.observable(this.opts.scope || {});
       this.items = ko.observableArray([]);
       this.page = ko.observable(1);
       this.limit = ko.observable(this.opts.limit || 100);
       this.title = ko.observable(this.opts.title || 'Collection');
       this.count = ko.observable(0);
       this.extra_params = ko.observable(this.opts.extra_params || {});
-      this.model = this.opts.model || Model;
-      this.adapter = this.opts.adapter || new ModelAdapter();
+      this.model = this.opts.model || QS.Model;
+      this.adapter = this.opts.adapter || new QS.ModelAdapter();
       this.model_state = ko.observable(0);
       this.named_filters = {};
       this.named_sorts = {};
@@ -2389,7 +2409,7 @@ Date.prototype.format = function (mask, utc) {
 
     Collection.prototype._load = function(scope, op, load_opts) {
       var opts, reqid;
-      op || (op = Collection.REPLACE);
+      op || (op = QS.Collection.REPLACE);
       if (load_opts.overwrite_request === false) {
         reqid = this._reqid;
       } else {
@@ -2421,14 +2441,14 @@ Date.prototype.format = function (mask, utc) {
           };
         })(this)
       });
-      if (op === Collection.REPLACE) {
+      if (op === QS.Collection.REPLACE) {
         this.model_state(ko.modelStates.LOADING);
       }
-      if (op === Collection.UPDATE) {
+      if (op === QS.Collection.UPDATE) {
         return this.model_state(ko.modelStates.UPDATING);
-      } else if (op === Collection.APPEND) {
+      } else if (op === QS.Collection.APPEND) {
         return this.model_state(ko.modelStates.APPENDING);
-      } else if (op === Collection.INSERT) {
+      } else if (op === QS.Collection.INSERT) {
         return this.model_state(ko.modelStates.INSERTING);
       }
     };
@@ -2445,7 +2465,7 @@ Date.prototype.format = function (mask, utc) {
       if (scope != null) {
         this.scope(scope);
       }
-      return this._load(this.scope(), Collection.REPLACE, opts);
+      return this._load(this.scope(), QS.Collection.REPLACE, opts);
     };
 
     Collection.prototype.update = function(opts) {
@@ -2454,7 +2474,7 @@ Date.prototype.format = function (mask, utc) {
           callback: opts
         };
       }
-      return this._load(this.scope(), Collection.UPDATE, opts);
+      return this._load(this.scope(), QS.Collection.UPDATE, opts);
     };
 
     Collection.prototype.insert = function(scope, opts) {
@@ -2463,7 +2483,7 @@ Date.prototype.format = function (mask, utc) {
           callback: opts
         };
       }
-      return this._load(scope, Collection.INSERT, opts);
+      return this._load(scope, QS.Collection.INSERT, opts);
     };
 
     Collection.prototype.append = function(scope, opts) {
@@ -2472,7 +2492,7 @@ Date.prototype.format = function (mask, utc) {
           callback: opts
         };
       }
-      return this._load(scope, Collection.APPEND, opts);
+      return this._load(scope, QS.Collection.APPEND, opts);
     };
 
     Collection.prototype.handleData = function(data, op) {
@@ -2481,14 +2501,14 @@ Date.prototype.format = function (mask, utc) {
         return;
       }
       models = [];
-      op || (op = Collection.UPDATE);
+      op || (op = QS.Collection.UPDATE);
       curr_a = this.items();
       id_h = {};
       for (_i = 0, _len = curr_a.length; _i < _len; _i++) {
         itm = curr_a[_i];
         id_h[itm.id()] = itm;
       }
-      if (op === Collection.UPDATE) {
+      if (op === QS.Collection.UPDATE) {
         curr_len = this.items().length;
         new_a = data;
         new_len = data.length;
@@ -2515,7 +2535,7 @@ Date.prototype.format = function (mask, utc) {
           }
         }
         this.items.valueHasMutated();
-      } else if (op === Collection.REPLACE) {
+      } else if (op === QS.Collection.REPLACE) {
         models = (function() {
           var _k, _len1, _results;
           _results = [];
@@ -2538,11 +2558,11 @@ Date.prototype.format = function (mask, utc) {
             leftovers.push(model);
           }
         }
-        if (op === Collection.INSERT) {
+        if (op === QS.Collection.INSERT) {
           if (leftovers.length > 0) {
             this.items(leftovers.concat(this.items()));
           }
-        } else if (op === Collection.APPEND) {
+        } else if (op === QS.Collection.APPEND) {
           if (leftovers.length > 0) {
             this.items(this.items().concat(leftovers));
           }
@@ -2755,7 +2775,7 @@ Date.prototype.format = function (mask, utc) {
       this.clear();
       this._reqid = 0;
       this.page(1);
-      return this.scope(null);
+      return this.scope({});
     };
 
     Collection.prototype.clear = function() {
@@ -2798,15 +2818,15 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
-  Collection.REPLACE = 0;
+  QS.Collection.REPLACE = 0;
 
-  Collection.INSERT = 1;
+  QS.Collection.INSERT = 1;
 
-  Collection.APPEND = 2;
+  QS.Collection.APPEND = 2;
 
-  Collection.UPDATE = 3;
+  QS.Collection.UPDATE = 3;
 
-  this.ViewCollection = (function(_super) {
+  QS.ViewCollection = (function(_super) {
     __extends(ViewCollection, _super);
 
     function ViewCollection() {
@@ -2821,7 +2841,7 @@ Date.prototype.format = function (mask, utc) {
     ViewCollection.prototype.extend = function(opts) {
       ViewCollection.__super__.extend.call(this);
       this.views = ko.observableArray([]);
-      this.view_model = this.opts.view || View;
+      this.view_model = this.opts.view || QS.View;
       this.view_owner = this.opts.view_owner || null;
       this.named_view_filters = {};
       this.named_view_sorts = {};
@@ -2928,9 +2948,9 @@ Date.prototype.format = function (mask, utc) {
 
     return ViewCollection;
 
-  })(this.Collection);
+  })(QS.Collection);
 
-  this.View = (function() {
+  QS.View = (function() {
     QuickScript.includeEventable(View);
 
     View.prototype.init = function() {};
@@ -3160,7 +3180,6 @@ Date.prototype.format = function (mask, utc) {
         return setTimeout((function(_this) {
           return function() {
             var idx, new_el;
-            console.log('after render');
             idx = _this.getViewBoxIndex(_this.task());
             new_el = $(_this.element).find('.slide-item-' + idx);
             return new_el.addClass('active');
@@ -3220,7 +3239,7 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
-  View.registerComponent = function(name, template_opts, view_class) {
+  QS.View.registerComponent = function(name, template_opts, view_class) {
     var topts;
     view_class || (view_class = this);
     QS.registered_components || (QS.registered_components = {});
@@ -3260,7 +3279,7 @@ Date.prototype.format = function (mask, utc) {
     });
   };
 
-  this.Host = (function() {
+  QS.Host = (function() {
     function Host(url) {
       this.resumeRequests = __bind(this.resumeRequests, this);
       this.pauseRequests = __bind(this.pauseRequests, this);
@@ -3270,7 +3289,7 @@ Date.prototype.format = function (mask, utc) {
       this.url = url;
       this.headers = {};
       this.requests = [];
-      this.state = Host.READY;
+      this.state = QS.Host.READY;
       this.before_request = null;
       this.process_request = function(req) {
         return req;
@@ -3285,7 +3304,7 @@ Date.prototype.format = function (mask, utc) {
       if (typeof this.before_request === "function") {
         this.before_request(req);
       }
-      if (this.state === Host.PAUSED) {
+      if (this.state === QS.Host.PAUSED) {
         this.requests.push(req);
         return typeof req.loading === "function" ? req.loading(true) : void 0;
       } else {
@@ -3330,11 +3349,11 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Host.prototype.pauseRequests = function() {
-      return this.state = Host.PAUSED;
+      return this.state = QS.Host.PAUSED;
     };
 
     Host.prototype.resumeRequests = function() {
-      this.state = Host.READY;
+      this.state = QS.Host.READY;
       return this.executeQueuedRequests();
     };
 
@@ -3342,11 +3361,11 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
-  Host.READY = 1;
+  QS.Host.READY = 1;
 
-  Host.PAUSED = 2;
+  QS.Host.PAUSED = 2;
 
-  Host.process_api_response = function(resp, status) {
+  QS.Host.process_api_response = function(resp, status) {
     if (typeof resp === "string") {
       return resp = {
         success: false,
@@ -3359,13 +3378,13 @@ Date.prototype.format = function (mask, utc) {
     }
   };
 
-  this.ModelAdapter = (function() {
+  QS.ModelAdapter = (function() {
     function ModelAdapter(opts) {
       var prop, val;
       this.save_url = null;
       this.load_url = null;
       this.index_url = null;
-      this.host = ModelAdapter.host;
+      this.host = QS.ModelAdapter.host;
       this.notifier = null;
       this.event_scope = null;
       for (prop in opts) {
@@ -3442,9 +3461,9 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
-  ModelAdapter.host = new Host("/api/");
+  QS.ModelAdapter.host = new QS.Host("/api/");
 
-  this.AccountAdapter = (function() {
+  QS.AccountAdapter = (function() {
     function AccountAdapter(opts) {
       var prop, val;
       this.login_url = "/account/login";
@@ -3457,7 +3476,7 @@ Date.prototype.format = function (mask, utc) {
       this.load_url = "/account";
       this.login_key = "email";
       this.password_key = "password";
-      this.host = ModelAdapter.host;
+      this.host = QS.ModelAdapter.host;
       for (prop in opts) {
         val = opts[prop];
         this[prop] = val;
@@ -3538,9 +3557,9 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
-  this.LocalStore = store;
+  QS.LocalStore = store;
 
-  this.Application = (function(_super) {
+  QS.Application = (function(_super) {
     __extends(Application, _super);
 
     function Application(opts) {
@@ -3558,14 +3577,14 @@ Date.prototype.format = function (mask, utc) {
       this.title = ko.observable('');
       this.redirect_on_login = ko.observable(null);
       this.auth_method = this.opts.auth_method || 'session';
-      this.redirect_on_login(LocalStore.get('app.redirect_on_login'));
+      this.redirect_on_login(QS.LocalStore.get('app.redirect_on_login'));
       this.redirect_on_login.subscribe((function(_this) {
         return function(val) {
-          return LocalStore.set('app.redirect_on_login', val);
+          return QS.LocalStore.set('app.redirect_on_login', val);
         };
       })(this));
       this.configure();
-      this.account_model || (this.account_model = this.opts.account_model || Model);
+      this.account_model || (this.account_model = this.opts.account_model || QS.Model);
       this.current_user = new this.account_model();
       this.current_user_token = ko.observable(null);
       this.is_logged_in = ko.computed(function() {
@@ -3585,7 +3604,7 @@ Date.prototype.format = function (mask, utc) {
     Application.prototype.route = function() {
       var path;
       path = this.location.pathname;
-      console.log("Loading path '" + path + "'");
+      QS.log("Loading path '" + path + "'");
       this.setTitle(this.name, true);
       this.previous_path(this.path());
       this.path_parts = path.split('/');
@@ -3613,19 +3632,19 @@ Date.prototype.format = function (mask, utc) {
       var token;
       QS.log(data, 2);
       if (data != null) {
-        token = new AuthToken(data);
-        LocalStore.set('app.current_user_token', token.data);
+        token = new QS.AuthToken(data);
+        QS.LocalStore.set('app.current_user_token', token.data);
         return this.current_user_token(token);
       } else {
-        LocalStore.set('app.current_user_token', null);
+        QS.LocalStore.set('app.current_user_token', null);
         return this.current_user_token(null);
       }
     };
 
     Application.prototype.getUserToken = function() {
       var data, old_token, token;
-      data = LocalStore.get('app.current_user_token');
-      token = data != null ? new AuthToken(data) : null;
+      data = QS.LocalStore.get('app.current_user_token');
+      token = data != null ? new QS.AuthToken(data) : null;
       old_token = this.current_user_token();
       if ((token != null) && (old_token != null)) {
         if (token.access_token !== old_token.access_token) {
@@ -3741,7 +3760,7 @@ Date.prototype.format = function (mask, utc) {
 
     return Application;
 
-  })(this.View);
+  })(QS.View);
 
   QuickScript.initialize = function(opts) {
     var app;
@@ -4338,7 +4357,7 @@ Date.prototype.format = function (mask, utc) {
         name = opts.name;
         data = opts.data;
         owner = opts.owner;
-        view = opts.view || View;
+        view = opts.view || QS.View;
         feopts = opts.foreach || {};
         feopts.data = data;
         if (!ko.components.isRegistered(name)) {

@@ -75,7 +75,7 @@ History.getRelativeUrl = ->
 	"/#{url.replace(History.getRootUrl(), '')}"
 
 ## SELECTOPTS
-class @SelectOpts
+class QS.SelectOpts
 	constructor : ->
 		@options = []
 	add : (val, str)=>
@@ -87,7 +87,7 @@ class @SelectOpts
 		return ""
 
 ## PAGETIMER
-class @PageTimer
+class QS.PageTimer
 	constructor: (func, time, self) ->
 		@self = self || this
 		@callback = func.bind(self)
@@ -113,7 +113,7 @@ class @PageTimer
 		@setFrequency( @getFrequency() + (if @getFrequency() % 5 == 0 then 9 else 1) )
 
 ## NOTIFIER
-class @Notifier
+class QS.Notifier
 	constructor: ->
 		@popup = null
 		@tid = null
@@ -167,7 +167,7 @@ class @Notifier
 
 
 ## TIMELENGTH
-class @TimeLength
+class QS.TimeLength
 	constructor : (@date1, @date2)->
 		@date2 = new Date() unless @date2?
 	seconds : ->
@@ -213,18 +213,11 @@ class @TimeLength
 			str = "seconds"
 		attr = str + ( if (val > 1) then "s" else "" )
 		"#{val} #{attr}"
-TimeLength.DAY = 86400
-TimeLength.YEAR = 31536000
-
-# SUPPORTMANAGER
-class @SupportManager
-SupportManager.hasFormData = ->
-	(window.FormData?)
-SupportManager.canUpload = ->
-	SupportManager.hasFormData()
+QS.TimeLength.DAY = 86400
+QS.TimeLength.YEAR = 31536000
 
 # AUTHTOKEN
-class @AuthToken
+class QS.AuthToken
 	constructor : (@data)->
 		for key,val of @data
 			@[key] = val
@@ -238,7 +231,7 @@ class @AuthToken
 	toJSON : =>
 		JSON.stringify(@data)
 
-@AssetsLibrary = {}
+QS.AssetsLibrary = {}
 
 unless window.console?
 	window.console =

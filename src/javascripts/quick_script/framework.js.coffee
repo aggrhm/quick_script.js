@@ -1,5 +1,5 @@
 
-class @Model
+class QS.Model
 	init : ->
 	extend : ->
 	constructor: (data, collection, opts) ->
@@ -67,9 +67,9 @@ class @Model
 	reloadOpts : =>
 		{id : @id()}
 	save : (fields, callback) ->
-		console.log("Saving fields #{fields}")
+		QS.log("Saving fields #{fields}")
 		if (@model_state() != ko.modelStates.READY)
-			console.log("Save postponed.")
+			QS.log("Save postponed.")
 			return
 		if fields instanceof Array
 			opts = @toAPI(fields)
@@ -94,7 +94,7 @@ class @Model
 	delete : (fields, callback)=>
 		fields ||= ['id']
 		if (@model_state() != ko.modelStates.READY)
-			console.log("Delete postponed.")
+			QS.log("Delete postponed.")
 			return
 		opts = @toJS(fields)
 		opts['id'] = @id()
@@ -165,29 +165,29 @@ class @Model
 	absorb : (model) =>
 		@reset()
 		@handleData(model.toJS())
-Model.includeCollection = (self)->
+QS.Model.includeCollection = (self)->
 	self ||= this
-	self.Collection = class extends Collection
+	self.Collection = class extends QS.Collection
 		constructor : (opts)->
 			super(opts)
 			@adapter = self.Adapter
 			@model = self
-Model.includeViewCollection = (self)->
+QS.Model.includeViewCollection = (self)->
 	self ||= this
-	self.Collection = class extends ViewCollection
+	self.Collection = class extends QS.ViewCollection
 		constructor : (opts)->
 			super(opts)
 			@adapter = self.Adapter
 			@model = self
-Model.includeAdapter = (adapter, self)->
+QS.Model.includeAdapter = (adapter, self)->
 	self ||= this
 	if !adapter.save? && !adapter.load?
-		adapter.type ||= ModelAdapter
+		adapter.type ||= QS.ModelAdapter
 		adapter = new adapter.type(adapter)
 	self.Adapter = adapter
 	self::initAdapter = (=> adapter)
 
-class @FileModel extends Model
+class QS.FileModel extends QS.Model
 	extend : ->
 		@input = {}
 		# source
@@ -223,7 +223,7 @@ class @FileModel extends Model
 				@input.file_uri('')
 				reader = new FileReader()
 				reader.onloadend = (ev)=>
-					console.log('input loaded')
+					QS.log('input loaded')
 					@input.file_uri(ev.target.result)
 				reader.readAsDataURL(val[0])
 		, this
@@ -243,7 +243,7 @@ class @FileModel extends Model
 					null
 		, this
 		@input.is_present = ko.computed ->
-			(@input.source() != null) || @input.has_file()
+			return QS.utils.isPresent(@input.source()) || @input.has_file()
 		, this
 		@input.present = @input.is_present
 		@input.is_image = ko.computed ->
@@ -262,7 +262,7 @@ class @FileModel extends Model
 			@input.source(src)
 			return src
 		@input.clear = =>
-			@input.source('')
+			@input.source(null)
 			@input.files([])
 		@input.reset = @input.clear
 		@input.handleData = (data)=>
@@ -293,7 +293,7 @@ class @FileModel extends Model
 	toAPIParam : =>
 		QS.utils.prepareAPIParam(@toAPI())
 
-class @Collection
+class QS.Collection
 	init : ->
 	constructor: (opts) ->
 		@opts = {}
@@ -301,15 +301,15 @@ class @Collection
 			@opts[key] = val
 		@events = {}
 		@_reqid = 0
-		@scope = ko.observable(@opts.scope || null)
+		@scope = ko.observable(@opts.scope || {})
 		@items = ko.observableArray([])
 		@page = ko.observable(1)
 		@limit = ko.observable(@opts.limit || 100)
 		@title = ko.observable(@opts.title || 'Collection')
 		@count = ko.observable(0)
 		@extra_params = ko.observable(@opts.extra_params || {})
-		@model = @opts.model || Model
-		@adapter = @opts.adapter || new ModelAdapter()
+		@model = @opts.model || QS.Model
+		@adapter = @opts.adapter || new QS.ModelAdapter()
 		@model_state = ko.observable(0)
 		@named_filters = {}
 		@named_sorts = {}
@@ -339,7 +339,7 @@ class @Collection
 			, this
 		@scope = ko.intercepter @scope, (obs, prev, curr) ->
 				obs(curr)
-				#console.log("Scope changed from #{prev} to #{curr}")
+				#QS.log("Scope changed from #{prev} to #{curr}")
 				#@load()
 			, this
 		@hasItems = ko.dependentObservable ->
@@ -359,8 +359,8 @@ class @Collection
 		opts.unshift(scp)
 		@scope(opts)
 	_load : (scope, op, load_opts)->
-		#console.log("Loading items for #{scope}")
-		op ||= Collection.REPLACE
+		#QS.log("Loading items for #{scope}")
+		op ||= QS.Collection.REPLACE
 		if load_opts.overwrite_request == false
 			reqid = @_reqid
 		else
@@ -378,33 +378,33 @@ class @Collection
 				@count(resp.count) if resp.count?
 				load_opts.callback(resp) if load_opts.callback?
 				@events.onchange() if @events.onchange?
-		if op == Collection.REPLACE
+		if op == QS.Collection.REPLACE
 			@model_state(ko.modelStates.LOADING)
-		if op == Collection.UPDATE
+		if op == QS.Collection.UPDATE
 			@model_state(ko.modelStates.UPDATING)
-		else if op == Collection.APPEND
+		else if op == QS.Collection.APPEND
 			@model_state(ko.modelStates.APPENDING)
-		else if op == Collection.INSERT
+		else if op == QS.Collection.INSERT
 			@model_state(ko.modelStates.INSERTING)
 	load : (scope, opts)=>
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
 		@reset() unless opts.reset? && !opts.reset
 		@scope(scope) if scope?
-		@_load(@scope(), Collection.REPLACE, opts)
+		@_load(@scope(), QS.Collection.REPLACE, opts)
 	update : (opts)=>
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
-		@_load(@scope(), Collection.UPDATE, opts)
+		@_load(@scope(), QS.Collection.UPDATE, opts)
 	insert : (scope, opts)->
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
-		@_load(scope, Collection.INSERT, opts)
+		@_load(scope, QS.Collection.INSERT, opts)
 	append : (scope, opts)->
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
-		@_load(scope, Collection.APPEND, opts)
+		@_load(scope, QS.Collection.APPEND, opts)
 	handleData : (data, op) =>
 		return if !data?
 		#QS.log "COLLECTION::HANDLE_DATA : Starting (#{QS.time()}).", 3
 		models = []
-		op ||= Collection.UPDATE
+		op ||= QS.Collection.UPDATE
 		curr_a = @items()
 		# build temp id hash
 		id_h = {}
@@ -412,7 +412,7 @@ class @Collection
 			id_h[itm.id()] = itm
 
 
-		if op == Collection.UPDATE
+		if op == QS.Collection.UPDATE
 			curr_len = @items().length
 			new_a = data
 			new_len = data.length
@@ -446,7 +446,7 @@ class @Collection
 
 			@items.valueHasMutated()
 
-		else if op == Collection.REPLACE
+		else if op == QS.Collection.REPLACE
 			models = for item in data
 				new @model(item, this)
 			@items(models)
@@ -463,9 +463,9 @@ class @Collection
 					leftovers.push(model)
 
 			#QS.log "COLLECTION::HANDLE_DATA : Finished building data #{QS.time()}.", 3
-			if op == Collection.INSERT
+			if op == QS.Collection.INSERT
 				@items(leftovers.concat(@items())) if leftovers.length > 0
-			else if op == Collection.APPEND
+			else if op == QS.Collection.APPEND
 				@items(@items().concat(leftovers)) if leftovers.length > 0
 		@model_state(ko.modelStates.READY)
 	handleItemData : (data)=>
@@ -569,7 +569,7 @@ class @Collection
 		@clear()
 		@_reqid = 0
 		@page(1)
-		@scope(null)
+		@scope({})
 	clear : ->
 		@items([])
 	absorb : (model) =>
@@ -589,16 +589,16 @@ class @Collection
 	toAPIParam : =>
 		@toAPI()
 
-Collection.REPLACE = 0
-Collection.INSERT = 1
-Collection.APPEND = 2
-Collection.UPDATE = 3
+QS.Collection.REPLACE = 0
+QS.Collection.INSERT = 1
+QS.Collection.APPEND = 2
+QS.Collection.UPDATE = 3
 
-class @ViewCollection extends @Collection
+class QS.ViewCollection extends QS.Collection
 	extend: (opts)->
 		super()
 		@views = ko.observableArray([])
-		@view_model = (@opts.view || View)
+		@view_model = (@opts.view || QS.View)
 		@view_owner = (@opts.view_owner || null)
 		@named_view_filters = {}
 		@named_view_sorts = {}
@@ -676,7 +676,7 @@ class @ViewCollection extends @Collection
 	getTemplate : ->
 		@template()
 
-class @View
+class QS.View
 	QuickScript.includeEventable(this)
 	init : ->
 	constructor : (@name, @owner, @model, @opts)->
@@ -804,7 +804,6 @@ class @View
 		if @transition.type == 'slide'
 			return
 			setTimeout =>
-				console.log('after render')
 				idx = @getViewBoxIndex(@task())
 				new_el = $(@element).find('.slide-item-' + idx)
 				new_el.addClass('active')
@@ -841,7 +840,7 @@ class @View
 		obj
 	toAPIParam : (flds)=>
 		QS.utils.prepareAPIParam(@toAPI(flds))
-View.registerComponent = (name, template_opts, view_class)->
+QS.View.registerComponent = (name, template_opts, view_class)->
 	view_class ||= this
 	QS.registered_components ||= {}
 
@@ -867,12 +866,12 @@ View.registerComponent = (name, template_opts, view_class)->
 				return new_view
 		template: topts
 
-class @Host
+class QS.Host
 	constructor : (url)->
 		@url = url
 		@headers = {}
 		@requests = []
-		@state = Host.READY
+		@state = QS.Host.READY
 		@before_request = null
 		@process_request = (req)-> return req
 		@process_response = (resp, status)-> return resp
@@ -882,7 +881,7 @@ class @Host
 		req.headers ||= {}
 		@before_request?(req)
 
-		if @state == Host.PAUSED
+		if @state == QS.Host.PAUSED
 			#QS.log "... adding request"
 			@requests.push(req)
 			req.loading?(true)
@@ -908,26 +907,26 @@ class @Host
 			req.headers[key] ||= val
 		QS.ajax req
 	pauseRequests : =>
-		@state = Host.PAUSED
+		@state = QS.Host.PAUSED
 	resumeRequests : =>
 		#QS.log "Resuming #{@requests.length} requests"
-		@state = Host.READY
+		@state = QS.Host.READY
 		@executeQueuedRequests()
-Host.READY = 1
-Host.PAUSED = 2
-Host.process_api_response = (resp, status)->
+QS.Host.READY = 1
+QS.Host.PAUSED = 2
+QS.Host.process_api_response = (resp, status)->
 	if typeof(resp) == "string"
 		resp = {success: false, meta : status, error : 'An error occurred.', data : resp}
 	else
 		resp
 
 
-class @ModelAdapter
+class QS.ModelAdapter
 	constructor : (opts)->
 		@save_url = null
 		@load_url = null
 		@index_url = null
-		@host = ModelAdapter.host
+		@host = QS.ModelAdapter.host
 		@notifier = null
 		@event_scope = null
 		for prop,val of opts
@@ -973,9 +972,9 @@ class @ModelAdapter
 			opts.type = http_m
 			@send opts
 			
-ModelAdapter.host = new Host("/api/")
+QS.ModelAdapter.host = new QS.Host("/api/")
 
-class @AccountAdapter
+class QS.AccountAdapter
 	constructor : (opts)->
 		@login_url = "/account/login"
 		@logout_url = "/account/logout"
@@ -987,7 +986,7 @@ class @AccountAdapter
 		@load_url = "/account"
 		@login_key = "email"
 		@password_key = "password"
-		@host = ModelAdapter.host
+		@host = QS.ModelAdapter.host
 		for prop,val of opts
 			@[prop] = val
 	login : (opts)->
@@ -1035,9 +1034,9 @@ class @AccountAdapter
 			@send opts
 
 
-@LocalStore = store
+QS.LocalStore = store
 
-class @Application extends @View
+class QS.Application extends QS.View
 	constructor : (opts)->
 		@app = this
 		@opts = opts
@@ -1050,11 +1049,11 @@ class @Application extends @View
 		@title = ko.observable('')
 		@redirect_on_login = ko.observable(null)
 		@auth_method = @opts.auth_method || 'session'
-		@redirect_on_login(LocalStore.get('app.redirect_on_login'))
+		@redirect_on_login(QS.LocalStore.get('app.redirect_on_login'))
 		@redirect_on_login.subscribe (val)=>
-			LocalStore.set('app.redirect_on_login', val)
+			QS.LocalStore.set('app.redirect_on_login', val)
 		@configure()
-		@account_model ||= (@opts.account_model || Model)
+		@account_model ||= (@opts.account_model || QS.Model)
 		@current_user = new @account_model()
 		@current_user_token = ko.observable(null)	# NOTE: always use getUserToken()
 
@@ -1070,7 +1069,7 @@ class @Application extends @View
 	configure : ->
 	route : ->
 		path = @location.pathname
-		console.log("Loading path '#{path}'")
+		QS.log("Loading path '#{path}'")
 		@setTitle(@name, true)
 		@previous_path(@path())
 		@path_parts = path.split('/')
@@ -1086,15 +1085,15 @@ class @Application extends @View
 	setUserToken : (data)->
 		QS.log(data, 2)
 		if data?
-			token = new AuthToken(data)
-			LocalStore.set('app.current_user_token', token.data)
+			token = new QS.AuthToken(data)
+			QS.LocalStore.set('app.current_user_token', token.data)
 			@current_user_token(token)
 		else
-			LocalStore.set('app.current_user_token', null)
+			QS.LocalStore.set('app.current_user_token', null)
 			@current_user_token(null)
 	getUserToken : =>
-		data = LocalStore.get('app.current_user_token')
-		token = if data? then new AuthToken(data) else null
+		data = QS.LocalStore.get('app.current_user_token')
+		token = if data? then new QS.AuthToken(data) else null
 		# cache new token
 		old_token = @current_user_token()
 		if token? && old_token?
