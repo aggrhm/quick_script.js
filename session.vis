@@ -65,7 +65,6 @@ set softtabstop=2
 set tabstop=2
 set tags=/osi/common/vob/tags,./tags
 set termencoding=utf-8
-set window=50
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
@@ -87,7 +86,7 @@ badd +99 src/javascripts/date.js
 badd +1 src/javascripts/knockout.js
 args bower.json
 set lines=51 columns=80
-winpos 1440 468
+winpos 840 344
 edit bower.json
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -98,8 +97,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 22 + 25) / 51)
-exe '2resize ' . ((&lines * 25 + 25) / 51)
+exe '1resize ' . ((&lines * 23 + 25) / 51)
+exe '2resize ' . ((&lines * 24 + 25) / 51)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -203,7 +202,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 3 - ((2 * winheight(0) + 11) / 22)
+let s:l = 3 - ((2 * winheight(0) + 11) / 23)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -314,15 +313,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 13 - ((6 * winheight(0) + 12) / 25)
+let s:l = 13 - ((0 * winheight(0) + 12) / 24)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 13
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 22 + 25) / 51)
-exe '2resize ' . ((&lines * 25 + 25) / 51)
+exe '1resize ' . ((&lines * 23 + 25) / 51)
+exe '2resize ' . ((&lines * 24 + 25) / 51)
 tabedit CHANGELOG.md
 set splitbelow splitright
 set nosplitbelow
@@ -547,12 +546,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 761 - ((11 * winheight(0) + 24) / 49)
+let s:l = 752 - ((24 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-761
-normal! 015|
+752
+normal! 08|
 tabedit src/javascripts/quick_script/ko_bindings.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -662,12 +661,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 402 - ((18 * winheight(0) + 24) / 49)
+let s:l = 464 - ((28 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-402
-normal! 083|
+464
+normal! 06|
 tabedit src/javascripts/quick_script/classes.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -892,12 +891,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 11 - ((10 * winheight(0) + 24) / 49)
+let s:l = 134 - ((24 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-11
-normal! 026|
+134
+normal! 013|
 tabedit src/javascripts
 set splitbelow splitright
 set nosplitbelow
@@ -907,24 +906,24 @@ set winheight=1 winwidth=1
 argglobal
 let s:cpo_save=&cpo
 set cpo&vim
-inoremap <buffer> <silent> <S-Down> :Nexplore
-inoremap <buffer> <silent> <S-Up> :Pexplore
-imap <buffer> <LeftMouse> <Plug>ILeftmouse
-imap <buffer> <MiddleMouse> <Plug>IMiddlemouse
 imap <buffer> <S-LeftMouse> <Plug>ISLeftmouse
+imap <buffer> <MiddleMouse> <Plug>IMiddlemouse
+imap <buffer> <LeftMouse> <Plug>ILeftmouse
+inoremap <buffer> <silent> <S-Up> :Pexplore
+inoremap <buffer> <silent> <S-Down> :Nexplore
 nmap <buffer>  <Plug>NetrwHideEdit
 nmap <buffer>  <Plug>NetrwRefresh
 nnoremap <buffer> <silent> C :let g:netrw_chgwin= winnr()
 nnoremap <buffer> <silent> c :exe "keepjumps lcd ".fnameescape(b:netrw_curdir)
-nnoremap <buffer> <silent> <S-Down> :Nexplore
-nnoremap <buffer> <silent> <S-Up> :Pexplore
-nmap <buffer> <LeftMouse> <Plug>NetrwLeftmouse
-nmap <buffer> <S-RightDrag> <Plug>NetrwRightdrag
-nmap <buffer> <MiddleMouse> <Plug>NetrwMiddlemouse
-nmap <buffer> <S-LeftMouse> <Plug>NetrwSLeftmouse
-nmap <buffer> <2-LeftMouse> <Plug>Netrw2Leftmouse
-nmap <buffer> <silent> <Plug>Netrw2Leftmouse -
 nnoremap <buffer> <F1> :he netrw-quickhelp
+nmap <buffer> <silent> <Plug>Netrw2Leftmouse -
+nmap <buffer> <2-LeftMouse> <Plug>Netrw2Leftmouse
+nmap <buffer> <S-LeftMouse> <Plug>NetrwSLeftmouse
+nmap <buffer> <MiddleMouse> <Plug>NetrwMiddlemouse
+nmap <buffer> <S-RightDrag> <Plug>NetrwRightdrag
+nmap <buffer> <LeftMouse> <Plug>NetrwLeftmouse
+nnoremap <buffer> <silent> <S-Up> :Pexplore
+nnoremap <buffer> <silent> <S-Down> :Nexplore
 imap <buffer>  <Plug>NetrwHideEdit
 imap <buffer>  <Plug>NetrwRefresh
 inoremap <buffer> <silent> C :let g:netrw_chgwin= winnr()
@@ -1040,7 +1039,7 @@ normal! zt
 1
 normal! 0
 lcd ~/Projects/lib/quick_script.js/src/javascripts
-tabnext 1
+tabnext 3
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
 endif

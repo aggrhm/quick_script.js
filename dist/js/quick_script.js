@@ -2975,7 +2975,7 @@ Date.prototype.format = function (mask, utc) {
       this.views.name_map = {};
       this.events = {};
       this.opts || (this.opts = {});
-      this.templateID = "view-" + this.name;
+      this.templateID || (this.templateID = "view-" + this.name);
       this.fields = [];
       this.view_name = ko.computed(function() {
         return this.templateID;
@@ -3081,7 +3081,9 @@ Date.prototype.format = function (mask, utc) {
         return;
       }
       view = new view_class(name, this);
-      view.templateID = tpl;
+      if (tpl != null) {
+        view.templateID = tpl;
+      }
       this.views.push(view);
       this.views[name] = this.views.name_map[name] = view;
       this["is_task_" + name] = ko.computed(function() {
@@ -3265,7 +3267,7 @@ Date.prototype.format = function (mask, utc) {
             new_view = view;
           } else {
             model = params.model;
-            owner = params.owner || context['$view'] || context['$parents'][0];
+            owner = params.owner || context['$view'] || context['$parent'] || context['$root'];
             vn = model != null ? "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
             new_view = new view_class(vn, owner, model, params);
           }
@@ -3707,7 +3709,7 @@ Date.prototype.format = function (mask, utc) {
       if (opts.token != null) {
         this.setUserToken(opts.token);
       }
-      if (this.redirect_on_login() !== null) {
+      if (this.redirect_on_login() != null) {
         this.redirectTo(this.redirect_on_login());
         return this.redirect_on_login(null);
       } else {

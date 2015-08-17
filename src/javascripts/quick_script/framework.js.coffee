@@ -685,7 +685,7 @@ class QS.View
 		@views.name_map = {}
 		@events = {}
 		@opts ||= {}
-		@templateID = "view-#{@name}"
+		@templateID ||= "view-#{@name}"
 		@fields = []
 		@view_name = ko.computed ->
 				@templateID
@@ -746,7 +746,7 @@ class QS.View
 	addView : (name, view_class, tpl) ->
 		return if @views.name_map[name]?
 		view = new view_class(name, this)
-		view.templateID = tpl
+		view.templateID = tpl if tpl?
 		@views.push(view)
 		@views[name] = @views.name_map[name] = view
 		@["is_task_#{name}"] = ko.computed ->
@@ -859,7 +859,7 @@ QS.View.registerComponent = (name, template_opts, view_class)->
 					new_view = view
 				else
 					model = params.model
-					owner = params.owner || context['$view'] || context['$parents'][0]
+					owner = params.owner || context['$view'] || context['$parent'] || context['$root']
 					vn = if model? then "#{name}-#{model.id?()}" else name
 					new_view = new view_class(vn, owner, model, params)
 				new_view.element = componentInfo.element if componentInfo?
@@ -1126,7 +1126,7 @@ class QS.Application extends QS.View
 		opts ||= {}
 		@setUser(opts.user) if opts.user?
 		@setUserToken(opts.token) if opts.token?
-		if @redirect_on_login() != null
+		if @redirect_on_login()?
 			@redirectTo(@redirect_on_login())
 			@redirect_on_login(null)
 		else
