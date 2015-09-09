@@ -248,11 +248,11 @@ class QS.FileModel extends QS.Model
 		@input.present = @input.is_present
 		@input.is_image = ko.computed ->
 			if (@input.has_file() && @input.file().type?)
-				return @input.file().type.match('image.*')
+				return QS.utils.isContentTypeImage(@input.file().type)
 			else if @input.has_url()
 				return /(jpg|gif|png|JPG|GIF|PNG|JPEG|jpeg)$/.test(@input.url())
 			else if @input.source_type() == 'base64'
-				return @input.source().content_type.match('image.*')
+				return QS.utils.isContentTypeImage(@input.source().content_type)
 			else
 				return false
 		, this

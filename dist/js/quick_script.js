@@ -1070,7 +1070,14 @@ Date.prototype.format = function (mask, utc) {
         }
         return ret;
       };
-    })(this)
+    })(this),
+    imageContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff'],
+    isContentTypeImage: function(content_type) {
+      if (content_type == null) {
+        return false;
+      }
+      return QS.utils.imageContentTypes.includes(content_type.toLowerCase());
+    }
   };
 
   QuickScript.log = function(msg, lvl) {
@@ -2232,11 +2239,11 @@ Date.prototype.format = function (mask, utc) {
       this.input.present = this.input.is_present;
       this.input.is_image = ko.computed(function() {
         if (this.input.has_file() && (this.input.file().type != null)) {
-          return this.input.file().type.match('image.*');
+          return QS.utils.isContentTypeImage(this.input.file().type);
         } else if (this.input.has_url()) {
           return /(jpg|gif|png|JPG|GIF|PNG|JPEG|jpeg)$/.test(this.input.url());
         } else if (this.input.source_type() === 'base64') {
-          return this.input.source().content_type.match('image.*');
+          return QS.utils.isContentTypeImage(this.input.source().content_type);
         } else {
           return false;
         }

@@ -100,7 +100,10 @@ QuickScript.utils =
 		for key, val of data
 			ret[key] = QS.utils.prepareAPIParam(val, opts)
 		return ret
-
+	imageContentTypes : ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff']
+	isContentTypeImage : (content_type)->
+		return false if !content_type?
+		return QS.utils.imageContentTypes.includes(content_type.toLowerCase())
 
 
 QuickScript.log = (msg, lvl)->

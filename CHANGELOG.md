@@ -15,6 +15,7 @@
 	- Added `elementContainsPoint` method in Utils
 	- Added `revert` method to Model
 	- Accept `data` argument in Collection load options
+	- Added `isContentTypeImage` to utils for use in FileModel
 
 - v2.9.0
 	- Added support for JST templates
