@@ -2641,7 +2641,7 @@ Date.prototype.format = function (mask, utc) {
       scope = this.scope();
       items = this.items().filter((function(_this) {
         return function(el) {
-          var filt, filt_args, filt_fn, params, ret;
+          var filt, filt_fn, params, ret;
           ret = true;
           for (filt in scope) {
             params = scope[filt];
@@ -2652,9 +2652,7 @@ Date.prototype.format = function (mask, utc) {
             if (filt_fn == null) {
               continue;
             }
-            filt_args = params instanceof Array ? params.slice(0) : [params];
-            filt_args.unshift(el);
-            ret = ret && filt_fn.apply(_this, filt_args);
+            ret = ret && filt_fn.call(_this, el, params);
           }
           return ret;
         };

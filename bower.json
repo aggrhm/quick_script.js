@@ -1,6 +1,6 @@
 {
   "name": "quick_script",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "main": [
     "dist/js/quick_script.js"
   ],

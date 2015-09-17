@@ -506,9 +506,7 @@ class QS.Collection
 				continue if filt == 'sort'
 				filt_fn = @named_filters[filt]
 				continue if !filt_fn?
-				filt_args = if (params instanceof Array) then params.slice(0) else [params]
-				filt_args.unshift(el)
-				ret = ret && filt_fn.apply(this, filt_args)
+				ret = ret && filt_fn.call(this, el, params)
 			ret
 		if scope.sort?
 			sort_key = scope.sort[0]

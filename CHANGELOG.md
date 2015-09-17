@@ -2,7 +2,8 @@
 
 - Pending Changes
 	- TODO: Add @location observable to Application, which keeps hash of path, path_parts, href, hash, and params
-	- TODO: Move classes into QS namespace and add install method to install into window
+
+- v2.10.0
 	- Improved filters and sorting in collections
 	- Improved option handling in Application
 	- Added ability to pass in scope to Collection
@@ -15,6 +16,8 @@
 	- Added `elementContainsPoint` method in Utils
 	- Added `revert` method to Model
 	- Accept `data` argument in Collection load options
+	- Added namespace for all classes with an install method
+	- View template is optional in `addView`
 	- Added `isContentTypeImage` to utils for use in FileModel
 
 - v2.9.0
