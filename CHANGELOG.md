@@ -2,6 +2,8 @@
 
 - Pending Changes
 	- TODO: Add @location observable to Application, which keeps hash of path, path_parts, href, hash, and params
+	- TODO: Change build framework to gulp
+	-	Updated login and logout support with `redirect_on_login`
 
 - v2.10.0
 	- Improved filters and sorting in collections

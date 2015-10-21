@@ -1063,6 +1063,15 @@ class QS.Application extends QS.View
 			else
 				false
 		, this
+		@is_logged_in.subscribe (val)=>
+			if val == true
+				# redirect if necessary
+				if (rol = @redirect_on_login())?
+					@redirectTo(rol)
+					@redirect_on_login(null)
+				@app.trigger 'app.logged_in'
+			else
+				@app.trigger 'app.logged_out'
 		super('app', null, null, @opts)
 	configure : ->
 	route : ->
@@ -1122,17 +1131,24 @@ class QS.Application extends QS.View
 		, 100
 	loginTo : (path, opts)->
 		opts ||= {}
+		if !@redirect_on_login()?
+			@redirect_on_login(path)
 		@setUser(opts.user) if opts.user?
 		@setUserToken(opts.token) if opts.token?
-		if @redirect_on_login()?
-			@redirectTo(@redirect_on_login())
-			@redirect_on_login(null)
-		else
-			@redirectTo(path)
-	logoutTo : (path, opts)->
+	logoutTo : (path, opts={})->
+		cp = @app.path()
 		@setUser(null)
 		@setUserToken(null)
+		if opts.save_path == true
+			@setRedirectOnLogin(cp)
 		@redirectTo(path)
+	setRedirectOnLogin : (path, opts={})->
+		opts.force = true if !opts.force?
+		rol = @redirect_on_login()
+		if opts.force == false && rol?
+			return rol
+		@redirect_on_login(path)
+		return path
 	runLater : (callback)->
 		setTimeout callback, 10
 	host : =>

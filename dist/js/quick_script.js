@@ -3603,6 +3603,20 @@ Date.prototype.format = function (mask, utc) {
           return false;
         }
       }, this);
+      this.is_logged_in.subscribe((function(_this) {
+        return function(val) {
+          var rol;
+          if (val === true) {
+            if ((rol = _this.redirect_on_login()) != null) {
+              _this.redirectTo(rol);
+              _this.redirect_on_login(null);
+            }
+            return _this.app.trigger('app.logged_in');
+          } else {
+            return _this.app.trigger('app.logged_out');
+          }
+        };
+      })(this));
       Application.__super__.constructor.call(this, 'app', null, null, this.opts);
     }
 
@@ -3708,24 +3722,45 @@ Date.prototype.format = function (mask, utc) {
 
     Application.prototype.loginTo = function(path, opts) {
       opts || (opts = {});
+      if (this.redirect_on_login() == null) {
+        this.redirect_on_login(path);
+      }
       if (opts.user != null) {
         this.setUser(opts.user);
       }
       if (opts.token != null) {
-        this.setUserToken(opts.token);
-      }
-      if (this.redirect_on_login() != null) {
-        this.redirectTo(this.redirect_on_login());
-        return this.redirect_on_login(null);
-      } else {
-        return this.redirectTo(path);
+        return this.setUserToken(opts.token);
       }
     };
 
     Application.prototype.logoutTo = function(path, opts) {
+      var cp;
+      if (opts == null) {
+        opts = {};
+      }
+      cp = this.app.path();
       this.setUser(null);
       this.setUserToken(null);
+      if (opts.save_path === true) {
+        this.setRedirectOnLogin(cp);
+      }
       return this.redirectTo(path);
+    };
+
+    Application.prototype.setRedirectOnLogin = function(path, opts) {
+      var rol;
+      if (opts == null) {
+        opts = {};
+      }
+      if (opts.force == null) {
+        opts.force = true;
+      }
+      rol = this.redirect_on_login();
+      if (opts.force === false && (rol != null)) {
+        return rol;
+      }
+      this.redirect_on_login(path);
+      return path;
     };
 
     Application.prototype.runLater = function(callback) {

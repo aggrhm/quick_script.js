@@ -7,9 +7,11 @@ GEM
     coffee-script-source (1.7.0)
     execjs (2.0.2)
     hike (1.2.3)
+    libv8 (3.16.14.7)
     multi_json (1.9.2)
     rack (1.5.2)
     rake (10.2.2)
+    ref (1.0.5)
     sass (3.3.4)
     sprockets (2.12.0)
       hike (~> 1.2)
@@ -19,6 +21,9 @@ GEM
     sprockets-sass (1.0.3)
       sprockets (~> 2.0)
       tilt (~> 1.1)
+    therubyracer (0.12.1)
+      libv8 (~> 3.16.14.0)
+      ref
     tilt (1.4.1)
 
 PLATFORMS
@@ -30,3 +35,7 @@ DEPENDENCIES
   sass
   sprockets
   sprockets-sass
+  therubyracer
+
+BUNDLED WITH
+   1.10.6
