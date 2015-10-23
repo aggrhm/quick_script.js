@@ -1235,9 +1235,6 @@ Date.prototype.format = function (mask, utc) {
           }
         }
       };
-      if (opts.error != null) {
-        req.upload.addEventListener('error', opts.error);
-      }
       if (opts.progress != null) {
         req.upload.addEventListener('progress', function(ev) {
           return opts.progress(ev, Math.floor(ev.loaded / ev.total * 100));

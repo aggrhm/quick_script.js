@@ -193,7 +193,7 @@ if QS.SupportManager.hasFormData()
 					opts.success(resp, req.status)
 				else
 					opts.error(resp, req.status) if opts.error?
-		req.upload.addEventListener('error', opts.error) if opts.error?
+		#req.upload.addEventListener('error', opts.error) if opts.error?
 		if opts.progress?
 			req.upload.addEventListener 'progress', (ev)->
 				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
