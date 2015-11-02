@@ -5,6 +5,7 @@
 	- TODO: Change build framework to gulp
 	-	Updated login and logout support with `redirect_on_login`
 	- Fixed core ajax utility function to not call error callback on upload error
+	- Added smarter link handling
 
 - v2.10.0
 	- Improved filters and sorting in collections

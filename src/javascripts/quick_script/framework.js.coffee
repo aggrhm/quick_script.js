@@ -1168,7 +1168,9 @@ class QS.Application extends QS.View
 		# override links
 		app = this
 		$('body').on 'click', 'a', ->
-			if this.origin == window.location.origin
+			if this.getAttribute("global") == "true" || QS.utils.isPresent(this.download)
+				return true
+			else if this.origin == window.location.origin
 				app.redirectTo(this.href)
 				return false
 			else if (path = this.getAttribute('path'))?

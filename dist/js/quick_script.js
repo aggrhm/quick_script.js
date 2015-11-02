@@ -3785,7 +3785,9 @@ Date.prototype.format = function (mask, utc) {
       app = this;
       return $('body').on('click', 'a', function() {
         var path;
-        if (this.origin === window.location.origin) {
+        if (this.getAttribute("global") === "true" || QS.utils.isPresent(this.download)) {
+          return true;
+        } else if (this.origin === window.location.origin) {
           app.redirectTo(this.href);
           return false;
         } else if ((path = this.getAttribute('path')) != null) {
