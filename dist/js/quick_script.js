@@ -13,7 +13,6 @@
  *
  * Update: 2014-06-29 20:56
  */
-
 (function(P){"function"===typeof define&&define.amd?define("object"!==typeof document||"loading"!==document.readyState?[]:"html5-history-api",P):P()})(function(){var j=!0,k=null,m=!1;function Q(a,b){var c=e.history!==n;c&&(e.history=n);a.apply(n,b);c&&(e.history=l)}function J(){}function h(a,b,c){if(a!=k&&""!==a&&!b){var b=h(),d=g.getElementsByTagName("base")[0];!c&&d&&d.getAttribute("href")&&(d.href=d.href,b=h(d.href,k,j));c=b.e;d=b.h;a=""+a;a=/^(?:\w+\:)?\/\//.test(a)?0===a.indexOf("/")?d+a:a:d+"//"+b.g+(0===a.indexOf("/")?a:0===a.indexOf("?")?c+a:0===a.indexOf("#")?c+b.f+a:c.replace(/[^\/]+$/g,"")+a)}else if(a=b?a:f.href,!s||c)a=a.replace(/^[^#]*/,"")||"#",a=f.protocol.replace(/:.*$|$/,
 ":")+"//"+f.host+i.basepath+a.replace(RegExp("^#[/]?(?:"+i.type+")?"),"");R.href=a;var a=/(?:(\w+\:))?(?:\/\/(?:[^@]*@)?([^\/:\?#]+)(?::([0-9]+))?)?([^\?#]*)(?:(\?[^#]+)|\?)?(?:(#.*))?/.exec(R.href),b=a[2]+(a[3]?":"+a[3]:""),c=a[4]||"/",d=a[5]||"",e="#"===a[6]?"":a[6]||"",p=c+d+e,v=c.replace(RegExp("^"+i.basepath,"i"),i.type)+d;return{a:a[1]+"//"+b+p,h:a[1],g:b,i:a[2],k:a[3]||"",e:c,f:d,b:e,c:p,j:v,d:v+e}}function aa(){var a;try{a=e.sessionStorage,a.setItem(E+"t","1"),a.removeItem(E+"t")}catch(b){a=
 {getItem:function(a){a=g.cookie.split(a+"=");return 1<a.length&&a.pop().split(";").shift()||"null"},setItem:function(a){var b={};if(b[f.href]=l.state)g.cookie=a+"="+t.stringify(b)}}}try{q=t.parse(a.getItem(E))||{}}catch(c){q={}}w(x+"unload",function(){a.setItem(E,t.stringify(q))},m)}function y(a,b,c,d){var f=0;c||(c={set:J},f=1);var g=!c.set,v=!c.get,K={configurable:j,set:function(){g=1},get:function(){v=1}};try{C(a,b,K),a[b]=a[b],C(a,b,c)}catch(ha){}if(!g||!v)if(a.__defineGetter__&&(a.__defineGetter__(b,
@@ -38,7 +37,6 @@ l)e.history=l=b[c+1]=a}))return Z(x+"hashchange",M,m),m;b[c+1]===e&&(z[d]=z[d.su
  * (c) Steven Sanderson - http://knockoutjs.com/
  * License: MIT (http://www.opensource.org/licenses/mit-license.php)
  */
-
 
 (function() {(function(p){var y=this||(0,eval)("this"),w=y.document,M=y.navigator,u=y.jQuery,E=y.JSON;(function(p){"function"===typeof define&&define.amd?define(["exports","require"],p):"function"===typeof require&&"object"===typeof exports&&"object"===typeof module?p(module.exports||exports):p(y.ko={})})(function(N,O){function J(a,d){return null===a||typeof a in Q?a===d:!1}function R(a,d){var c;return function(){c||(c=setTimeout(function(){c=p;a()},d))}}function S(a,d){var c;return function(){clearTimeout(c);
 c=setTimeout(a,d)}}function K(b,d,c,e){a.d[b]={init:function(b,k,h,l,g){var m,x;a.w(function(){var q=a.a.c(k()),n=!c!==!q,r=!x;if(r||d||n!==m)r&&a.Z.oa()&&(x=a.a.la(a.e.childNodes(b),!0)),n?(r||a.e.T(b,a.a.la(x)),a.Ja(e?e(g,q):g,b)):a.e.ma(b),m=n},null,{q:b});return{controlsDescendantBindings:!0}}};a.h.ka[b]=!1;a.e.R[b]=!0}var a="undefined"!==typeof N?N:{};a.b=function(b,d){for(var c=b.split("."),e=a,f=0;f<c.length-1;f++)e=e[c[f]];e[c[c.length-1]]=d};a.D=function(a,d,c){a[d]=c};a.version="3.3.0";
@@ -149,6 +147,7 @@ c)),k.beforeRemove&&(e[C]=s,y.push(s)));v++;break;case "retained":l(C,v++);break
 a.a.fb);a.P=function(){this.allowTemplateRewriting=!1};a.P.prototype=new a.J;a.P.prototype.renderTemplateSource=function(b,d,c,e){if(d=(9>a.a.M?0:b.nodes)?b.nodes():null)return a.a.O(d.cloneNode(!0).childNodes);b=b.text();return a.a.ca(b,e)};a.P.Va=new a.P;a.hb(a.P.Va);a.b("nativeTemplateEngine",a.P);(function(){a.Ya=function(){var a=this.uc=function(){if(!u||!u.tmpl)return 0;try{if(0<=u.tmpl.tag.tmpl.open.toString().indexOf("__"))return 2}catch(a){}return 1}();this.renderTemplateSource=function(b,
 e,f,k){k=k||w;f=f||{};if(2>a)throw Error("Your version of jQuery.tmpl is too old. Please upgrade to jQuery.tmpl 1.0.0pre or later.");var h=b.data("precompiled");h||(h=b.text()||"",h=u.template(null,"{{ko_with $item.koBindingContext}}"+h+"{{/ko_with}}"),b.data("precompiled",h));b=[e.$data];e=u.extend({koBindingContext:e},f.templateOptions);e=u.tmpl(h,b,e);e.appendTo(k.createElement("div"));u.fragments={};return e};this.createJavaScriptEvaluatorBlock=function(a){return"{{ko_code ((function() { return "+
 a+" })()) }}"};this.addTemplate=function(a,b){w.write("<script type='text/html' id='"+a+"'>"+b+"\x3c/script>")};0<a&&(u.tmpl.tag.ko_code={open:"__.push($1 || '');"},u.tmpl.tag.ko_with={open:"with($1) {",close:"} "})};a.Ya.prototype=new a.J;var b=new a.Ya;0<b.uc&&a.hb(b);a.b("jqueryTmplTemplateEngine",a.Ya)})()})})();})();
+
 /**
  * @license Knockout.Punches
  * Enhanced binding syntaxes for Knockout 3+
@@ -156,7 +155,6 @@ a+" })()) }}"};this.addTemplate=function(a,b){w.write("<script type='text/html' 
  * License: MIT (http://www.opensource.org/licenses/mit-license.php)
  * Version 0.5.1
  */
-
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
@@ -747,6 +745,7 @@ var ko_punches_attributeInterpolationMarkup = ko_punches.attributeInterpolationM
 
     return ko_punches;
 }));
+
 /*
  * Date Format 1.2.3
  * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
@@ -760,7 +759,6 @@ var ko_punches_attributeInterpolationMarkup = ko_punches.attributeInterpolationM
  * The date defaults to the current date/time.
  * The mask defaults to dateFormat.masks.default.
  */
-
 
 var dateFormat = function () {
 	var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
@@ -874,10 +872,183 @@ Date.prototype.format = function (mask, utc) {
 	return dateFormat(this, mask, utc);
 };
 
-/* Copyright (c) 2010-2013 Marcus Westin */
 
-(function(e){function o(){try{return r in e&&e[r]}catch(t){return!1}}var t={},n=e.document,r="localStorage",i="script",s;t.disabled=!1,t.version="1.3.17",t.set=function(e,t){},t.get=function(e,t){},t.has=function(e){return t.get(e)!==undefined},t.remove=function(e){},t.clear=function(){},t.transact=function(e,n,r){r==null&&(r=n,n=null),n==null&&(n={});var i=t.get(e,n);r(i),t.set(e,i)},t.getAll=function(){},t.forEach=function(){},t.serialize=function(e){return JSON.stringify(e)},t.deserialize=function(e){if(typeof e!="string")return undefined;try{return JSON.parse(e)}catch(t){return e||undefined}};if(o())s=e[r],t.set=function(e,n){return n===undefined?t.remove(e):(s.setItem(e,t.serialize(n)),n)},t.get=function(e,n){var r=t.deserialize(s.getItem(e));return r===undefined?n:r},t.remove=function(e){s.removeItem(e)},t.clear=function(){s.clear()},t.getAll=function(){var e={};return t.forEach(function(t,n){e[t]=n}),e},t.forEach=function(e){for(var n=0;n<s.length;n++){var r=s.key(n);e(r,t.get(r))}};else if(n.documentElement.addBehavior){var u,a;try{a=new ActiveXObject("htmlfile"),a.open(),a.write("<"+i+">document.w=window</"+i+'><iframe src="/favicon.ico"></iframe>'),a.close(),u=a.w.frames[0].document,s=u.createElement("div")}catch(f){s=n.createElement("div"),u=n.body}var l=function(e){return function(){var n=Array.prototype.slice.call(arguments,0);n.unshift(s),u.appendChild(s),s.addBehavior("#default#userData"),s.load(r);var i=e.apply(t,n);return u.removeChild(s),i}},c=new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]","g");function h(e){return e.replace(/^d/,"___$&").replace(c,"___")}t.set=l(function(e,n,i){return n=h(n),i===undefined?t.remove(n):(e.setAttribute(n,t.serialize(i)),e.save(r),i)}),t.get=l(function(e,n,r){n=h(n);var i=t.deserialize(e.getAttribute(n));return i===undefined?r:i}),t.remove=l(function(e,t){t=h(t),e.removeAttribute(t),e.save(r)}),t.clear=l(function(e){var t=e.XMLDocument.documentElement.attributes;e.load(r);for(var n=0,i;i=t[n];n++)e.removeAttribute(i.name);e.save(r)}),t.getAll=function(e){var n={};return t.forEach(function(e,t){n[e]=t}),n},t.forEach=l(function(e,n){var r=e.XMLDocument.documentElement.attributes;for(var i=0,s;s=r[i];++i)n(s.name,t.deserialize(e.getAttribute(s.name)))})}try{var p="__storejs__";t.set(p,p),t.get(p)!=p&&(t.disabled=!0),t.remove(p)}catch(f){t.disabled=!0}t.enabled=!t.disabled,typeof module!="undefined"&&module.exports&&this.module!==module?module.exports=t:typeof define=="function"&&define.amd?define(t):e.store=t})(Function("return this")())
-;
+;(function(win){
+	var store = {},
+		doc = win.document,
+		localStorageName = 'localStorage',
+		scriptTag = 'script',
+		storage
+
+	store.disabled = false
+	store.version = '1.3.17'
+	store.set = function(key, value) {}
+	store.get = function(key, defaultVal) {}
+	store.has = function(key) { return store.get(key) !== undefined }
+	store.remove = function(key) {}
+	store.clear = function() {}
+	store.transact = function(key, defaultVal, transactionFn) {
+		if (transactionFn == null) {
+			transactionFn = defaultVal
+			defaultVal = null
+		}
+		if (defaultVal == null) {
+			defaultVal = {}
+		}
+		var val = store.get(key, defaultVal)
+		transactionFn(val)
+		store.set(key, val)
+	}
+	store.getAll = function() {}
+	store.forEach = function() {}
+
+	store.serialize = function(value) {
+		return JSON.stringify(value)
+	}
+	store.deserialize = function(value) {
+		if (typeof value != 'string') { return undefined }
+		try { return JSON.parse(value) }
+		catch(e) { return value || undefined }
+	}
+
+	// Functions to encapsulate questionable FireFox 3.6.13 behavior
+	// when about.config::dom.storage.enabled === false
+	// See https://github.com/marcuswestin/store.js/issues#issue/13
+	function isLocalStorageNameSupported() {
+		try { return (localStorageName in win && win[localStorageName]) }
+		catch(err) { return false }
+	}
+
+	if (isLocalStorageNameSupported()) {
+		storage = win[localStorageName]
+		store.set = function(key, val) {
+			if (val === undefined) { return store.remove(key) }
+			storage.setItem(key, store.serialize(val))
+			return val
+		}
+		store.get = function(key, defaultVal) {
+			var val = store.deserialize(storage.getItem(key))
+			return (val === undefined ? defaultVal : val)
+		}
+		store.remove = function(key) { storage.removeItem(key) }
+		store.clear = function() { storage.clear() }
+		store.getAll = function() {
+			var ret = {}
+			store.forEach(function(key, val) {
+				ret[key] = val
+			})
+			return ret
+		}
+		store.forEach = function(callback) {
+			for (var i=0; i<storage.length; i++) {
+				var key = storage.key(i)
+				callback(key, store.get(key))
+			}
+		}
+	} else if (doc.documentElement.addBehavior) {
+		var storageOwner,
+			storageContainer
+		// Since #userData storage applies only to specific paths, we need to
+		// somehow link our data to a specific path.  We choose /favicon.ico
+		// as a pretty safe option, since all browsers already make a request to
+		// this URL anyway and being a 404 will not hurt us here.  We wrap an
+		// iframe pointing to the favicon in an ActiveXObject(htmlfile) object
+		// (see: http://msdn.microsoft.com/en-us/library/aa752574(v=VS.85).aspx)
+		// since the iframe access rules appear to allow direct access and
+		// manipulation of the document element, even for a 404 page.  This
+		// document can be used instead of the current document (which would
+		// have been limited to the current path) to perform #userData storage.
+		try {
+			storageContainer = new ActiveXObject('htmlfile')
+			storageContainer.open()
+			storageContainer.write('<'+scriptTag+'>document.w=window</'+scriptTag+'><iframe src="/favicon.ico"></iframe>')
+			storageContainer.close()
+			storageOwner = storageContainer.w.frames[0].document
+			storage = storageOwner.createElement('div')
+		} catch(e) {
+			// somehow ActiveXObject instantiation failed (perhaps some special
+			// security settings or otherwse), fall back to per-path storage
+			storage = doc.createElement('div')
+			storageOwner = doc.body
+		}
+		var withIEStorage = function(storeFunction) {
+			return function() {
+				var args = Array.prototype.slice.call(arguments, 0)
+				args.unshift(storage)
+				// See http://msdn.microsoft.com/en-us/library/ms531081(v=VS.85).aspx
+				// and http://msdn.microsoft.com/en-us/library/ms531424(v=VS.85).aspx
+				storageOwner.appendChild(storage)
+				storage.addBehavior('#default#userData')
+				storage.load(localStorageName)
+				var result = storeFunction.apply(store, args)
+				storageOwner.removeChild(storage)
+				return result
+			}
+		}
+
+		// In IE7, keys cannot start with a digit or contain certain chars.
+		// See https://github.com/marcuswestin/store.js/issues/40
+		// See https://github.com/marcuswestin/store.js/issues/83
+		var forbiddenCharsRegex = new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]", "g")
+		function ieKeyFix(key) {
+			return key.replace(/^d/, '___$&').replace(forbiddenCharsRegex, '___')
+		}
+		store.set = withIEStorage(function(storage, key, val) {
+			key = ieKeyFix(key)
+			if (val === undefined) { return store.remove(key) }
+			storage.setAttribute(key, store.serialize(val))
+			storage.save(localStorageName)
+			return val
+		})
+		store.get = withIEStorage(function(storage, key, defaultVal) {
+			key = ieKeyFix(key)
+			var val = store.deserialize(storage.getAttribute(key))
+			return (val === undefined ? defaultVal : val)
+		})
+		store.remove = withIEStorage(function(storage, key) {
+			key = ieKeyFix(key)
+			storage.removeAttribute(key)
+			storage.save(localStorageName)
+		})
+		store.clear = withIEStorage(function(storage) {
+			var attributes = storage.XMLDocument.documentElement.attributes
+			storage.load(localStorageName)
+			for (var i=0, attr; attr=attributes[i]; i++) {
+				storage.removeAttribute(attr.name)
+			}
+			storage.save(localStorageName)
+		})
+		store.getAll = function(storage) {
+			var ret = {}
+			store.forEach(function(key, val) {
+				ret[key] = val
+			})
+			return ret
+		}
+		store.forEach = withIEStorage(function(storage, callback) {
+			var attributes = storage.XMLDocument.documentElement.attributes
+			for (var i=0, attr; attr=attributes[i]; ++i) {
+				callback(attr.name, store.deserialize(storage.getAttribute(attr.name)))
+			}
+		})
+	}
+
+	try {
+		var testKey = '__storejs__'
+		store.set(testKey, testKey)
+		if (store.get(testKey) != testKey) { store.disabled = true }
+		store.remove(testKey)
+	} catch(e) {
+		store.disabled = true
+	}
+	store.enabled = !store.disabled
+
+	if (typeof module != 'undefined' && module.exports && this.module !== module) { module.exports = store }
+	else if (typeof define === 'function' && define.amd) { define(store) }
+	else { win.store = store }
+
+})(Function('return this')());
+
 (function() {
   window.QuickScript = window.QS = {};
 
@@ -904,9 +1075,9 @@ Date.prototype.format = function (mask, utc) {
     },
     pluralize: function(count, single, plural) {
       if (count === 1) {
-        return "" + count + " " + single;
+        return count + " " + single;
       } else {
-        return "" + count + " " + plural;
+        return count + " " + plural;
       }
     },
     isFunction: function(fn) {
@@ -982,16 +1153,16 @@ Date.prototype.format = function (mask, utc) {
     objectToArray: function(obj) {
       var key, ret, val;
       return ret = (function() {
-        var _results;
-        _results = [];
+        var results;
+        results = [];
         for (key in obj) {
           val = obj[key];
-          _results.push({
+          results.push({
             'key': key,
             'value': val
           });
         }
-        return _results;
+        return results;
       })();
     },
     preventDefault: (function(_this) {
@@ -1021,16 +1192,16 @@ Date.prototype.format = function (mask, utc) {
     })(this),
     getURLParams: (function(_this) {
       return function(url) {
-        var i, kv, pair, ret, str, _i, _len, _ref;
+        var i, k, kv, len, pair, ref, ret, str;
         i = url.indexOf("?");
         if (i === -1) {
           return {};
         }
         str = url.substring(i + 1);
         ret = {};
-        _ref = str.split("&");
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          pair = _ref[_i];
+        ref = str.split("&");
+        for (k = 0, len = ref.length; k < len; k++) {
+          pair = ref[k];
           kv = pair.split("=");
           if (!QS.utils.isBlank(kv[0])) {
             ret[kv[0]] = kv[1];
@@ -1101,54 +1272,54 @@ Date.prototype.format = function (mask, utc) {
 
   QuickScript.includeEventable = function(self) {
     self.prototype.handle = function(ev, callback, opts) {
-      var _base;
+      var base;
       if (opts == null) {
         opts = {};
       }
       this._events || (this._events = {});
-      (_base = this._events)[ev] || (_base[ev] = []);
+      (base = this._events)[ev] || (base[ev] = []);
       opts.callback = callback;
       return this._events[ev].push(opts);
     };
     return self.prototype.trigger = function(ev, data) {
-      var cbs, opts, rems, _i, _j, _len, _len1, _results;
+      var cbs, k, l, len, len1, opts, rems, results;
       QS.log("EVENTABLE::TRIGGER : " + ev, 5);
       this._events || (this._events = {});
       cbs = this._events[ev] || [];
       rems = [];
-      for (_i = 0, _len = cbs.length; _i < _len; _i++) {
-        opts = cbs[_i];
+      for (k = 0, len = cbs.length; k < len; k++) {
+        opts = cbs[k];
         opts.callback(data);
         if (opts.once === true) {
           rems.push(opts);
         }
       }
-      _results = [];
-      for (_j = 0, _len1 = rems.length; _j < _len1; _j++) {
-        opts = rems[_j];
-        _results.push(cbs.remove(opts));
+      results = [];
+      for (l = 0, len1 = rems.length; l < len1; l++) {
+        opts = rems[l];
+        results.push(cbs.remove(opts));
       }
-      return _results;
+      return results;
     };
   };
 
   QuickScript.install = function(scope) {
-    var cns, install_class, name, others, _i, _j, _len, _len1, _results;
+    var cns, install_class, k, l, len, len1, name, others, results;
     cns = ['Application', 'View', 'Model', 'FileModel', 'Collection', 'ViewCollection', 'Host', 'ModelAdapter', 'AccountAdapter', 'LocalStore'];
     others = ['PageTimer', 'Notifier', 'AuthToken', 'TimeLength', 'SelectOpts', 'SupportManager', 'AssetsLibrary'];
     install_class = function(name) {
       return scope[name] = QuickScript[name];
     };
-    for (_i = 0, _len = cns.length; _i < _len; _i++) {
-      name = cns[_i];
+    for (k = 0, len = cns.length; k < len; k++) {
+      name = cns[k];
       install_class(name);
     }
-    _results = [];
-    for (_j = 0, _len1 = others.length; _j < _len1; _j++) {
-      name = others[_j];
-      _results.push(install_class(name));
+    results = [];
+    for (l = 0, len1 = others.length; l < len1; l++) {
+      name = others[l];
+      results.push(install_class(name));
     }
-    return _results;
+    return results;
   };
 
   QuickScript.STATES = {};
@@ -1184,7 +1355,7 @@ Date.prototype.format = function (mask, utc) {
 
   if (QS.SupportManager.hasFormData()) {
     QuickScript.ajax = function(opts) {
-      var aval, data, first, key, req, url, val, _i, _len, _ref, _ref1, _ref2;
+      var aval, data, first, k, key, len, ref, ref1, ref2, req, url, val;
       data = new FormData();
       req = new XMLHttpRequest();
       url = opts.url;
@@ -1195,35 +1366,35 @@ Date.prototype.format = function (mask, utc) {
       if (opts.type === "GET") {
         url = url + "?";
         first = true;
-        _ref = opts.data;
-        for (key in _ref) {
-          val = _ref[key];
+        ref = opts.data;
+        for (key in ref) {
+          val = ref[key];
           if (val instanceof Array) {
-            for (_i = 0, _len = val.length; _i < _len; _i++) {
-              aval = val[_i];
+            for (k = 0, len = val.length; k < len; k++) {
+              aval = val[k];
               url = url + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
             }
           } else {
-            url = url + ("" + key + "=" + (escape(val)) + "&");
+            url = url + (key + "=" + (escape(val)) + "&");
           }
         }
         url = url.substring(0, url.length - 1);
       } else {
-        _ref1 = opts.data;
-        for (key in _ref1) {
-          val = _ref1[key];
+        ref1 = opts.data;
+        for (key in ref1) {
+          val = ref1[key];
           data.append(key, val);
         }
       }
       req.onreadystatechange = function(ev) {
-        var resp;
+        var error, resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
           }
           try {
             resp = JSON.parse(req.responseText);
-          } catch (_error) {
+          } catch (error) {
             resp = req.responseText;
           }
           if (req.status === 200) {
@@ -1241,9 +1412,9 @@ Date.prototype.format = function (mask, utc) {
         });
       }
       req.open(opts.type, url, opts.async);
-      _ref2 = opts.headers;
-      for (key in _ref2) {
-        val = _ref2[key];
+      ref2 = opts.headers;
+      for (key in ref2) {
+        val = ref2[key];
         if (val != null) {
           req.setRequestHeader(key, val);
         }
@@ -1261,23 +1432,23 @@ Date.prototype.format = function (mask, utc) {
     };
   } else {
     QuickScript.ajax = function(opts) {
-      var aval, data_s, key, req, url, val, _i, _len, _ref, _ref1;
+      var aval, data_s, k, key, len, ref, ref1, req, url, val;
       req = new XMLHttpRequest();
       url = opts.url;
       if (opts.async == null) {
         opts.async = true;
       }
       data_s = '';
-      _ref = opts.data;
-      for (key in _ref) {
-        val = _ref[key];
+      ref = opts.data;
+      for (key in ref) {
+        val = ref[key];
         if (val instanceof Array) {
-          for (_i = 0, _len = val.length; _i < _len; _i++) {
-            aval = val[_i];
+          for (k = 0, len = val.length; k < len; k++) {
+            aval = val[k];
             data_s = data_s + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
           }
         } else {
-          data_s = data_s + ("" + key + "=" + (escape(val)) + "&");
+          data_s = data_s + (key + "=" + (escape(val)) + "&");
         }
       }
       data_s = data_s.substring(0, data_s.length - 1);
@@ -1285,14 +1456,14 @@ Date.prototype.format = function (mask, utc) {
         url = url + "?" + data_s;
       }
       req.onreadystatechange = function(ev) {
-        var resp;
+        var error, resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
           }
           try {
             resp = JSON.parse(req.responseText);
-          } catch (_error) {
+          } catch (error) {
             resp = req.responseText;
           }
           if (req.status === 200) {
@@ -1312,9 +1483,9 @@ Date.prototype.format = function (mask, utc) {
       				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
        */
       req.open(opts.type, url, opts.async);
-      _ref1 = opts.headers;
-      for (key in _ref1) {
-        val = _ref1[key];
+      ref1 = opts.headers;
+      for (key in ref1) {
+        val = ref1[key];
         if (val != null) {
           req.setRequestHeader(key, val);
         }
@@ -1330,13 +1501,14 @@ Date.prototype.format = function (mask, utc) {
   }
 
 }).call(this);
+
 (function() {
   var cropImage, fadeInElement, link_to, link_to_rel, link_to_span, loadScript, timeFromUnix,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Array.prototype.indexAt = function(val) {
-    var i, _i, _ref;
-    for (i = _i = 0, _ref = this.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+    var i, j, ref;
+    for (i = j = 0, ref = this.length; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
       if (this[i] === val) {
         return i;
       }
@@ -1469,8 +1641,8 @@ Date.prototype.format = function (mask, utc) {
 
   QS.SelectOpts = (function() {
     function SelectOpts() {
-      this.find = __bind(this.find, this);
-      this.add = __bind(this.add, this);
+      this.find = bind(this.find, this);
+      this.add = bind(this.add, this);
       this.options = [];
     }
 
@@ -1483,10 +1655,10 @@ Date.prototype.format = function (mask, utc) {
     };
 
     SelectOpts.prototype.find = function(val) {
-      var obj, _i, _len, _ref;
-      _ref = this.options;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        obj = _ref[_i];
+      var j, len, obj, ref;
+      ref = this.options;
+      for (j = 0, len = ref.length; j < len; j++) {
+        obj = ref[j];
         if (obj.val === val.toString()) {
           return obj.str;
         }
@@ -1500,12 +1672,12 @@ Date.prototype.format = function (mask, utc) {
 
   QS.PageTimer = (function() {
     function PageTimer(func, time, self) {
-      this.increasePollTime = __bind(this.increasePollTime, this);
-      this.getFrequency = __bind(this.getFrequency, this);
-      this.setFrequency = __bind(this.setFrequency, this);
-      this.isRunning = __bind(this.isRunning, this);
-      this.stop = __bind(this.stop, this);
-      this.start = __bind(this.start, this);
+      this.increasePollTime = bind(this.increasePollTime, this);
+      this.getFrequency = bind(this.getFrequency, this);
+      this.setFrequency = bind(this.setFrequency, this);
+      this.isRunning = bind(this.isRunning, this);
+      this.stop = bind(this.stop, this);
+      this.start = bind(this.start, this);
       this.self = self || this;
       this.callback = func.bind(self);
       this.frequency = time * 1000;
@@ -1703,7 +1875,7 @@ Date.prototype.format = function (mask, utc) {
         str = "seconds";
       }
       attr = str + (val > 1 ? "s" : "");
-      return "" + val + " " + attr;
+      return val + " " + attr;
     };
 
     return TimeLength;
@@ -1716,14 +1888,14 @@ Date.prototype.format = function (mask, utc) {
 
   QS.AuthToken = (function() {
     function AuthToken(data) {
-      var key, val, _ref;
+      var key, ref, val;
       this.data = data;
-      this.toJSON = __bind(this.toJSON, this);
-      this.is_expired = __bind(this.is_expired, this);
-      this.timeLeft = __bind(this.timeLeft, this);
-      _ref = this.data;
-      for (key in _ref) {
-        val = _ref[key];
+      this.toJSON = bind(this.toJSON, this);
+      this.is_expired = bind(this.is_expired, this);
+      this.timeLeft = bind(this.timeLeft, this);
+      ref = this.data;
+      for (key in ref) {
+        val = ref[key];
         this[key] = val;
       }
       if (this.data.received_at == null) {
@@ -1762,8 +1934,8 @@ Date.prototype.format = function (mask, utc) {
   }
 
   loadScript = function(u, d) {
-    var _ref;
-    d = (_ref = typeof d !== 'undefined') != null ? _ref : {
+    var ref;
+    d = (ref = typeof d !== 'undefined') != null ? ref : {
       d: ""
     };
     return $.ajax({
@@ -1809,10 +1981,11 @@ Date.prototype.format = function (mask, utc) {
   };
 
 }).call(this);
+
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
   QS.Model = (function() {
     Model.prototype.init = function() {};
@@ -1820,18 +1993,18 @@ Date.prototype.format = function (mask, utc) {
     Model.prototype.extend = function() {};
 
     function Model(data, collection, opts) {
-      this.absorb = __bind(this.absorb, this);
-      this.revert = __bind(this.revert, this);
-      this.checkDirty = __bind(this.checkDirty, this);
-      this.toClone = __bind(this.toClone, this);
-      this.getClass = __bind(this.getClass, this);
-      this.toJSON = __bind(this.toJSON, this);
-      this.toAPIParam = __bind(this.toAPIParam, this);
-      this.toAPI = __bind(this.toAPI, this);
-      this.toJS = __bind(this.toJS, this);
-      this.removeFromCollection = __bind(this.removeFromCollection, this);
-      this["delete"] = __bind(this["delete"], this);
-      this.reloadOpts = __bind(this.reloadOpts, this);
+      this.absorb = bind(this.absorb, this);
+      this.revert = bind(this.revert, this);
+      this.checkDirty = bind(this.checkDirty, this);
+      this.toClone = bind(this.toClone, this);
+      this.getClass = bind(this.getClass, this);
+      this.toJSON = bind(this.toJSON, this);
+      this.toAPIParam = bind(this.toAPIParam, this);
+      this.toAPI = bind(this.toAPI, this);
+      this.toJS = bind(this.toJS, this);
+      this.removeFromCollection = bind(this.removeFromCollection, this);
+      this["delete"] = bind(this["delete"], this);
+      this.reloadOpts = bind(this.reloadOpts, this);
       this._uuid = QS.utils.uuid();
       this.fields = [];
       this.submodels = {};
@@ -2013,11 +2186,11 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Model.prototype.toJS = function(flds) {
-      var obj, prop, _i, _len;
+      var j, len, obj, prop;
       flds || (flds = this.fields);
       obj = {};
-      for (_i = 0, _len = flds.length; _i < _len; _i++) {
-        prop = flds[_i];
+      for (j = 0, len = flds.length; j < len; j++) {
+        prop = flds[j];
         if (typeof this[prop].toJS === 'function') {
           obj[prop] = this[prop].toJS();
         } else {
@@ -2028,11 +2201,11 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Model.prototype.toAPI = function(flds) {
-      var obj, prop, val, _i, _len;
+      var j, len, obj, prop, val;
       flds || (flds = this.fields);
       obj = {};
-      for (_i = 0, _len = flds.length; _i < _len; _i++) {
-        prop = flds[_i];
+      for (j = 0, len = flds.length; j < len; j++) {
+        prop = flds[j];
         if (typeof this[prop].toAPI === 'function') {
           val = this[prop].toAPI();
           if (val !== null) {
@@ -2098,8 +2271,8 @@ Date.prototype.format = function (mask, utc) {
 
   QS.Model.includeCollection = function(self) {
     self || (self = this);
-    return self.Collection = (function(_super) {
-      __extends(_Class, _super);
+    return self.Collection = (function(superClass) {
+      extend(_Class, superClass);
 
       function _Class(opts) {
         _Class.__super__.constructor.call(this, opts);
@@ -2114,8 +2287,8 @@ Date.prototype.format = function (mask, utc) {
 
   QS.Model.includeViewCollection = function(self) {
     self || (self = this);
-    return self.Collection = (function(_super) {
-      __extends(_Class, _super);
+    return self.Collection = (function(superClass) {
+      extend(_Class, superClass);
 
       function _Class(opts) {
         _Class.__super__.constructor.call(this, opts);
@@ -2142,14 +2315,14 @@ Date.prototype.format = function (mask, utc) {
     })(this));
   };
 
-  QS.FileModel = (function(_super) {
-    __extends(FileModel, _super);
+  QS.FileModel = (function(superClass) {
+    extend(FileModel, superClass);
 
     function FileModel() {
-      this.toAPIParam = __bind(this.toAPIParam, this);
-      this.toAPI = __bind(this.toAPI, this);
-      this.toJS = __bind(this.toJS, this);
-      this.reset = __bind(this.reset, this);
+      this.toAPIParam = bind(this.toAPIParam, this);
+      this.toAPI = bind(this.toAPI, this);
+      this.toJS = bind(this.toJS, this);
+      this.reset = bind(this.reset, this);
       return FileModel.__super__.constructor.apply(this, arguments);
     }
 
@@ -2320,25 +2493,25 @@ Date.prototype.format = function (mask, utc) {
     Collection.prototype.init = function() {};
 
     function Collection(opts) {
-      this.toAPIParam = __bind(this.toAPIParam, this);
-      this.toAPI = __bind(this.toAPI, this);
-      this.toJS = __bind(this.toJS, this);
-      this.absorb = __bind(this.absorb, this);
-      this.length = __bind(this.length, this);
-      this.hasItems = __bind(this.hasItems, this);
-      this.prevPage = __bind(this.prevPage, this);
-      this.nextPage = __bind(this.nextPage, this);
-      this.getScopedItems = __bind(this.getScopedItems, this);
-      this.getFilteredItems = __bind(this.getFilteredItems, this);
-      this.addNamedSort = __bind(this.addNamedSort, this);
-      this.addNamedFilter = __bind(this.addNamedFilter, this);
-      this.handleItemDelete = __bind(this.handleItemDelete, this);
-      this.handleItemData = __bind(this.handleItemData, this);
-      this.handleData = __bind(this.handleData, this);
-      this.update = __bind(this.update, this);
-      this.load = __bind(this.load, this);
-      this.setScope = __bind(this.setScope, this);
-      this.extend = __bind(this.extend, this);
+      this.toAPIParam = bind(this.toAPIParam, this);
+      this.toAPI = bind(this.toAPI, this);
+      this.toJS = bind(this.toJS, this);
+      this.absorb = bind(this.absorb, this);
+      this.length = bind(this.length, this);
+      this.hasItems = bind(this.hasItems, this);
+      this.prevPage = bind(this.prevPage, this);
+      this.nextPage = bind(this.nextPage, this);
+      this.getScopedItems = bind(this.getScopedItems, this);
+      this.getFilteredItems = bind(this.getFilteredItems, this);
+      this.addNamedSort = bind(this.addNamedSort, this);
+      this.addNamedFilter = bind(this.addNamedFilter, this);
+      this.handleItemDelete = bind(this.handleItemDelete, this);
+      this.handleItemData = bind(this.handleItemData, this);
+      this.handleData = bind(this.handleData, this);
+      this.update = bind(this.update, this);
+      this.load = bind(this.load, this);
+      this.setScope = bind(this.setScope, this);
+      this.extend = bind(this.extend, this);
       var key, val;
       this.opts = {};
       for (key in opts) {
@@ -2500,7 +2673,7 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Collection.prototype.handleData = function(data, op) {
-      var c_el, c_id, curr_a, curr_len, id_h, idx, item, itm, leftovers, max_len, model, models, new_a, new_len, r_el, r_id, same_itm, _i, _j, _k, _len, _len1, _ref;
+      var c_el, c_id, curr_a, curr_len, id_h, idx, item, itm, j, k, l, leftovers, len, len1, max_len, model, models, new_a, new_len, r_el, r_id, ref, same_itm;
       if (data == null) {
         return;
       }
@@ -2508,8 +2681,8 @@ Date.prototype.format = function (mask, utc) {
       op || (op = QS.Collection.UPDATE);
       curr_a = this.items();
       id_h = {};
-      for (_i = 0, _len = curr_a.length; _i < _len; _i++) {
-        itm = curr_a[_i];
+      for (j = 0, len = curr_a.length; j < len; j++) {
+        itm = curr_a[j];
         id_h[itm.id()] = itm;
       }
       if (op === QS.Collection.UPDATE) {
@@ -2518,7 +2691,7 @@ Date.prototype.format = function (mask, utc) {
         new_len = data.length;
         max_len = Math.max(curr_len, new_len);
         if (max_len > 0) {
-          for (idx = _j = _ref = max_len - 1; _ref <= 0 ? _j <= 0 : _j >= 0; idx = _ref <= 0 ? ++_j : --_j) {
+          for (idx = k = ref = max_len - 1; ref <= 0 ? k <= 0 : k >= 0; idx = ref <= 0 ? ++k : --k) {
             c_el = curr_a[idx];
             c_id = c_el != null ? c_el.id() : null;
             r_el = new_a[idx];
@@ -2541,18 +2714,18 @@ Date.prototype.format = function (mask, utc) {
         this.items.valueHasMutated();
       } else if (op === QS.Collection.REPLACE) {
         models = (function() {
-          var _k, _len1, _results;
-          _results = [];
-          for (_k = 0, _len1 = data.length; _k < _len1; _k++) {
-            item = data[_k];
-            _results.push(new this.model(item, this));
+          var l, len1, results;
+          results = [];
+          for (l = 0, len1 = data.length; l < len1; l++) {
+            item = data[l];
+            results.push(new this.model(item, this));
           }
-          return _results;
+          return results;
         }).call(this);
         this.items(models);
       } else {
         leftovers = [];
-        for (idx = _k = 0, _len1 = data.length; _k < _len1; idx = ++_k) {
+        for (idx = l = 0, len1 = data.length; l < len1; idx = ++l) {
           item = data[idx];
           same_itm = id_h[item.id];
           if (same_itm != null) {
@@ -2617,10 +2790,10 @@ Date.prototype.format = function (mask, utc) {
       fa = fsv instanceof Array ? fsv : [fsv];
       items = this.items().filter((function(_this) {
         return function(el) {
-          var filt, filt_fn, ret, _i, _len;
+          var filt, filt_fn, j, len, ret;
           ret = true;
-          for (_i = 0, _len = fa.length; _i < _len; _i++) {
-            filt = fa[_i];
+          for (j = 0, len = fa.length; j < len; j++) {
+            filt = fa[j];
             filt_fn = _this.named_filters[filt];
             ret = ret && filt_fn(el);
           }
@@ -2728,11 +2901,11 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Collection.prototype.getIndexById = function(id) {
-      var idx, item, _i, _len, _ref;
+      var idx, item, j, len, ref;
       idx = 0;
-      _ref = this.items();
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
+      ref = this.items();
+      for (j = 0, len = ref.length; j < len; j++) {
+        item = ref[j];
         if (item.id() === id) {
           return idx;
         }
@@ -2790,22 +2963,22 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Collection.prototype.toJS = function() {
-      var item, objs, _i, _len, _ref;
+      var item, j, len, objs, ref;
       objs = [];
-      _ref = this.items();
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
+      ref = this.items();
+      for (j = 0, len = ref.length; j < len; j++) {
+        item = ref[j];
         objs.push(item.toJS());
       }
       return objs;
     };
 
     Collection.prototype.toAPI = function() {
-      var item, objs, _i, _len, _ref;
+      var item, j, len, objs, ref;
       objs = [];
-      _ref = this.items();
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
+      ref = this.items();
+      for (j = 0, len = ref.length; j < len; j++) {
+        item = ref[j];
         objs.push(item.toAPI());
       }
       objs;
@@ -2828,15 +3001,15 @@ Date.prototype.format = function (mask, utc) {
 
   QS.Collection.UPDATE = 3;
 
-  QS.ViewCollection = (function(_super) {
-    __extends(ViewCollection, _super);
+  QS.ViewCollection = (function(superClass) {
+    extend(ViewCollection, superClass);
 
     function ViewCollection() {
-      this.computeFilteredViews = __bind(this.computeFilteredViews, this);
-      this.addViewSort = __bind(this.addViewSort, this);
-      this.addViewFilter = __bind(this.addViewFilter, this);
-      this.setView = __bind(this.setView, this);
-      this.updateViews = __bind(this.updateViews, this);
+      this.computeFilteredViews = bind(this.computeFilteredViews, this);
+      this.addViewSort = bind(this.addViewSort, this);
+      this.addViewFilter = bind(this.addViewFilter, this);
+      this.setView = bind(this.setView, this);
+      this.updateViews = bind(this.updateViews, this);
       return ViewCollection.__super__.constructor.apply(this, arguments);
     }
 
@@ -2854,7 +3027,7 @@ Date.prototype.format = function (mask, utc) {
     };
 
     ViewCollection.prototype.updateViews = function(items) {
-      var ca, cm, idx, max_len, mh, ra, rm, same_view, view_cls, view_name, view_owner, _i, _ref;
+      var ca, cm, idx, j, max_len, mh, ra, ref, rm, same_view, view_cls, view_name, view_owner;
       view_cls = this.view_model;
       view_owner = this.view_owner;
       ra = items;
@@ -2865,7 +3038,7 @@ Date.prototype.format = function (mask, utc) {
         return mh[view.model._uuid] = view;
       });
       if (max_len > 0) {
-        for (idx = _i = _ref = max_len - 1; _ref <= 0 ? _i <= 0 : _i >= 0; idx = _ref <= 0 ? ++_i : --_i) {
+        for (idx = j = ref = max_len - 1; ref <= 0 ? j <= 0 : j >= 0; idx = ref <= 0 ? ++j : --j) {
           rm = ra[idx];
           cm = ca[idx] != null ? ca[idx].model : null;
           if (rm == null) {
@@ -2911,10 +3084,10 @@ Date.prototype.format = function (mask, utc) {
         fa = fsv instanceof Array ? fsv : [fsv];
         views = this.views().filter((function(_this) {
           return function(el) {
-            var filt, filt_fn, ret, _i, _len;
+            var filt, filt_fn, j, len, ret;
             ret = true;
-            for (_i = 0, _len = fa.length; _i < _len; _i++) {
-              filt = fa[_i];
+            for (j = 0, len = fa.length; j < len; j++) {
+              filt = fa[j];
               filt_fn = _this.named_view_filters[filt];
               ret = ret && filt_fn(el);
             }
@@ -2957,19 +3130,19 @@ Date.prototype.format = function (mask, utc) {
 
     View.prototype.init = function() {};
 
-    function View(name, owner, model, opts) {
-      this.name = name;
-      this.owner = owner;
-      this.model = model;
-      this.opts = opts;
-      this.toAPIParam = __bind(this.toAPIParam, this);
-      this.toAPI = __bind(this.toAPI, this);
-      this.ensure = __bind(this.ensure, this);
-      this.afterRender = __bind(this.afterRender, this);
-      this.validate_fields = __bind(this.validate_fields, this);
-      this.validate_for = __bind(this.validate_for, this);
-      this.addFields = __bind(this.addFields, this);
-      this.reload = __bind(this.reload, this);
+    function View(name1, owner1, model1, opts1) {
+      this.name = name1;
+      this.owner = owner1;
+      this.model = model1;
+      this.opts = opts1;
+      this.toAPIParam = bind(this.toAPIParam, this);
+      this.toAPI = bind(this.toAPI, this);
+      this.ensure = bind(this.ensure, this);
+      this.afterRender = bind(this.afterRender, this);
+      this.validate_fields = bind(this.validate_fields, this);
+      this.validate_for = bind(this.validate_for, this);
+      this.addFields = bind(this.addFields, this);
+      this.reload = bind(this.reload, this);
       if (this.owner != null) {
         this.app = this.owner.app;
       }
@@ -3002,8 +3175,8 @@ Date.prototype.format = function (mask, utc) {
       };
       this.transition.has_slide_css = (function(_this) {
         return function(css, idx) {
-          var _base;
-          return typeof (_base = _this.transition.opts['slide_css' + css]()).includes === "function" ? _base.includes(idx) : void 0;
+          var base;
+          return typeof (base = _this.transition.opts['slide_css' + css]()).includes === "function" ? base.includes(idx) : void 0;
         };
       })(this);
       this.init();
@@ -3018,10 +3191,10 @@ Date.prototype.format = function (mask, utc) {
     };
 
     View.prototype.hide = function() {
-      var view, _i, _len, _ref;
-      _ref = this.views();
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        view = _ref[_i];
+      var j, len, ref, view;
+      ref = this.views();
+      for (j = 0, len = ref.length; j < len; j++) {
+        view = ref[j];
         view.hide();
       }
       this.is_visible(false);
@@ -3205,11 +3378,11 @@ Date.prototype.format = function (mask, utc) {
     };
 
     View.prototype.toAPI = function(flds) {
-      var obj, prop, val, _i, _len;
+      var j, len, obj, prop, val;
       flds || (flds = this.fields);
       obj = {};
-      for (_i = 0, _len = flds.length; _i < _len; _i++) {
-        prop = flds[_i];
+      for (j = 0, len = flds.length; j < len; j++) {
+        prop = flds[j];
         if (typeof this[prop].toAPI === 'function') {
           val = this[prop].toAPI();
           if (val !== null) {
@@ -3270,7 +3443,7 @@ Date.prototype.format = function (mask, utc) {
           } else {
             model = params.model;
             owner = params.owner || context['$view'] || context['$parent'] || context['$root'];
-            vn = model != null ? "" + name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
+            vn = model != null ? name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
             new_view = new view_class(vn, owner, model, params);
           }
           if (componentInfo != null) {
@@ -3285,11 +3458,11 @@ Date.prototype.format = function (mask, utc) {
 
   QS.Host = (function() {
     function Host(url) {
-      this.resumeRequests = __bind(this.resumeRequests, this);
-      this.pauseRequests = __bind(this.pauseRequests, this);
-      this.executeRequest = __bind(this.executeRequest, this);
-      this.executeQueuedRequests = __bind(this.executeQueuedRequests, this);
-      this.request = __bind(this.request, this);
+      this.resumeRequests = bind(this.resumeRequests, this);
+      this.pauseRequests = bind(this.pauseRequests, this);
+      this.executeRequest = bind(this.executeRequest, this);
+      this.executeQueuedRequests = bind(this.executeQueuedRequests, this);
+      this.request = bind(this.request, this);
       this.url = url;
       this.headers = {};
       this.requests = [];
@@ -3317,17 +3490,17 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Host.prototype.executeQueuedRequests = function() {
-      var req, _results;
-      _results = [];
+      var req, results;
+      results = [];
       while (this.requests.length > 0) {
         req = this.requests.shift();
-        _results.push(this.executeRequest(req));
+        results.push(this.executeRequest(req));
       }
-      return _results;
+      return results;
     };
 
     Host.prototype.executeRequest = function(req) {
-      var callback_fn, key, resp_fn, val, _base, _ref;
+      var base, callback_fn, key, ref, resp_fn, val;
       req = this.process_request(req);
       resp_fn = req.callback || req.success;
       callback_fn = (function(_this) {
@@ -3344,10 +3517,10 @@ Date.prototype.format = function (mask, utc) {
       if (req.error == null) {
         req.error = callback_fn;
       }
-      _ref = this.headers;
-      for (key in _ref) {
-        val = _ref[key];
-        (_base = req.headers)[key] || (_base[key] = val);
+      ref = this.headers;
+      for (key in ref) {
+        val = ref[key];
+        (base = req.headers)[key] || (base[key] = val);
       }
       return QS.ajax(req);
     };
@@ -3563,13 +3736,13 @@ Date.prototype.format = function (mask, utc) {
 
   QS.LocalStore = store;
 
-  QS.Application = (function(_super) {
-    __extends(Application, _super);
+  QS.Application = (function(superClass) {
+    extend(Application, superClass);
 
     function Application(opts) {
-      this.bindToBody = __bind(this.bindToBody, this);
-      this.host = __bind(this.host, this);
-      this.getUserToken = __bind(this.getUserToken, this);
+      this.bindToBody = bind(this.bindToBody, this);
+      this.host = bind(this.host, this);
+      this.getUserToken = bind(this.getUserToken, this);
       this.app = this;
       this.opts = opts;
       this.location = window.history.location || window.location;
@@ -3774,7 +3947,7 @@ Date.prototype.format = function (mask, utc) {
       if (setFull) {
         return $('title').text(title);
       } else {
-        return $('title').text("" + this.name + " - " + title);
+        return $('title').text(this.name + " - " + title);
       }
     };
 
@@ -3816,6 +3989,7 @@ Date.prototype.format = function (mask, utc) {
   };
 
 }).call(this);
+
 (function() {
   QuickScript.initKO = function() {
     var JSTTemplateSource, templateEngine;
@@ -3958,12 +4132,12 @@ Date.prototype.format = function (mask, utc) {
     };
     ko.bindingHandlers.viewOptions = {
       update: function(element, valueAccessor) {
-        var opts, view, views, _i, _len;
+        var i, len, opts, view, views;
         $(element).empty();
         opts = valueAccessor();
         views = ko.utils.unwrapObservable(opts[0]);
-        for (_i = 0, _len = views.length; _i < _len; _i++) {
-          view = views[_i];
+        for (i = 0, len = views.length; i < len; i++) {
+          view = views[i];
           $(element).append("<option value='" + (opts[2](view)) + "'>" + (opts[1](view)) + "</option>");
         }
         if (opts[3] != null) {
@@ -4286,7 +4460,7 @@ Date.prototype.format = function (mask, utc) {
     };
     ko.bindingHandlers.tabpanes = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel) {
-        var $el, $panes, click_db, pane, pane_data, str, tab_obs, visible_db, _i, _j, _len, _len1;
+        var $el, $panes, click_db, i, j, len, len1, pane, pane_data, str, tab_obs, visible_db;
         $el = $(element);
         $panes = $el.children('pane');
         pane_data = $panes.toArray().map(function(p) {
@@ -4304,16 +4478,16 @@ Date.prototype.format = function (mask, utc) {
           viewModel[tab_obs] = ko.observable(pane_data[0].key);
         }
         str = "<div class='tabbable'><ul class='nav nav-tabs'>";
-        for (_i = 0, _len = pane_data.length; _i < _len; _i++) {
-          pane = pane_data[_i];
+        for (i = 0, len = pane_data.length; i < len; i++) {
+          pane = pane_data[i];
           click_db = "click : function(){" + tab_obs + "('" + pane.key + "');}";
           visible_db = pane.visible != null ? ", visible : " + pane.visible : "";
           str += "<li data-bind=\"css : {active : " + tab_obs + "() == '" + pane.key + "'}\"><a href='' data-bind=\"" + click_db + visible_db + "\">" + pane.title + "</a></li>";
         }
         str += "</ul>";
         str += "<div class='tab-content'>";
-        for (_j = 0, _len1 = pane_data.length; _j < _len1; _j++) {
-          pane = pane_data[_j];
+        for (j = 0, len1 = pane_data.length; j < len1; j++) {
+          pane = pane_data[j];
           str += "<div class='tab-pane' data-bind=\"css : {active : " + tab_obs + "() == '" + pane.key + "'}\">" + pane.html + "</div>";
         }
         str += "</div></div>";
@@ -4403,14 +4577,14 @@ Date.prototype.format = function (mask, utc) {
         feopts.data = data;
         if (!ko.components.isRegistered(name)) {
           tpl = ((function() {
-            var _i, _len, _ref, _results;
-            _ref = ko.virtualElements.childNodes(element);
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              node = _ref[_i];
-              _results.push(node.outerHTML);
+            var i, len, ref, results;
+            ref = ko.virtualElements.childNodes(element);
+            results = [];
+            for (i = 0, len = ref.length; i < len; i++) {
+              node = ref[i];
+              results.push(node.outerHTML);
             }
-            return _results;
+            return results;
           })()).join(" ");
           tpl_name = "component-" + name;
           ko.addTemplate(tpl_name, tpl);
@@ -4431,17 +4605,17 @@ Date.prototype.format = function (mask, utc) {
     ko.virtualElements.allowedBindings.viewComponents = true;
     ko.bindingHandlers.updateContext = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
-        var prop, props, val, _results;
+        var prop, props, results, val;
         props = valueAccessor();
         if (typeof props === "string") {
           return bindingContext[props] = viewModel;
         } else {
-          _results = [];
+          results = [];
           for (prop in props) {
             val = props[prop];
-            _results.push(bindingContext[prop] = val);
+            results.push(bindingContext[prop] = val);
           }
-          return _results;
+          return results;
         }
       }
     };
@@ -4491,7 +4665,7 @@ Date.prototype.format = function (mask, utc) {
       });
       target.ago_str = ko.computed({
         read: function() {
-          return "" + ((new TimeLength(target.date())).toString()) + " ago";
+          return ((new TimeLength(target.date())).toString()) + " ago";
         },
         deferEvaluation: true
       });
@@ -4532,16 +4706,16 @@ Date.prototype.format = function (mask, utc) {
           throw new Error("Component '" + name + "': " + msg + ".");
         };
         applyStyles = function(el) {
-          var $el, props, sel, _ref;
+          var $el, props, ref, sel;
           if (config.style != null) {
             if (typeof config.style === 'string') {
               $('head').append("<style>" + config.style + "</style>");
               return callback(el);
             } else {
               $el = $(el);
-              _ref = config.style;
-              for (sel in _ref) {
-                props = _ref[sel];
+              ref = config.style;
+              for (sel in ref) {
+                props = ref[sel];
                 $el.filter(sel).add($el.find(sel)).css(props);
               }
               return callback($el.toArray());
@@ -4628,14 +4802,14 @@ Date.prototype.format = function (mask, utc) {
       var db;
       db = node.getAttribute('data-bind');
       if (db != null) {
-        return node.setAttribute('data-bind', "" + db + ", " + bind);
+        return node.setAttribute('data-bind', db + ", " + bind);
       } else {
         return node.setAttribute('data-bind', bind);
       }
     };
     ko.absorbModel = function(data, self) {
-      var prop, val, _results;
-      _results = [];
+      var prop, results, val;
+      results = [];
       for (prop in data) {
         val = data[prop];
         if (typeof val === "function") {
@@ -4653,18 +4827,18 @@ Date.prototype.format = function (mask, utc) {
         } else {
           self[prop](val);
         }
-        _results.push(self.fields.pushOnce(prop));
+        results.push(self.fields.pushOnce(prop));
       }
-      return _results;
+      return results;
     };
     ko.addFields = function(fields, val, self) {
-      var prop, _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = fields.length; _i < _len; _i++) {
-        prop = fields[_i];
-        _results.push(ko.addField(prop, val, self));
+      var i, len, prop, results;
+      results = [];
+      for (i = 0, len = fields.length; i < len; i++) {
+        prop = fields[i];
+        results.push(ko.addField(prop, val, self));
       }
-      return _results;
+      return results;
     };
     ko.addField = function(field, val, valid_fn, self) {
       if (self == null) {
@@ -4678,7 +4852,7 @@ Date.prototype.format = function (mask, utc) {
           self[field] = ko.observable(val);
         }
         if (valid_fn != null) {
-          self["" + field + "_valid"] = ko.computed((function() {
+          self[field + "_valid"] = ko.computed((function() {
             return (valid_fn.bind(self))(self[field]());
           }), self);
         }
@@ -4717,11 +4891,11 @@ Date.prototype.format = function (mask, utc) {
       });
       if (self[field].is_valid == null) {
         return self[field].is_valid = ko.computed(function() {
-          var val_obj, valid, _i, _len, _ref;
+          var i, len, ref, val_obj, valid;
           valid = true;
-          _ref = self.validations[field];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            val_obj = _ref[_i];
+          ref = self.validations[field];
+          for (i = 0, len = ref.length; i < len; i++) {
+            val_obj = ref[i];
             valid && (valid = val_obj.test(self[field]()));
           }
           return valid;
@@ -4729,13 +4903,13 @@ Date.prototype.format = function (mask, utc) {
       }
     };
     ko.validate_fields = function(fields, fn, self) {
-      var field, msgs, val_obj, _i, _j, _len, _len1, _ref;
+      var field, i, j, len, len1, msgs, ref, val_obj;
       msgs = [];
-      for (_i = 0, _len = fields.length; _i < _len; _i++) {
-        field = fields[_i];
-        _ref = self.validations[field];
-        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-          val_obj = _ref[_j];
+      for (i = 0, len = fields.length; i < len; i++) {
+        field = fields[i];
+        ref = self.validations[field];
+        for (j = 0, len1 = ref.length; j < len1; j++) {
+          val_obj = ref[j];
           if (!val_obj.test(self[field]())) {
             msgs.push(val_obj.msg);
           }
@@ -4768,7 +4942,7 @@ Date.prototype.format = function (mask, utc) {
       });
     };
     ko.dirtyFlag = function(root, isInitiallyDirty) {
-      var result, _initialState, _isInitiallyDirty;
+      var _initialState, _isInitiallyDirty, result;
       result = function() {};
       _initialState = ko.observable(ko.toJSON(root));
       _isInitiallyDirty = ko.observable(isInitiallyDirty);
@@ -4782,10 +4956,10 @@ Date.prototype.format = function (mask, utc) {
       return result;
     };
     ko.copyObject = function(obj, fields) {
-      var prop, ret, _i, _len;
+      var i, len, prop, ret;
       ret = {};
-      for (_i = 0, _len = fields.length; _i < _len; _i++) {
-        prop = fields[_i];
+      for (i = 0, len = fields.length; i < len; i++) {
+        prop = fields[i];
         ret[prop] = obj[prop];
       }
       return ret;
@@ -4832,12 +5006,3 @@ Date.prototype.format = function (mask, utc) {
   };
 
 }).call(this);
-
-
-
-
-
-
-
-
-
