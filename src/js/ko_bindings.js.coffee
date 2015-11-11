@@ -404,8 +404,10 @@ QuickScript.initKO = ->
 			opts = valueAccessor()
 			name = opts.name
 			data = opts.data
-			owner = opts.owner
+			owner = opts.owner || viewModel
 			view = opts.view || QS.View
+			params = opts.params || {}
+			params.owner ||= owner
 			feopts = opts.foreach || {}
 			feopts.data = data
 			if !ko.components.isRegistered(name)
@@ -415,14 +417,18 @@ QuickScript.initKO = ->
 				tpl_name = "component-#{name}"
 				ko.addTemplate tpl_name, tpl
 				view.registerComponent(name, tpl_name)
-			bindingContext.componentOwner = owner || viewModel
-			bindingContext.componentData = data
+			bc = {}
+			bc.$componentOwner = owner
+			bc.$componentCollectionData = data
+			bc.$componentCollectionParams = params
+			bc.$componentParamsForContext = (context)->
+				return $.extend({model: context.$data}, context.$componentCollectionParams)
 			$tpl = $("
-				<!-- ko component : {name: '#{name}', params: {model: $data, owner: $parentContext.componentOwner}} -->
+				<!-- ko component : {name: '#{name}', params: $componentParamsForContext($context)} -->
 				<!-- /ko -->
 			")
 			ko.virtualElements.setDomNodeChildren(element, $tpl)
-			ko.applyBindingsToNode(element, {foreach: feopts}, bindingContext)
+			ko.applyBindingsToNode(element, {foreach: feopts}, bindingContext.extend(bc))
 			return {controlsDescendantBindings: true}
 	ko.virtualElements.allowedBindings.viewComponents = true
 

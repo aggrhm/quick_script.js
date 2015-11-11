@@ -1272,16 +1272,21 @@ Date.prototype.format = function (mask, utc) {
 
   QuickScript.includeEventable = function(self) {
     self.prototype.handle = function(ev, callback, opts) {
-      var base;
+      var base, cbs;
       if (opts == null) {
         opts = {};
       }
       this._events || (this._events = {});
       (base = this._events)[ev] || (base[ev] = []);
+      cbs = this._events[ev];
       opts.callback = callback;
-      return this._events[ev].push(opts);
+      opts.dispose = function() {
+        return cbs.remove(opts);
+      };
+      cbs.push(opts);
+      return opts;
     };
-    return self.prototype.trigger = function(ev, data) {
+    self.prototype.trigger = function(ev, data) {
       var cbs, k, l, len, len1, opts, rems, results;
       QS.log("EVENTABLE::TRIGGER : " + ev, 5);
       this._events || (this._events = {});
@@ -1291,6 +1296,24 @@ Date.prototype.format = function (mask, utc) {
         opts = cbs[k];
         opts.callback(data);
         if (opts.once === true) {
+          rems.push(opts);
+        }
+      }
+      results = [];
+      for (l = 0, len1 = rems.length; l < len1; l++) {
+        opts = rems[l];
+        results.push(cbs.remove(opts));
+      }
+      return results;
+    };
+    return self.prototype.removeHandler = function(ev, evo) {
+      var cbs, k, l, len, len1, opts, rems, results;
+      this._events || (this._events = {});
+      cbs = this._events[ev] || [];
+      rems = [];
+      for (k = 0, len = cbs.length; k < len; k++) {
+        opts = cbs[k];
+        if (opts === evo) {
           rems.push(opts);
         }
       }
@@ -2806,9 +2829,9 @@ Date.prototype.format = function (mask, utc) {
       return items;
     };
 
-    Collection.prototype.getScopedItems = function() {
-      var items, scope, sort_asc, sort_key;
-      scope = this.scope();
+    Collection.prototype.getScopedItems = function(scope) {
+      var items, sort_asc, sort_key;
+      scope || (scope = this.scope());
       items = this.items().filter((function(_this) {
         return function(el) {
           var filt, filt_fn, params, ret;
@@ -3143,6 +3166,7 @@ Date.prototype.format = function (mask, utc) {
       this.validate_for = bind(this.validate_for, this);
       this.addFields = bind(this.addFields, this);
       this.reload = bind(this.reload, this);
+      this.disposeLater = bind(this.disposeLater, this);
       if (this.owner != null) {
         this.app = this.owner.app;
       }
@@ -3150,6 +3174,7 @@ Date.prototype.format = function (mask, utc) {
       this.views.name_map = {};
       this.events = {};
       this.opts || (this.opts = {});
+      this.disposables = [];
       this.templateID || (this.templateID = "view-" + this.name);
       this.fields = [];
       this.view_name = ko.computed(function() {
@@ -3203,6 +3228,30 @@ Date.prototype.format = function (mask, utc) {
       if (this.onHidden != null) {
         return this.onHidden();
       }
+    };
+
+    View.prototype.dispose = function() {
+      var d, j, k, len, len1, ref, ref1, view;
+      ref = this.views();
+      for (j = 0, len = ref.length; j < len; j++) {
+        view = ref[j];
+        view.dispose();
+      }
+      ref1 = this.disposables;
+      for (k = 0, len1 = ref1.length; k < len1; k++) {
+        d = ref1[k];
+        d.dispose();
+      }
+      return this.disposables = [];
+    };
+
+    View.prototype.disposeLater = function(d) {
+      if (d instanceof Array) {
+        this.disposables.push.apply(this.disposables, d);
+      } else {
+        this.disposables.push(d);
+      }
+      return this.disposables;
     };
 
     View.prototype.setupViewBox = function() {
@@ -4566,13 +4615,15 @@ Date.prototype.format = function (mask, utc) {
     };
     ko.bindingHandlers.viewComponents = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
-        var $el, $tpl, data, feopts, name, node, opts, owner, tpl, tpl_name, view;
+        var $el, $tpl, bc, data, feopts, name, node, opts, owner, params, tpl, tpl_name, view;
         $el = $(element);
         opts = valueAccessor();
         name = opts.name;
         data = opts.data;
-        owner = opts.owner;
+        owner = opts.owner || viewModel;
         view = opts.view || QS.View;
+        params = opts.params || {};
+        params.owner || (params.owner = owner);
         feopts = opts.foreach || {};
         feopts.data = data;
         if (!ko.components.isRegistered(name)) {
@@ -4590,13 +4641,20 @@ Date.prototype.format = function (mask, utc) {
           ko.addTemplate(tpl_name, tpl);
           view.registerComponent(name, tpl_name);
         }
-        bindingContext.componentOwner = owner || viewModel;
-        bindingContext.componentData = data;
-        $tpl = $("<!-- ko component : {name: '" + name + "', params: {model: $data, owner: $parentContext.componentOwner}} --> <!-- /ko -->");
+        bc = {};
+        bc.$componentOwner = owner;
+        bc.$componentCollectionData = data;
+        bc.$componentCollectionParams = params;
+        bc.$componentParamsForContext = function(context) {
+          return $.extend({
+            model: context.$data
+          }, context.$componentCollectionParams);
+        };
+        $tpl = $("<!-- ko component : {name: '" + name + "', params: $componentParamsForContext($context)} --> <!-- /ko -->");
         ko.virtualElements.setDomNodeChildren(element, $tpl);
         ko.applyBindingsToNode(element, {
           foreach: feopts
-        }, bindingContext);
+        }, bindingContext.extend(bc));
         return {
           controlsDescendantBindings: true
         };

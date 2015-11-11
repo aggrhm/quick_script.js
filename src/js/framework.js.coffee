@@ -498,8 +498,8 @@ class QS.Collection
 			ret
 		items = items.sort(@named_sorts[sort]) if sort != null
 		return items
-	getScopedItems : =>
-		scope = @scope()
+	getScopedItems : (scope)=>
+		scope ||= @scope()
 		items = @items().filter (el)=>
 			ret = true
 			for filt, params of scope
@@ -683,6 +683,7 @@ class QS.View
 		@views.name_map = {}
 		@events = {}
 		@opts ||= {}
+		@disposables = []
 		@templateID ||= "view-#{@name}"
 		@fields = []
 		@view_name = ko.computed ->
@@ -712,6 +713,19 @@ class QS.View
 		@view = null
 		@task(null)
 		@onHidden() if @onHidden?
+	dispose : ->
+		for view in @views()
+			view.dispose()
+		for d in @disposables
+			#QS.log "Disposing observable.", 5
+			d.dispose()
+		@disposables = []
+	disposeLater : (d)=>
+		if d instanceof Array
+			@disposables.push.apply(@disposables, d)
+		else
+			@disposables.push(d)
+		return @disposables
 	setupViewBox : ->
 		if @transition.type == 'slide'
 			@task.subscribe (val)=>

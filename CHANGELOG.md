@@ -1,11 +1,20 @@
 # CHANGELOG
 
+NOTE: Generally, create a new version on every 8 changes
+
 - Pending Changes
 	- TODO: Add @location observable to Application, which keeps hash of path, path_parts, href, hash, and params
+	- TODO: Set version in QS.version
+
+- v2.11.0
 	-	Updated login and logout support with `redirect_on_login`
 	- Fixed core ajax utility function to not call error callback on upload error
 	- Added smarter link handling
 	- Changed build framework to gulp
+	- Added disposal ability to Eventable
+	- Collection `getScopedItems` now accepts scope
+	- View `disposables` property and support
+	- Can now pass params to `viewComponent` binding
 
 - v2.10.0
 	- Improved filters and sorting in collections

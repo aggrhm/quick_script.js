@@ -120,8 +120,12 @@ QuickScript.includeEventable = (self)->
 	self::handle = (ev, callback, opts={})->
 		@_events ||= {}
 		@_events[ev] ||= []
+		cbs = @_events[ev]
 		opts.callback = callback
-		@_events[ev].push opts
+		opts.dispose = ->
+			cbs.remove(opts)
+		cbs.push opts
+		return opts
 	self::trigger = (ev, data)->
 		QS.log "EVENTABLE::TRIGGER : #{ev}", 5
 		@_events ||= {}
@@ -133,6 +137,15 @@ QuickScript.includeEventable = (self)->
 		# remove any only to be ran once
 		for opts in rems
 			cbs.remove(opts)
+	self::removeHandler = (ev, evo)->
+		@_events ||= {}
+		cbs = @_events[ev] || []
+		rems = []
+		for opts in cbs
+			rems.push(opts) if opts == evo
+		for opts in rems
+			cbs.remove(opts)
+
 
 QuickScript.install = (scope)->
 	cns = ['Application', 'View', 'Model', 'FileModel', 'Collection', 'ViewCollection', 'Host', 'ModelAdapter', 'AccountAdapter', 'LocalStore']
