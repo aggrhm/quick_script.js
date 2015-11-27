@@ -3484,16 +3484,22 @@ Date.prototype.format = function (mask, utc) {
     return ko.components.register(name, {
       viewModel: {
         createViewModel: function(params, componentInfo) {
-          var context, model, new_view, owner, view, vn;
+          var context, model, new_view, new_view_class, owner, vn;
           context = ko.contextFor(componentInfo.element);
-          view = params.view;
-          if (view != null) {
-            new_view = view;
-          } else {
+          new_view = null;
+          new_view_class = view_class;
+          if (params.view != null) {
+            if (typeof params.view === 'function') {
+              new_view_class = params.view;
+            } else {
+              new_view = params.view;
+            }
+          }
+          if (new_view == null) {
             model = params.model;
             owner = params.owner || context['$view'] || context['$parent'] || context['$root'];
             vn = model != null ? name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
-            new_view = new view_class(vn, owner, model, params);
+            new_view = new new_view_class(vn, owner, model, params);
           }
           if (componentInfo != null) {
             new_view.element = componentInfo.element;
@@ -3504,6 +3510,10 @@ Date.prototype.format = function (mask, utc) {
       template: topts
     });
   };
+
+  QS.View.registerComponent('view-element', {
+    html: "<!-- ko template : {nodes : $componentTemplateNodes} -->\n<!-- /ko -->"
+  });
 
   QS.Host = (function() {
     function Host(url) {
@@ -3845,7 +3855,9 @@ Date.prototype.format = function (mask, utc) {
       var path;
       path = this.location.pathname;
       QS.log("Loading path '" + path + "'");
-      this.setTitle(this.name, true);
+      if (this.opts.update_title !== false) {
+        this.setTitle(this.name, true);
+      }
       this.previous_path(this.path());
       this.path_parts = path.split('/');
       if (this.path_parts[this.path_parts.length - 1] !== '') {
@@ -4009,7 +4021,7 @@ Date.prototype.format = function (mask, utc) {
         var path;
         if (this.getAttribute("global") === "true" || QS.utils.isPresent(this.download)) {
           return true;
-        } else if (this.origin === window.location.origin) {
+        } else if ((this.origin === window.location.origin) && (app.opts.handle_links !== false)) {
           app.redirectTo(this.href);
           return false;
         } else if ((path = this.getAttribute('path')) != null) {
@@ -4661,6 +4673,24 @@ Date.prototype.format = function (mask, utc) {
       }
     };
     ko.virtualElements.allowedBindings.viewComponents = true;
+    ko.bindingHandlers.withView = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
+        var child_context, model, owner, view, view_class, view_options;
+        view_class = valueAccessor();
+        view_options = bindingsAccessor().viewOptions || {};
+        view_options.element = element;
+        owner = view_options.owner || bindingContext['$view'] || bindingContext['$parent'] || bindingContext['$root'];
+        model = view_options.model;
+        view = new view_class("view", owner, model, view_options);
+        child_context = bindingContext.createChildContext(view);
+        child_context.$view = view;
+        ko.applyBindingsToDescendants(child_context, element);
+        return {
+          controlsDescendantBindings: true
+        };
+      }
+    };
+    ko.virtualElements.allowedBindings.withView = true;
     ko.bindingHandlers.updateContext = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
         var prop, props, results, val;
@@ -4680,9 +4710,15 @@ Date.prototype.format = function (mask, utc) {
     ko.bindingHandlers.context = ko.bindingHandlers.updateContext;
     ko.bindingHandlers.scopeAs = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
-        var props;
-        props = valueAccessor();
-        return bindingContext[props] = viewModel;
+        var new_context, prop, vr;
+        prop = valueAccessor();
+        vr = {};
+        vr[prop] = viewModel;
+        new_context = bindingContext.extend(vr);
+        ko.applyBindingsToDescendants(new_context, element);
+        return {
+          controlsDescendantBindings: true
+        };
       }
     };
     ko.extenders.usd = function(target) {

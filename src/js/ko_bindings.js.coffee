@@ -432,6 +432,20 @@ QuickScript.initKO = ->
 			return {controlsDescendantBindings: true}
 	ko.virtualElements.allowedBindings.viewComponents = true
 
+	ko.bindingHandlers.withView =
+		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
+			view_class = valueAccessor()
+			view_options = bindingsAccessor().viewOptions || {}
+			view_options.element = element
+			owner = view_options.owner || bindingContext['$view'] || bindingContext['$parent'] || bindingContext['$root']
+			model = view_options.model
+			view = new view_class("view", owner, model, view_options)
+			child_context = bindingContext.createChildContext(view)
+			child_context.$view = view
+			ko.applyBindingsToDescendants(child_context, element)
+			return {controlsDescendantBindings: true}
+	ko.virtualElements.allowedBindings.withView = true
+
 	ko.bindingHandlers.updateContext =
 		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
 			props = valueAccessor()
@@ -443,8 +457,12 @@ QuickScript.initKO = ->
 	ko.bindingHandlers.context = ko.bindingHandlers.updateContext
 	ko.bindingHandlers.scopeAs =
 		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
-			props = valueAccessor()
-			bindingContext[props] = viewModel
+			prop = valueAccessor()
+			vr = {}
+			vr[prop] = viewModel
+			new_context = bindingContext.extend(vr)
+			ko.applyBindingsToDescendants(new_context, element)
+			return {controlsDescendantBindings: true}
 
 	## EXTENDERS
 	

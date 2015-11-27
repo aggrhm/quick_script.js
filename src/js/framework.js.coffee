@@ -866,17 +866,27 @@ QS.View.registerComponent = (name, template_opts, view_class)->
 		viewModel :
 			createViewModel : (params, componentInfo)->
 				context = ko.contextFor(componentInfo.element)
-				view = params.view
-				if view?
-					new_view = view
-				else
+				new_view = null
+				new_view_class = view_class
+				if params.view?
+					if typeof(params.view) == 'function'
+						new_view_class = params.view
+					else
+						new_view = params.view
+			
+				if !new_view?
 					model = params.model
 					owner = params.owner || context['$view'] || context['$parent'] || context['$root']
 					vn = if model? then "#{name}-#{model.id?()}" else name
-					new_view = new view_class(vn, owner, model, params)
+					new_view = new new_view_class(vn, owner, model, params)
 				new_view.element = componentInfo.element if componentInfo?
 				return new_view
 		template: topts
+QS.View.registerComponent 'view-element',
+	html: """
+		<!-- ko template : {nodes : $componentTemplateNodes} -->
+		<!-- /ko -->
+	"""
 
 class QS.Host
 	constructor : (url)->
@@ -1091,7 +1101,7 @@ class QS.Application extends QS.View
 	route : ->
 		path = @location.pathname
 		QS.log("Loading path '#{path}'")
-		@setTitle(@name, true)
+		@setTitle(@name, true) unless @opts.update_title == false
 		@previous_path(@path())
 		@path_parts = path.split('/')
 		@path_parts.push('') unless @path_parts[@path_parts.length-1] == ''
@@ -1184,7 +1194,7 @@ class QS.Application extends QS.View
 		$('body').on 'click', 'a', ->
 			if this.getAttribute("global") == "true" || QS.utils.isPresent(this.download)
 				return true
-			else if this.origin == window.location.origin
+			else if (this.origin == window.location.origin) && (app.opts.handle_links != false)
 				app.redirectTo(this.href)
 				return false
 			else if (path = this.getAttribute('path'))?
