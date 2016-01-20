@@ -342,13 +342,16 @@ class QS.Collection
 				#QS.log("Scope changed from #{prev} to #{curr}")
 				#@load()
 			, this
-		@hasItems = ko.dependentObservable ->
+		@hasItems = ko.pureComputed ->
 				@items().length > 0
 			, this
-		@has_items = ko.computed ->
+		@has_items = ko.pureComputed ->
 			@items().length > 0
 		, this
-		@length = ko.computed ->
+		@is_empty = ko.pureComputed ->
+			@items().length == 0
+		, this
+		@length = ko.pureComputed ->
 				@items().length
 			, this
 		@extend(opts)

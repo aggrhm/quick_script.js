@@ -2585,13 +2585,16 @@ Date.prototype.format = function (mask, utc) {
       this.scope = ko.intercepter(this.scope, function(obs, prev, curr) {
         return obs(curr);
       }, this);
-      this.hasItems = ko.dependentObservable(function() {
+      this.hasItems = ko.pureComputed(function() {
         return this.items().length > 0;
       }, this);
-      this.has_items = ko.computed(function() {
+      this.has_items = ko.pureComputed(function() {
         return this.items().length > 0;
       }, this);
-      this.length = ko.computed(function() {
+      this.is_empty = ko.pureComputed(function() {
+        return this.items().length === 0;
+      }, this);
+      this.length = ko.pureComputed(function() {
         return this.items().length;
       }, this);
       this.extend(opts);
@@ -4190,6 +4193,32 @@ Date.prototype.format = function (mask, utc) {
           }
         }, viewModel);
       }
+    };
+    ko.bindingHandlers.loading = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel) {
+        var $el;
+        $el = $(element);
+        $el.data('is_loading', false);
+        return $el.data('default_html', $el.html());
+      },
+      update: function(element, valueAccessor, bindingsAccessor, viewModel) {
+        var $el, html, is_loading, loading_text;
+        $el = $(element);
+        is_loading = ko.unwrap(valueAccessor());
+        loading_text = bindingsAccessor().loadingText || "";
+        if (is_loading) {
+          html = "<i class='" + ko.bindingHandlers.loading.icon_class + "'/> " + loading_text;
+          $el.data('is_loading', true);
+          $el.html(html);
+          return $el.attr('disabled', 'true');
+        } else {
+          html = $el.data('default_html');
+          $el.data('is_loading', false);
+          $el.html(html);
+          return $el.removeAttr('disabled');
+        }
+      },
+      icon_class: 'fa fa-circle-o-notch fa-spin'
     };
     ko.bindingHandlers.viewOptions = {
       update: function(element, valueAccessor) {

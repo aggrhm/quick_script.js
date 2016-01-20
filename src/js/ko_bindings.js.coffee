@@ -77,6 +77,28 @@ QuickScript.initKO = ->
 			#fn()
 			#opts.list.is_loading.subscribe(fn)
 
+	ko.bindingHandlers.loading =
+		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
+			# store current html
+			$el = $(element)
+			$el.data('is_loading', false)
+			$el.data('default_html', $el.html())
+		update : (element, valueAccessor, bindingsAccessor, viewModel) ->
+			$el = $(element)
+			is_loading = ko.unwrap(valueAccessor())
+			loading_text = bindingsAccessor().loadingText || ""
+			if is_loading
+				html = "<i class='#{ko.bindingHandlers.loading.icon_class}'/> #{loading_text}"
+				$el.data('is_loading', true)
+				$el.html(html)
+				$el.attr('disabled', 'true')
+			else
+				html = $el.data('default_html')
+				$el.data('is_loading', false)
+				$el.html(html)
+				$el.removeAttr('disabled')
+		icon_class: 'fa fa-circle-o-notch fa-spin'
+
 	# viewOptions - [views, view_string_fn, view_val_fn, default_str (optional)]
 	ko.bindingHandlers.viewOptions =
 		update : (element, valueAccessor) ->
