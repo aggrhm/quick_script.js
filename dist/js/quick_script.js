@@ -2008,7 +2008,8 @@ Date.prototype.format = function (mask, utc) {
 (function() {
   var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+    hasProp = {}.hasOwnProperty,
+    slice = [].slice;
 
   QS.Model = (function() {
     Model.prototype.init = function() {};
@@ -2567,7 +2568,7 @@ Date.prototype.format = function (mask, utc) {
         return this.model_state() === ko.modelStates.LOADING;
       }, this);
       this.is_updating = ko.dependentObservable(function() {
-        return (this.model_state() === ko.modelStates.LOADING) || (this.model_state() === ko.modelStates.UPDATING);
+        return this.model_state() !== ko.modelStates.READY;
       }, this);
       this.is_appending = ko.dependentObservable(function() {
         return this.model_state() === ko.modelStates.APPENDING;
@@ -2774,11 +2775,19 @@ Date.prototype.format = function (mask, utc) {
       return this.model_state(ko.modelStates.READY);
     };
 
-    Collection.prototype.handleItemData = function(data) {
-      var item;
+    Collection.prototype.handleItemData = function(data, opts) {
+      var do_append, item;
+      if (opts == null) {
+        opts = {};
+      }
+      do_append = opts.do_append || false;
       item = this.getItemById(data.id);
       if (item != null) {
         item.handleData(data);
+      }
+      if ((item == null) && do_append === true) {
+        item = new this.model(data, this);
+        this.addItem(item);
       }
       return item;
     };
@@ -3248,12 +3257,10 @@ Date.prototype.format = function (mask, utc) {
       return this.disposables = [];
     };
 
-    View.prototype.disposeLater = function(d) {
-      if (d instanceof Array) {
-        this.disposables.push.apply(this.disposables, d);
-      } else {
-        this.disposables.push(d);
-      }
+    View.prototype.disposeLater = function() {
+      var ds;
+      ds = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      this.disposables.push.apply(this.disposables, ds);
       return this.disposables;
     };
 

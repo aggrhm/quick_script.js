@@ -322,7 +322,7 @@ class QS.Collection
 				@model_state() == ko.modelStates.LOADING
 			, this
 		@is_updating = ko.dependentObservable ->
-				(@model_state() == ko.modelStates.LOADING) || (@model_state() == ko.modelStates.UPDATING)
+				@model_state() != ko.modelStates.READY
 			, this
 		@is_appending = ko.dependentObservable ->
 				@model_state() == ko.modelStates.APPENDING
@@ -471,9 +471,13 @@ class QS.Collection
 			else if op == QS.Collection.APPEND
 				@items(@items().concat(leftovers)) if leftovers.length > 0
 		@model_state(ko.modelStates.READY)
-	handleItemData : (data)=>
+	handleItemData : (data, opts={})=>
+		do_append = opts.do_append || false
 		item = @getItemById(data.id)
 		item.handleData(data) if item?
+		if !item? && do_append == true
+			item = new @model(data, this)
+			@addItem(item)
 		return item
 	handleItemDelete : (data)=>
 		@removeItemById(data.id)
@@ -723,11 +727,8 @@ class QS.View
 			#QS.log "Disposing observable.", 5
 			d.dispose()
 		@disposables = []
-	disposeLater : (d)=>
-		if d instanceof Array
-			@disposables.push.apply(@disposables, d)
-		else
-			@disposables.push(d)
+	disposeLater : (ds...)=>
+		@disposables.push.apply(@disposables, ds)
 		return @disposables
 	setupViewBox : ->
 		if @transition.type == 'slide'
