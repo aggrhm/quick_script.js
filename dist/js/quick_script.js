@@ -4075,21 +4075,34 @@ Date.prototype.format = function (mask, utc) {
     ko.bindingHandlers.fadeVisible = {
       init: function(element, valueAccessor) {
         var shouldDisplay;
-        shouldDisplay = ko.utils.unwrapObservable(valueAccessor());
+        shouldDisplay = ko.unwrap(valueAccessor());
         if (shouldDisplay) {
           return $(element).show();
         } else {
           return $(element).hide();
         }
       },
-      update: function(element, value) {
-        var shouldDisplay;
-        shouldDisplay = value();
+      update: function(element, valueAccessor, bindingsAccessor) {
+        var $el, bopts, def_opts, fadeInSpeed, fadeOutSpeed, shouldDisplay;
+        bopts = bindingsAccessor();
+        def_opts = ko.bindingHandlers.fadeVisible.defaults;
+        fadeInSpeed = bopts.fadeInSpeed || def_opts.fadeInSpeed;
+        fadeOutSpeed = bopts.fadeOutSpeed || def_opts.fadeOutSpeed;
+        shouldDisplay = ko.unwrap(valueAccessor());
+        $el = $(element);
         if (shouldDisplay) {
-          return $(element).fadeIn('slow');
+          return $el.fadeIn(fadeInSpeed);
         } else {
-          return $(element).hide();
+          if (fadeOutSpeed != null) {
+            return $el.fadeOut(fadeOutSpeed);
+          } else {
+            return $el.hide();
+          }
         }
+      },
+      defaults: {
+        fadeInSpeed: 'slow',
+        fadeOutSpeed: null
       }
     };
     ko.bindingHandlers.slideVisible = {

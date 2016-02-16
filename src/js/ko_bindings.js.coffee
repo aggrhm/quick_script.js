@@ -9,14 +9,25 @@ QuickScript.initKO = ->
 
 	ko.bindingHandlers.fadeVisible =
 		init : (element, valueAccessor) ->
-			shouldDisplay = ko.utils.unwrapObservable(valueAccessor())
+			shouldDisplay = ko.unwrap(valueAccessor())
 			if shouldDisplay then $(element).show() else $(element).hide()
-		update : (element, value) ->
-			shouldDisplay = value()
+		update : (element, valueAccessor, bindingsAccessor) ->
+			bopts = bindingsAccessor()
+			def_opts = ko.bindingHandlers.fadeVisible.defaults
+			fadeInSpeed = bopts.fadeInSpeed || def_opts.fadeInSpeed
+			fadeOutSpeed = bopts.fadeOutSpeed || def_opts.fadeOutSpeed
+			shouldDisplay = ko.unwrap(valueAccessor())
+			$el = $(element)
 			if shouldDisplay
-				$(element).fadeIn('slow')
+				$el.fadeIn(fadeInSpeed)
 			else
-				$(element).hide()
+				if fadeOutSpeed?
+					$el.fadeOut(fadeOutSpeed)
+				else
+					$el.hide()
+		defaults:
+			fadeInSpeed: 'slow'
+			fadeOutSpeed: null
 
 	ko.bindingHandlers.slideVisible =
 		init : (element, valueAccessor) ->

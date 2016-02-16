@@ -10,6 +10,7 @@ NOTE: Generally, create a new version on every 8 changes
 	- Added loading binding
 	- Dispose later takes variable arguments
 	- Collection `handleItemData` accepts `do_append` option
+	- Added `fadeOptions` to `fadeVisible` binding
 
 - v2.11.0
 	-	Updated login and logout support with `redirect_on_login`
