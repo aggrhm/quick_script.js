@@ -475,6 +475,8 @@ QuickScript.initKO = ->
 			view = new view_class("view", owner, model, view_options)
 			child_context = bindingContext.createChildContext(view)
 			child_context.$view = view
+			ko.utils.domNodeDisposal.addDisposeCallback element, ->
+				view.dispose?()
 			ko.applyBindingsToDescendants(child_context, element)
 			return {controlsDescendantBindings: true}
 	ko.virtualElements.allowedBindings.withView = true

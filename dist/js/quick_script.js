@@ -4733,6 +4733,9 @@ Date.prototype.format = function (mask, utc) {
         view = new view_class("view", owner, model, view_options);
         child_context = bindingContext.createChildContext(view);
         child_context.$view = view;
+        ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+          return typeof view.dispose === "function" ? view.dispose() : void 0;
+        });
         ko.applyBindingsToDescendants(child_context, element);
         return {
           controlsDescendantBindings: true
