@@ -4806,22 +4806,18 @@ Date.prototype.format = function (mask, utc) {
     };
     ko.extenders.errors = function(target) {
       target.has = function(field) {
-        return ko.computed(function() {
-          return target()[field] != null;
-        }, target);
+        return target()[field] != null;
       };
       target["for"] = function(field) {
-        return ko.computed(function() {
-          if (target()[field] != null) {
-            return target()[field][0];
-          } else {
-            return null;
-          }
-        }, target);
+        if (target()[field] != null) {
+          return target()[field][0];
+        } else {
+          return null;
+        }
       };
-      target.any = ko.computed(function() {
+      target.any = ko.pureComputed(function() {
         return !jQuery.isEmptyObject(target());
-      }, target);
+      });
       return target;
     };
     ko.punches.utils.setNodePreprocessor(function(node) {

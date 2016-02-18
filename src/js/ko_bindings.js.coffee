@@ -523,16 +523,11 @@ QuickScript.initKO = ->
 
 	ko.extenders.errors = (target) ->
 		target.has = (field)->
-			ko.computed ->
-				return target()[field]?
-			, target
+			return target()[field]?
 		target.for = (field)->
-			ko.computed ->
-				if target()[field]? then target()[field][0] else null
-			, target
-		target.any = ko.computed ->
-				!jQuery.isEmptyObject(target())
-			, target
+			if target()[field]? then target()[field][0] else null
+		target.any = ko.pureComputed ->
+			!jQuery.isEmptyObject(target())
 		return target
 
 	## PREPROCESSORS
