@@ -110,17 +110,6 @@ QuickScript.initKO = ->
 				$el.removeAttr('disabled')
 		icon_class: 'fa fa-circle-o-notch fa-spin'
 
-	# viewOptions - [views, view_string_fn, view_val_fn, default_str (optional)]
-	ko.bindingHandlers.viewOptions =
-		update : (element, valueAccessor) ->
-			$(element).empty()
-			opts = valueAccessor()
-			views = ko.utils.unwrapObservable(opts[0])
-			for view in views
-				$(element).append("<option value='#{opts[2](view)}'>#{opts[1](view)}</option>")
-			if opts[3]?
-				$(element).prepend("<option>#{opts[3]}</option>")
-
 	ko.bindingHandlers.handleEnter =
 		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
 			$(element).keypress (ev)->
@@ -468,8 +457,10 @@ QuickScript.initKO = ->
 	ko.bindingHandlers.withView =
 		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
 			view_class = valueAccessor()
-			view_options = bindingsAccessor().viewOptions || {}
+			view_options = bindingsAccessor().withViewOptions || bindingsAccessor().viewOptions || {}
 			view_options.element = element
+			view_options.model = bindingsAccessor().withViewModel
+			view_options.owner = bindingsAccessor().withViewOwner
 			owner = view_options.owner || bindingContext['$view'] || bindingContext['$parent'] || bindingContext['$root']
 			model = view_options.model
 			view = new view_class("view", owner, model, view_options)

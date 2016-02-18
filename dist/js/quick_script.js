@@ -4240,21 +4240,6 @@ Date.prototype.format = function (mask, utc) {
       },
       icon_class: 'fa fa-circle-o-notch fa-spin'
     };
-    ko.bindingHandlers.viewOptions = {
-      update: function(element, valueAccessor) {
-        var i, len, opts, view, views;
-        $(element).empty();
-        opts = valueAccessor();
-        views = ko.utils.unwrapObservable(opts[0]);
-        for (i = 0, len = views.length; i < len; i++) {
-          view = views[i];
-          $(element).append("<option value='" + (opts[2](view)) + "'>" + (opts[1](view)) + "</option>");
-        }
-        if (opts[3] != null) {
-          return $(element).prepend("<option>" + opts[3] + "</option>");
-        }
-      }
-    };
     ko.bindingHandlers.handleEnter = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel) {
         return $(element).keypress(function(ev) {
@@ -4726,8 +4711,10 @@ Date.prototype.format = function (mask, utc) {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
         var child_context, model, owner, view, view_class, view_options;
         view_class = valueAccessor();
-        view_options = bindingsAccessor().viewOptions || {};
+        view_options = bindingsAccessor().withViewOptions || bindingsAccessor().viewOptions || {};
         view_options.element = element;
+        view_options.model = bindingsAccessor().withViewModel;
+        view_options.owner = bindingsAccessor().withViewOwner;
         owner = view_options.owner || bindingContext['$view'] || bindingContext['$parent'] || bindingContext['$root'];
         model = view_options.model;
         view = new view_class("view", owner, model, view_options);
