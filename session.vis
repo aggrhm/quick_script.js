@@ -80,7 +80,7 @@ badd +7 bower.json
 badd +1071 src/javascripts/quick_script/framework.js.coffee
 badd +504 src/javascripts/quick_script/ko_bindings.js.coffee
 badd +1 src/javascripts/quick_script/core.js.coffee
-badd +12 README.md
+badd +1 README.md
 badd +9 CHANGELOG.md
 badd +225 src/javascripts/quick_script/classes.js.coffee
 badd +1 src/javascripts/quick_script.js
@@ -88,22 +88,22 @@ badd +1 src/javascripts/date.js
 badd +1 src/javascripts/knockout.js
 badd +8 Gemfile
 badd +1 Rakefile
-badd +19 package.json
-badd +0 gulpfile.js
-badd +0 dist/js/quick_script.js
+badd +1 package.json
+badd +1 gulpfile.js
+badd +1 dist/js/quick_script.js
 badd +7 Gemfile.lock
 badd +14 node_modules/gulp-coffee/node_modules/coffee-script/package.json
-badd +0 src/js/framework.js.coffee
+badd +1 src/js/framework.js.coffee
 badd +1 src/js/lib/store.min.js
 badd +120 src/js/core.js.coffee
-badd +0 src/js/ko_bindings.js.coffee
-badd +30 src/js/classes.js.coffee
-badd +0 src/js/lib/date.js
+badd +479 src/js/ko_bindings.js.coffee
+badd +1 src/js/classes.js.coffee
+badd +1 src/js/lib/date.js
 argglobal
 silent! argdel *
 argadd bower.json
 set lines=51 columns=80
-winpos 1473 507
+winpos 1477 414
 set stal=2
 edit README.md
 set splitbelow splitright
@@ -225,12 +225,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 13 - ((6 * winheight(0) + 11) / 23)
+let s:l = 20 - ((13 * winheight(0) + 11) / 23)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-13
-normal! 051|
+20
+normal! 020|
 wincmd w
 argglobal
 edit CHANGELOG.md
@@ -341,12 +341,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 8 - ((7 * winheight(0) + 12) / 24)
+let s:l = 13 - ((12 * winheight(0) + 12) / 24)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-8
-normal! 05|
+13
+normal! 017|
 wincmd w
 exe '1resize ' . ((&lines * 23 + 25) / 51)
 exe '2resize ' . ((&lines * 24 + 25) / 51)
@@ -474,12 +474,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 5 - ((4 * winheight(0) + 8) / 16)
+let s:l = 6 - ((5 * winheight(0) + 8) / 16)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-5
-normal! 018|
+6
+normal! 014|
 wincmd w
 argglobal
 edit bower.json
@@ -830,12 +830,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 440 - ((9 * winheight(0) + 24) / 49)
+let s:l = 132 - ((23 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-440
-normal! 036|
+132
+normal! 0
 tabedit src/js/framework.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -950,12 +950,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 197 - ((7 * winheight(0) + 24) / 49)
+let s:l = 307 - ((13 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-197
-normal! 026|
+307
+normal! 046|
 tabedit src/js/core.js.coffee
 set splitbelow splitright
 set nosplitbelow
@@ -1070,12 +1070,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 53 - ((0 * winheight(0) + 24) / 49)
+let s:l = 58 - ((47 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-53
-normal! 0
+58
+normal! 03|
 tabedit src/js/classes.js.coffee
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -1312,17 +1312,16 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 102 - ((8 * winheight(0) + 11) / 23)
+let s:l = 101 - ((8 * winheight(0) + 11) / 23)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-102
+101
 normal! 0
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 24 + 25) / 51)
 exe '2resize ' . ((&lines * 23 + 25) / 51)
-tabnext 6
+tabnext 3
 set stal=1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

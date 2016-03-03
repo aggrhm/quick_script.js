@@ -700,7 +700,9 @@ class QS.View
 		@is_loading = ko.observable(false)
 		@is_saving = ko.observable(false)
 		@error = ko.observable('')
-		@has_error = ko.computed (-> @error().length > 0), this
+		@has_error = ko.pureComputed ->
+			QS.utils.isPresent(@error())
+		, this
 		@view = null
 		@task = ko.observable(null)
 		@prev_task = ko.observable(null)

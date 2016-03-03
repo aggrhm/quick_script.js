@@ -3196,9 +3196,9 @@ Date.prototype.format = function (mask, utc) {
       this.is_loading = ko.observable(false);
       this.is_saving = ko.observable(false);
       this.error = ko.observable('');
-      this.has_error = ko.computed((function() {
-        return this.error().length > 0;
-      }), this);
+      this.has_error = ko.pureComputed(function() {
+        return QS.utils.isPresent(this.error());
+      }, this);
       this.view = null;
       this.task = ko.observable(null);
       this.prev_task = ko.observable(null);
@@ -4713,8 +4713,8 @@ Date.prototype.format = function (mask, utc) {
         view_class = valueAccessor();
         view_options = bindingsAccessor().withViewOptions || bindingsAccessor().viewOptions || {};
         view_options.element = element;
-        view_options.model = bindingsAccessor().withViewModel;
-        view_options.owner = bindingsAccessor().withViewOwner;
+        view_options.model || (view_options.model = bindingsAccessor().withViewModel);
+        view_options.owner || (view_options.owner = bindingsAccessor().withViewOwner);
         owner = view_options.owner || bindingContext['$view'] || bindingContext['$parent'] || bindingContext['$root'];
         model = view_options.model;
         view = new view_class("view", owner, model, view_options);
