@@ -1595,6 +1595,18 @@ Date.prototype.format = function (mask, utc) {
     }
   };
 
+  Array.prototype.unique = function() {
+    var arr, el, j, len;
+    arr = [];
+    for (j = 0, len = this.length; j < len; j++) {
+      el = this[j];
+      if (arr.indexOf(el) === -1) {
+        arr.push(el);
+      }
+    }
+    return arr;
+  };
+
   Date.from_utc = function(utc) {
     return new Date(utc * 1000);
   };
@@ -4818,6 +4830,23 @@ Date.prototype.format = function (mask, utc) {
       target.any = ko.pureComputed(function() {
         return !jQuery.isEmptyObject(target());
       });
+      return target;
+    };
+    ko.extenders.editable = function(target) {
+      target.is_editing = ko.observable(false);
+      target.edited = ko.observable();
+      target.startEdit = function() {
+        target.edited(target());
+        return target.is_editing(true);
+      };
+      target.cancelEdit = function() {
+        target.edited(target());
+        return target.is_editing(false);
+      };
+      target.commitEdit = function() {
+        target(target.edited());
+        return target.is_editing(false);
+      };
       return target;
     };
     ko.punches.utils.setNodePreprocessor(function(node) {

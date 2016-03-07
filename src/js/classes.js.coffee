@@ -33,6 +33,12 @@ Array.prototype.findAndMap = (params, field, def)->
 			result
 	else
 		return def
+Array.prototype.unique = ->
+		arr = []
+		for el in this
+			if arr.indexOf(el) == -1
+				arr.push(el)
+		return arr
 	
 Date.from_utc = (utc) ->
 	new Date(utc * 1000)

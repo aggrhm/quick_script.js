@@ -530,6 +530,20 @@ QuickScript.initKO = ->
 			!jQuery.isEmptyObject(target())
 		return target
 
+	ko.extenders.editable = (target) ->
+		target.is_editing = ko.observable(false)
+		target.edited = ko.observable()
+		target.startEdit = ->
+			target.edited(target())
+			target.is_editing(true)
+		target.cancelEdit = ->
+			target.edited(target())
+			target.is_editing(false)
+		target.commitEdit = ->
+			target(target.edited())
+			target.is_editing(false)
+		return target
+
 	## PREPROCESSORS
 	
 	ko.punches.utils.setNodePreprocessor (node)->

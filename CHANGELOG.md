@@ -5,12 +5,16 @@ NOTE: Generally, create a new version on every 8 changes
 - Pending Changes
 	- TODO: Add @location observable to Application, which keeps hash of path, path_parts, href, hash, and params
 	- TODO: Set version in QS.version
+
+- Latest Changes
 	- Better support for server-side client views
 	- Updated Collection observables
 	- Added loading binding
 	- Dispose later takes variable arguments
 	- Collection `handleItemData` accepts `do_append` option
 	- Added `fadeOptions` to `fadeVisible` binding
+	- Added `editable` extender
+	- Added `unique` prototype function for Array
 
 - v2.11.0
 	-	Updated login and logout support with `redirect_on_login`
