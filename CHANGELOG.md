@@ -15,6 +15,7 @@ NOTE: Generally, create a new version on every 8 changes
 	- Added `fadeOptions` to `fadeVisible` binding
 	- Added `editable` extender
 	- Added `unique` prototype function for Array
+	- Updated `is_saving` to writeable observable on model
 
 - v2.11.0
 	-	Updated login and logout support with `redirect_on_login`

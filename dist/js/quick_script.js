@@ -2063,11 +2063,29 @@ Date.prototype.format = function (mask, utc) {
       this.addComputed('is_ready', function() {
         return this.model_state() === ko.modelStates.READY;
       });
-      this.addComputed('is_loading', function() {
-        return this.model_state() === ko.modelStates.LOADING;
+      this.addComputed('is_loading', {
+        read: function() {
+          return this.model_state() === ko.modelStates.LOADING;
+        },
+        write: function(val) {
+          if (val === true) {
+            return this.model_state(ko.modelStates.LOADING);
+          } else {
+            return this.model_state(ko.modelStates.READY);
+          }
+        }
       });
-      this.addComputed('is_saving', function() {
-        return this.model_state() === ko.modelStates.SAVING;
+      this.addComputed('is_saving', {
+        read: function() {
+          return this.model_state() === ko.modelStates.SAVING;
+        },
+        write: function(val) {
+          if (val === true) {
+            return this.model_state(ko.modelStates.SAVING);
+          } else {
+            return this.model_state(ko.modelStates.READY);
+          }
+        }
       });
       this.addComputed('is_editing', function() {
         return this.model_state() === ko.modelStates.EDITING;
@@ -2312,7 +2330,7 @@ Date.prototype.format = function (mask, utc) {
 
       function _Class(opts) {
         _Class.__super__.constructor.call(this, opts);
-        this.adapter = self.Adapter;
+        this.adapter || (this.adapter = self.Adapter);
         this.model = self;
       }
 
@@ -2564,7 +2582,7 @@ Date.prototype.format = function (mask, utc) {
       this.count = ko.observable(0);
       this.extra_params = ko.observable(this.opts.extra_params || {});
       this.model = this.opts.model || QS.Model;
-      this.adapter = this.opts.adapter || new QS.ModelAdapter();
+      this.adapter = this.opts.adapter;
       this.model_state = ko.observable(0);
       this.named_filters = {};
       this.named_sorts = {};

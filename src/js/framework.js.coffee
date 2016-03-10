@@ -22,10 +22,16 @@ class QS.Model
 		@init()
 		@addComputed 'is_ready', ->
 			@model_state() == ko.modelStates.READY
-		@addComputed 'is_loading', ->
-			@model_state() == ko.modelStates.LOADING
-		@addComputed 'is_saving', ->
+		@addComputed 'is_loading',
+			read : ->
+				@model_state() == ko.modelStates.LOADING
+			write : (val)->
+				if val == true then @model_state(ko.modelStates.LOADING) else @model_state(ko.modelStates.READY)
+		@addComputed 'is_saving',
+			read : ->
 				@model_state() == ko.modelStates.SAVING
+			write : (val)->
+				if val == true then @model_state(ko.modelStates.SAVING) else @model_state(ko.modelStates.READY)
 		@addComputed 'is_editing', ->
 				@model_state() == ko.modelStates.EDITING
 		@addComputed 'is_new', ->
@@ -170,7 +176,7 @@ QS.Model.includeCollection = (self)->
 	self.Collection = class extends QS.Collection
 		constructor : (opts)->
 			super(opts)
-			@adapter = self.Adapter
+			@adapter ||= self.Adapter
 			@model = self
 QS.Model.includeViewCollection = (self)->
 	self ||= this
@@ -309,7 +315,7 @@ class QS.Collection
 		@count = ko.observable(0)
 		@extra_params = ko.observable(@opts.extra_params || {})
 		@model = @opts.model || QS.Model
-		@adapter = @opts.adapter || new QS.ModelAdapter()
+		@adapter = @opts.adapter
 		@model_state = ko.observable(0)
 		@named_filters = {}
 		@named_sorts = {}
