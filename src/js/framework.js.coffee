@@ -316,6 +316,7 @@ class QS.Collection
 		@extra_params = ko.observable(@opts.extra_params || {})
 		@model = @opts.model || QS.Model
 		@adapter = @opts.adapter
+		@adapter_endpoint = @opts.adapter_endpoint || 'index'
 		@model_state = ko.observable(0)
 		@named_filters = {}
 		@named_sorts = {}
@@ -377,7 +378,7 @@ class QS.Collection
 		opts = @loadOptions()
 		$.extend(opts, load_opts.data) if load_opts.data?
 		opts.scope = if (scope instanceof Array) then scope else JSON.stringify(scope)
-		@adapter.index
+		@adapter[@adapter_endpoint]
 			data : opts
 			success : (resp)=>
 				if @_reqid != reqid
@@ -1005,6 +1006,8 @@ class QS.ModelAdapter
 			opts.url = url
 			opts.type = http_m
 			@send opts
+	add_endpoint : =>
+		@route_method.apply(this, arguments)
 			
 QS.ModelAdapter.host = new QS.Host("/api/")
 

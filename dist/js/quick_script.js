@@ -2583,6 +2583,7 @@ Date.prototype.format = function (mask, utc) {
       this.extra_params = ko.observable(this.opts.extra_params || {});
       this.model = this.opts.model || QS.Model;
       this.adapter = this.opts.adapter;
+      this.adapter_endpoint = this.opts.adapter_endpoint || 'index';
       this.model_state = ko.observable(0);
       this.named_filters = {};
       this.named_sorts = {};
@@ -2654,7 +2655,7 @@ Date.prototype.format = function (mask, utc) {
         $.extend(opts, load_opts.data);
       }
       opts.scope = scope instanceof Array ? scope : JSON.stringify(scope);
-      this.adapter.index({
+      this.adapter[this.adapter_endpoint]({
         data: opts,
         success: (function(_this) {
           return function(resp) {
@@ -3656,6 +3657,7 @@ Date.prototype.format = function (mask, utc) {
 
   QS.ModelAdapter = (function() {
     function ModelAdapter(opts) {
+      this.add_endpoint = bind(this.add_endpoint, this);
       var prop, val;
       this.save_url = null;
       this.load_url = null;
@@ -3731,6 +3733,10 @@ Date.prototype.format = function (mask, utc) {
         opts.type = http_m;
         return this.send(opts);
       });
+    };
+
+    ModelAdapter.prototype.add_endpoint = function() {
+      return this.route_method.apply(this, arguments);
     };
 
     return ModelAdapter;

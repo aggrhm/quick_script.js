@@ -16,6 +16,8 @@ NOTE: Generally, create a new version on every 8 changes
 	- Added `editable` extender
 	- Added `unique` prototype function for Array
 	- Updated `is_saving` to writeable observable on model
+	- Added `add_endpoint` as alias for `route_method` in ModelAdapter
+	- Collection can now specify `adapter_endpoint`
 
 - v2.11.0
 	-	Updated login and logout support with `redirect_on_login`
