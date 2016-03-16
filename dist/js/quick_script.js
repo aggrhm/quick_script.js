@@ -2553,6 +2553,8 @@ Date.prototype.format = function (mask, utc) {
       this.absorb = bind(this.absorb, this);
       this.length = bind(this.length, this);
       this.hasItems = bind(this.hasItems, this);
+      this.toggleSort = bind(this.toggleSort, this);
+      this.updateScope = bind(this.updateScope, this);
       this.prevPage = bind(this.prevPage, this);
       this.nextPage = bind(this.nextPage, this);
       this.getScopedItems = bind(this.getScopedItems, this);
@@ -2920,6 +2922,48 @@ Date.prototype.format = function (mask, utc) {
     Collection.prototype.prevPage = function() {
       this.page(this.page() - 1);
       return this.update();
+    };
+
+    Collection.prototype.updateScope = function(scope, opts) {
+      var cs, do_replace, do_update, ns;
+      if (opts == null) {
+        opts = {};
+      }
+      if (!(opts.replace === true || opts.clear === true)) {
+        do_replace = false;
+      }
+      if (opts.do_update !== false) {
+        do_update = true;
+      }
+      if (do_replace) {
+        this.scope(scope);
+      } else {
+        cs = this.scope();
+        ns = $.extend({}, cs, scope);
+        this.scope(ns);
+      }
+      if (opts.page != null) {
+        this.page(opts.page);
+      }
+      if (do_update === true) {
+        return this.update();
+      }
+    };
+
+    Collection.prototype.toggleSort = function(field, opts) {
+      var csort, ns, scope;
+      if (opts == null) {
+        opts = {};
+      }
+      ns = {};
+      scope = this.scope();
+      csort = scope.sort;
+      if ((csort == null) || csort[0] !== field) {
+        ns.sort = [field, true];
+      } else {
+        ns.sort = [field, !csort[1]];
+      }
+      return this.updateScope(ns, opts);
     };
 
     Collection.prototype.hasItems = function() {

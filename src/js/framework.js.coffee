@@ -364,7 +364,7 @@ class QS.Collection
 		@extend(opts)
 		@init()
 	extend : (opts)=>
-	setScope : (scp, args) =>
+	setScope : (scp, args) =>		# NOTE: Deprecated
 		opts = args
 		opts.unshift(scp)
 		@scope(opts)
@@ -536,6 +536,26 @@ class QS.Collection
 	prevPage : =>
 		@page(@page() - 1)
 		@update()
+	updateScope : (scope, opts={})=>
+		do_replace = false unless opts.replace == true || opts.clear == true
+		do_update = true unless opts.do_update == false
+		if do_replace
+			@scope(scope)
+		else
+			cs = @scope()
+			ns = $.extend({}, cs, scope)
+			@scope(ns)
+		@page(opts.page) if opts.page?
+		@update() if do_update == true
+	toggleSort : (field, opts={})=>
+		ns = {}
+		scope = @scope()
+		csort = scope.sort
+		if !csort? || csort[0] != field
+			ns.sort = [field, true]
+		else
+			ns.sort = [field, !csort[1]]
+		@updateScope(ns, opts)
 	hasItems : =>
 		@items().length > 0
 	length : =>
