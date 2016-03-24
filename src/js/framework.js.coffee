@@ -135,24 +135,14 @@ class QS.Model
 		flds ||= @fields
 		obj = {}
 		for prop in flds
+			val = null
 			if typeof(@[prop].toAPI) == 'function'
 				val = @[prop].toAPI()
-				if val != null
-					if val instanceof File
-						obj[prop] = val
-					else
-						obj[prop] = JSON.stringify(val)
 			else if typeof(@[prop].toJS) == 'function'
-				obj[prop] = @[prop].toJS()
+				val = @[prop].toJS()
 			else
 				val = @[prop]()
-				if val instanceof Object
-					obj[prop] = JSON.stringify(val)
-				else
-					if val?
-						obj[prop] = val
-					else
-						obj[prop] = ''
+			obj[prop] = val
 		return QS.utils.prepareAPIData(obj)
 	toAPIParam : (flds)=>
 		QS.utils.prepareAPIParam(@toAPI(flds))
@@ -617,9 +607,8 @@ class QS.Collection
 		for item in @items()
 			objs.push(item.toAPI())
 		objs
-		JSON.stringify(objs)
 	toAPIParam : =>
-		@toAPI()
+		QS.utils.prepareAPIParam(@toAPI())
 
 QS.Collection.REPLACE = 0
 QS.Collection.INSERT = 1
@@ -867,21 +856,14 @@ class QS.View
 		flds ||= @fields
 		obj = {}
 		for prop in flds
+			val = null
 			if typeof(@[prop].toAPI) == 'function'
 				val = @[prop].toAPI()
-				if val != null
-					if val instanceof File
-						obj[prop] = val
-					else
-						obj[prop] = JSON.stringify val
 			else if typeof(@[prop].toJS) == 'function'
-				obj[prop] = @[prop].toJS()
+				val = @[prop].toJS()
 			else
 				val = @[prop]()
-				if val instanceof Object
-					obj[prop] = JSON.stringify(val)
-				else
-					obj[prop] = val if val != null
+			obj[prop] = QS.utils.prepareAPIParam(val)
 		obj
 	toAPIParam : (flds)=>
 		QS.utils.prepareAPIParam(@toAPI(flds))
@@ -954,7 +936,7 @@ class QS.Host
 			#QS.log "response : #{status}"
 			resp = @process_response(resp, status)
 			resp_fn?(resp, status)
-		req.type = 'POST' if !req.type?
+		req.type = req.method = 'POST' if (!req.type? && !req.method?)
 		req.url = @url + req.url
 		req.success = callback_fn
 		req.error = callback_fn if !req.error?

@@ -181,8 +181,9 @@ if QS.SupportManager.hasFormData()
 		url = opts.url
 		opts.async = true unless opts.async?
 		opts.data ||= {}
+		opts.method ||= (opts.type || 'POST')
 
-		if opts.type == "GET"
+		if opts.method == "GET"
 			url = url + "?"
 			first = true
 			for key, val of opts.data
@@ -210,12 +211,12 @@ if QS.SupportManager.hasFormData()
 		if opts.progress?
 			req.upload.addEventListener 'progress', (ev)->
 				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
-		req.open opts.type, url, opts.async
+		req.open opts.method, url, opts.async
 		for key, val of opts.headers
 			req.setRequestHeader(key, val) if val?
 		req.withCredentials = true
 		opts.loading(true) if opts.loading?
-		if opts.type == "GET" then req.send() else req.send(data)
+		if opts.method == "GET" then req.send() else req.send(data)
 		return req
 else
 	# IE compliant
@@ -224,6 +225,7 @@ else
 		req = new XMLHttpRequest()
 		url = opts.url
 		opts.async = true unless opts.async?
+		opts.method ||= (opts.type || 'POST')
 
 		# build data
 		data_s = ''
@@ -234,7 +236,7 @@ else
 			else
 				data_s = data_s + "#{key}=#{escape(val)}&"
 		data_s = data_s.substring(0, data_s.length - 1)
-		if opts.type == "GET"
+		if opts.method == "GET"
 			url = url + "?" + data_s
 		req.onreadystatechange = (ev)->
 			if req.readyState == 4
@@ -253,7 +255,7 @@ else
 			req.upload.addEventListener 'progress', (ev)->
 				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
 		###
-		req.open opts.type, url, opts.async
+		req.open opts.method, url, opts.async
 		for key, val of opts.headers
 			req.setRequestHeader(key, val) if val?
 		req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')

@@ -19,6 +19,7 @@ NOTE: Generally, create a new version on every 8 changes
 	- Added `add_endpoint` as alias for `route_method` in ModelAdapter
 	- Collection can now specify `adapter_endpoint`
 	- Added `updateScope` and `toggleSort` to Collection
+	- Improved `toAPI` for Model, View, and Collection
 
 - v2.11.0
 	-	Updated login and logout support with `redirect_on_login`

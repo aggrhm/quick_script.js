@@ -1386,7 +1386,8 @@ Date.prototype.format = function (mask, utc) {
         opts.async = true;
       }
       opts.data || (opts.data = {});
-      if (opts.type === "GET") {
+      opts.method || (opts.method = opts.type || 'POST');
+      if (opts.method === "GET") {
         url = url + "?";
         first = true;
         ref = opts.data;
@@ -1434,7 +1435,7 @@ Date.prototype.format = function (mask, utc) {
           return opts.progress(ev, Math.floor(ev.loaded / ev.total * 100));
         });
       }
-      req.open(opts.type, url, opts.async);
+      req.open(opts.method, url, opts.async);
       ref2 = opts.headers;
       for (key in ref2) {
         val = ref2[key];
@@ -1446,7 +1447,7 @@ Date.prototype.format = function (mask, utc) {
       if (opts.loading != null) {
         opts.loading(true);
       }
-      if (opts.type === "GET") {
+      if (opts.method === "GET") {
         req.send();
       } else {
         req.send(data);
@@ -1461,6 +1462,7 @@ Date.prototype.format = function (mask, utc) {
       if (opts.async == null) {
         opts.async = true;
       }
+      opts.method || (opts.method = opts.type || 'POST');
       data_s = '';
       ref = opts.data;
       for (key in ref) {
@@ -1475,7 +1477,7 @@ Date.prototype.format = function (mask, utc) {
         }
       }
       data_s = data_s.substring(0, data_s.length - 1);
-      if (opts.type === "GET") {
+      if (opts.method === "GET") {
         url = url + "?" + data_s;
       }
       req.onreadystatechange = function(ev) {
@@ -1505,7 +1507,7 @@ Date.prototype.format = function (mask, utc) {
       			req.upload.addEventListener 'progress', (ev)->
       				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
        */
-      req.open(opts.type, url, opts.async);
+      req.open(opts.method, url, opts.async);
       ref1 = opts.headers;
       for (key in ref1) {
         val = ref1[key];
@@ -2260,29 +2262,15 @@ Date.prototype.format = function (mask, utc) {
       obj = {};
       for (j = 0, len = flds.length; j < len; j++) {
         prop = flds[j];
+        val = null;
         if (typeof this[prop].toAPI === 'function') {
           val = this[prop].toAPI();
-          if (val !== null) {
-            if (val instanceof File) {
-              obj[prop] = val;
-            } else {
-              obj[prop] = JSON.stringify(val);
-            }
-          }
         } else if (typeof this[prop].toJS === 'function') {
-          obj[prop] = this[prop].toJS();
+          val = this[prop].toJS();
         } else {
           val = this[prop]();
-          if (val instanceof Object) {
-            obj[prop] = JSON.stringify(val);
-          } else {
-            if (val != null) {
-              obj[prop] = val;
-            } else {
-              obj[prop] = '';
-            }
-          }
         }
+        obj[prop] = val;
       }
       return QS.utils.prepareAPIData(obj);
     };
@@ -3091,12 +3079,11 @@ Date.prototype.format = function (mask, utc) {
         item = ref[j];
         objs.push(item.toAPI());
       }
-      objs;
-      return JSON.stringify(objs);
+      return objs;
     };
 
     Collection.prototype.toAPIParam = function() {
-      return this.toAPI();
+      return QS.utils.prepareAPIParam(this.toAPI());
     };
 
     return Collection;
@@ -3517,27 +3504,15 @@ Date.prototype.format = function (mask, utc) {
       obj = {};
       for (j = 0, len = flds.length; j < len; j++) {
         prop = flds[j];
+        val = null;
         if (typeof this[prop].toAPI === 'function') {
           val = this[prop].toAPI();
-          if (val !== null) {
-            if (val instanceof File) {
-              obj[prop] = val;
-            } else {
-              obj[prop] = JSON.stringify(val);
-            }
-          }
         } else if (typeof this[prop].toJS === 'function') {
-          obj[prop] = this[prop].toJS();
+          val = this[prop].toJS();
         } else {
           val = this[prop]();
-          if (val instanceof Object) {
-            obj[prop] = JSON.stringify(val);
-          } else {
-            if (val !== null) {
-              obj[prop] = val;
-            }
-          }
         }
+        obj[prop] = QS.utils.prepareAPIParam(val);
       }
       return obj;
     };
@@ -3653,8 +3628,8 @@ Date.prototype.format = function (mask, utc) {
           return typeof resp_fn === "function" ? resp_fn(resp, status) : void 0;
         };
       })(this);
-      if (req.type == null) {
-        req.type = 'POST';
+      if ((req.type == null) && (req.method == null)) {
+        req.type = req.method = 'POST';
       }
       req.url = this.url + req.url;
       req.success = callback_fn;
