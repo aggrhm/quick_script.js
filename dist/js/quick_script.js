@@ -3249,7 +3249,6 @@ Date.prototype.format = function (mask, utc) {
       this.events = {};
       this.opts || (this.opts = {});
       this.disposables = [];
-      this.templateID || (this.templateID = "view-" + this.name);
       this.fields = [];
       this.view_name = ko.computed(function() {
         return this.templateID;
@@ -3449,7 +3448,7 @@ Date.prototype.format = function (mask, utc) {
       return this.task() === task;
     };
 
-    View.prototype.getViewName = function(view) {
+    View.prototype.getViewTemplateID = function(view) {
       return view.templateID;
     };
 
@@ -3931,7 +3930,8 @@ Date.prototype.format = function (mask, utc) {
       this.path(path);
       this.path_params(QS.utils.getURLParams(this.location.href));
       this.path_anchor(this.location.hash.substring(1));
-      return this.handlePath(path);
+      this.handlePath(path);
+      return this.app.trigger('path.changed', path);
     };
 
     Application.prototype.handlePath = function(path) {};
@@ -5202,8 +5202,8 @@ Date.prototype.format = function (mask, utc) {
         });
       }
     });
-    ko.addTemplate("viewbox", "<div data-bind='foreach : {data: views(), as: \"$view\"}'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewName, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
-    return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n	<div data-bind='foreach : views()'>\n		<div class=\"slide-item\" data-bind=\"template : { name : getViewName }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n	</div>\n</div>");
+    ko.addTemplate("viewbox", "<div data-bind='foreach : {data: views(), as: \"$view\"}'>\n	<div data-bind=\"fadeVisible : is_visible(), template : { name : getViewTemplateID, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
+    return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n	<div data-bind='foreach : views()'>\n		<div class=\"slide-item\" data-bind=\"template : { name : getViewTemplateID }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n	</div>\n</div>");
   };
 
 }).call(this);

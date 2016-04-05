@@ -707,7 +707,7 @@ class QS.View
 		@events = {}
 		@opts ||= {}
 		@disposables = []
-		@templateID ||= "view-#{@name}"
+		#@templateID ||= "view-#{@name}"
 		@fields = []
 		@view_name = ko.computed ->
 				@templateID
@@ -821,8 +821,9 @@ class QS.View
 			view.show() if view.is_visible() != true
 	isTask : (task) ->
 		@task() == task
-	getViewName : (view) ->
-		view.templateID
+	getViewTemplateID : (view) ->
+		# returns template for subview
+		return view.templateID
 	getViewBoxTemplate : (view) ->
 		switch view.transition.type
 			when 'slide'
@@ -1126,6 +1127,7 @@ class QS.Application extends QS.View
 		@path_params(QS.utils.getURLParams(@location.href))
 		@path_anchor(@location.hash.substring(1))
 		@handlePath(path)
+		@app.trigger 'path.changed', path
 	handlePath : (path) ->
 	setUser : (data)->
 		QS.log(data, 2)
