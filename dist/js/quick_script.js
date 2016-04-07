@@ -3857,7 +3857,35 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
-  QS.LocalStore = store;
+  QS.LocalStore = {
+    store: window.store,
+    isEnabled: function() {
+      return !QS.LocalStore.store.disabled;
+    },
+    set: function(key, val) {
+      if (QS.LocalStore.isEnabled()) {
+        return QS.LocalStore.store.set(key, val);
+      } else {
+        return console.log("LocalStore:: An attempt to write to the local store was ignored because the store is not enabled.");
+      }
+    },
+    get: function(key) {
+      if (QS.LocalStore.isEnabled()) {
+        return QS.LocalStore.store.get(key);
+      } else {
+        console.log("LocalStore:: An attempt to read from the local store was ignored because the store is not enabled.");
+        return null;
+      }
+    },
+    remove: function(key) {
+      if (QS.LocalStore.isEnabled()) {
+        return QS.LocalStore.store.remove(key);
+      } else {
+        console.log("LocalStore:: An attempt to remove from the local store was ignored because the store is not enabled.");
+        return null;
+      }
+    }
+  };
 
   QS.Application = (function(superClass) {
     extend(Application, superClass);

@@ -20,6 +20,7 @@ NOTE: Generally, create a new version on every 8 changes
 	- Collection can now specify `adapter_endpoint`
 	- Added `updateScope` and `toggleSort` to Collection
 	- Improved `toAPI` for Model, View, and Collection
+	- Updated LocalStore to not fail on write
 
 - v2.11.0
 	-	Updated login and logout support with `redirect_on_login`

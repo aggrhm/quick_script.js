@@ -1074,7 +1074,28 @@ class QS.AccountAdapter
 			@send opts
 
 
-QS.LocalStore = store
+QS.LocalStore =
+	store: window.store
+	isEnabled : ->
+		return !QS.LocalStore.store.disabled
+	set: (key, val)->
+		if QS.LocalStore.isEnabled()
+			QS.LocalStore.store.set(key, val)
+		else
+			console.log "LocalStore:: An attempt to write to the local store was ignored because the store is not enabled."
+	get : (key)->
+		if QS.LocalStore.isEnabled()
+			QS.LocalStore.store.get(key)
+		else
+			console.log "LocalStore:: An attempt to read from the local store was ignored because the store is not enabled."
+			return null
+	remove : (key)->
+		if QS.LocalStore.isEnabled()
+			QS.LocalStore.store.remove(key)
+		else
+			console.log "LocalStore:: An attempt to remove from the local store was ignored because the store is not enabled."
+			return null
+
 
 class QS.Application extends QS.View
 	constructor : (opts)->
