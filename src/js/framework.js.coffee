@@ -709,6 +709,8 @@ class QS.View
 		@disposables = []
 		#@templateID ||= "view-#{@name}"
 		@fields = []
+		@templateID = @opts.templateID if @opts.templateID?
+		@model = @opts.model if @opts.model?
 		@view_name = ko.computed ->
 				@templateID
 			, this
@@ -722,6 +724,9 @@ class QS.View
 		@view = null
 		@task = ko.observable(null)
 		@prev_task = ko.observable(null)
+		@selected_view = ko.pureComputed =>
+			task = @task()
+			return @views.name_map[task] || null
 		@layout_attr = ko.observable({})
 		@transition = {type : 'fade', opts : {'slide_pos' : ko.observable(0), 'slide_index' : ko.observable(0)}}
 		@transition.has_slide_css = (css, idx)=>
@@ -777,10 +782,11 @@ class QS.View
 	load : ->
 	reload : =>
 		@load.apply(this, arguments)
-	addView : (name, view_class, tpl) ->
+	addView : (name, view_class, opts={}) ->
 		return if @views.name_map[name]?
-		view = new view_class(name, this)
-		view.templateID = tpl if tpl?
+		if typeof(opts) == 'string'
+			opts = {templateID: opts}
+		view = new view_class(name, this, opts.model, opts)
 		@views.push(view)
 		@views[name] = @views.name_map[name] = view
 		@["is_task_#{name}"] = ko.computed ->

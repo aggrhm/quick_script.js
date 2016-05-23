@@ -165,7 +165,7 @@ QuickScript.initKO = ->
 			opts = valueAccessor()
 			if opts[0]?
 				$(element).css
-					background : 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
+					backgroundImage : 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
 					backgroundSize: 'cover',
 					'background-position': 'center',
 					width: opts[1],
@@ -177,7 +177,7 @@ QuickScript.initKO = ->
 			opts = valueAccessor()
 			if opts[0]?
 				$(element).css
-					background : 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
+					backgroundImage : 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
 					backgroundSize: 'contain',
 					'background-position': 'center',
 					backgroundRepeat: 'no-repeat',
@@ -489,6 +489,7 @@ QuickScript.initKO = ->
 			new_context = bindingContext.extend(vr)
 			ko.applyBindingsToDescendants(new_context, element)
 			return {controlsDescendantBindings: true}
+	ko.virtualElements.allowedBindings.scopeAs = true
 
 	## EXTENDERS
 	
@@ -511,14 +512,23 @@ QuickScript.initKO = ->
 			read : ->
 				Date.from_utc(target())
 			deferEvaluation : true
+			pure: true
 		target.date_str = ko.computed
 			read : ->
 				target.date().format('mmm d, yyyy')
 			deferEvaluation : true
+			pure: true
 		target.ago_str = ko.computed
 			read : ->
 				"#{(new TimeLength(target.date())).toString()} ago"
 			deferEvaluation : true
+			pure: true
+		target.moment = ko.computed
+			read : ->
+				moment.unix(target())
+			deferEvaluation : true
+			pure: true
+
 		return target
 
 	ko.extenders.errors = (target) ->

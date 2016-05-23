@@ -3250,6 +3250,12 @@ Date.prototype.format = function (mask, utc) {
       this.opts || (this.opts = {});
       this.disposables = [];
       this.fields = [];
+      if (this.opts.templateID != null) {
+        this.templateID = this.opts.templateID;
+      }
+      if (this.opts.model != null) {
+        this.model = this.opts.model;
+      }
       this.view_name = ko.computed(function() {
         return this.templateID;
       }, this);
@@ -3263,6 +3269,13 @@ Date.prototype.format = function (mask, utc) {
       this.view = null;
       this.task = ko.observable(null);
       this.prev_task = ko.observable(null);
+      this.selected_view = ko.pureComputed((function(_this) {
+        return function() {
+          var task;
+          task = _this.task();
+          return _this.views.name_map[task] || null;
+        };
+      })(this));
       this.layout_attr = ko.observable({});
       this.transition = {
         type: 'fade',
@@ -3370,15 +3383,20 @@ Date.prototype.format = function (mask, utc) {
       return this.load.apply(this, arguments);
     };
 
-    View.prototype.addView = function(name, view_class, tpl) {
+    View.prototype.addView = function(name, view_class, opts) {
       var view;
+      if (opts == null) {
+        opts = {};
+      }
       if (this.views.name_map[name] != null) {
         return;
       }
-      view = new view_class(name, this);
-      if (tpl != null) {
-        view.templateID = tpl;
+      if (typeof opts === 'string') {
+        opts = {
+          templateID: opts
+        };
       }
+      view = new view_class(name, this, opts.model, opts);
       this.views.push(view);
       this.views[name] = this.views.name_map[name] = view;
       this["is_task_" + name] = ko.computed(function() {
@@ -4398,7 +4416,7 @@ Date.prototype.format = function (mask, utc) {
         opts = valueAccessor();
         if (opts[0] != null) {
           return $(element).css({
-            background: 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
+            backgroundImage: 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
             backgroundSize: 'cover',
             'background-position': 'center',
             width: opts[1],
@@ -4414,7 +4432,7 @@ Date.prototype.format = function (mask, utc) {
         opts = valueAccessor();
         if (opts[0] != null) {
           return $(element).css({
-            background: 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
+            backgroundImage: 'url(' + ko.utils.unwrapObservable(opts[0]) + ')',
             backgroundSize: 'contain',
             'background-position': 'center',
             backgroundRepeat: 'no-repeat',
@@ -4843,6 +4861,7 @@ Date.prototype.format = function (mask, utc) {
         };
       }
     };
+    ko.virtualElements.allowedBindings.scopeAs = true;
     ko.extenders.usd = function(target) {
       target.usd = ko.computed({
         read: function() {
