@@ -469,7 +469,7 @@ class QS.Collection
 				@items(@items().concat(leftovers)) if leftovers.length > 0
 		@model_state(ko.modelStates.READY)
 	handleItemData : (data, opts={})=>
-		do_append = opts.do_append || false
+		do_append = opts.do_append || opts.append || false
 		item = @getItemById(data.id)
 		item.handleData(data) if item?
 		if !item? && do_append == true
@@ -709,6 +709,7 @@ class QS.View
 		@disposables = []
 		#@templateID ||= "view-#{@name}"
 		@fields = []
+		@element = @opts.element if @opts.element?
 		@templateID = @opts.templateID if @opts.templateID?
 		@model = @opts.model if @opts.model?
 		@view_name = ko.computed ->
@@ -900,8 +901,10 @@ QS.View.registerComponent = (name, template_opts, view_class)->
 					model = params.model
 					owner = params.owner || context['$view'] || context['$parent'] || context['$root']
 					vn = if model? then "#{name}-#{model.id?()}" else name
+					params.element = componentInfo?.element
 					new_view = new new_view_class(vn, owner, model, params)
-				new_view.element = componentInfo.element if componentInfo?
+				else
+					new_view.element = componentInfo?.element
 				return new_view
 		template: topts
 QS.View.registerComponent 'view-element',
@@ -1082,6 +1085,7 @@ class QS.AccountAdapter
 
 QS.LocalStore =
 	store: window.store
+	cache: {}
 	isEnabled : ->
 		return !QS.LocalStore.store.disabled
 	set: (key, val)->
@@ -1089,18 +1093,19 @@ QS.LocalStore =
 			QS.LocalStore.store.set(key, val)
 		else
 			console.log "LocalStore:: An attempt to write to the local store was ignored because the store is not enabled."
+			QS.LocalStore.cache[key] = val
 	get : (key)->
 		if QS.LocalStore.isEnabled()
-			QS.LocalStore.store.get(key)
+			return QS.LocalStore.store.get(key)
 		else
 			console.log "LocalStore:: An attempt to read from the local store was ignored because the store is not enabled."
-			return null
+			return QS.LocalStore.cache[key]
 	remove : (key)->
 		if QS.LocalStore.isEnabled()
 			QS.LocalStore.store.remove(key)
 		else
 			console.log "LocalStore:: An attempt to remove from the local store was ignored because the store is not enabled."
-			return null
+			QS.LocalStore.cache[key] = null
 
 
 class QS.Application extends QS.View

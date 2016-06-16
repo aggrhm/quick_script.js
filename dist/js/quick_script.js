@@ -2801,7 +2801,7 @@ Date.prototype.format = function (mask, utc) {
       if (opts == null) {
         opts = {};
       }
-      do_append = opts.do_append || false;
+      do_append = opts.do_append || opts.append || false;
       item = this.getItemById(data.id);
       if (item != null) {
         item.handleData(data);
@@ -3250,6 +3250,9 @@ Date.prototype.format = function (mask, utc) {
       this.opts || (this.opts = {});
       this.disposables = [];
       this.fields = [];
+      if (this.opts.element != null) {
+        this.element = this.opts.element;
+      }
       if (this.opts.templateID != null) {
         this.templateID = this.opts.templateID;
       }
@@ -3576,10 +3579,10 @@ Date.prototype.format = function (mask, utc) {
             model = params.model;
             owner = params.owner || context['$view'] || context['$parent'] || context['$root'];
             vn = model != null ? name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
+            params.element = componentInfo != null ? componentInfo.element : void 0;
             new_view = new new_view_class(vn, owner, model, params);
-          }
-          if (componentInfo != null) {
-            new_view.element = componentInfo.element;
+          } else {
+            new_view.element = componentInfo != null ? componentInfo.element : void 0;
           }
           return new_view;
         }
@@ -3877,6 +3880,7 @@ Date.prototype.format = function (mask, utc) {
 
   QS.LocalStore = {
     store: window.store,
+    cache: {},
     isEnabled: function() {
       return !QS.LocalStore.store.disabled;
     },
@@ -3884,7 +3888,8 @@ Date.prototype.format = function (mask, utc) {
       if (QS.LocalStore.isEnabled()) {
         return QS.LocalStore.store.set(key, val);
       } else {
-        return console.log("LocalStore:: An attempt to write to the local store was ignored because the store is not enabled.");
+        console.log("LocalStore:: An attempt to write to the local store was ignored because the store is not enabled.");
+        return QS.LocalStore.cache[key] = val;
       }
     },
     get: function(key) {
@@ -3892,7 +3897,7 @@ Date.prototype.format = function (mask, utc) {
         return QS.LocalStore.store.get(key);
       } else {
         console.log("LocalStore:: An attempt to read from the local store was ignored because the store is not enabled.");
-        return null;
+        return QS.LocalStore.cache[key];
       }
     },
     remove: function(key) {
@@ -3900,7 +3905,7 @@ Date.prototype.format = function (mask, utc) {
         return QS.LocalStore.store.remove(key);
       } else {
         console.log("LocalStore:: An attempt to remove from the local store was ignored because the store is not enabled.");
-        return null;
+        return QS.LocalStore.cache[key] = null;
       }
     }
   };
@@ -4347,7 +4352,7 @@ Date.prototype.format = function (mask, utc) {
           var action, val;
           if (ev.keyCode === 13 && !ev.shiftKey) {
             action = valueAccessor();
-            val = bindingsAccessor().value;
+            val = bindingsAccessor().value || bindingsAccessor().textInput;
             val($(element).val());
             action.call(viewModel);
             return false;
@@ -4577,7 +4582,17 @@ Date.prototype.format = function (mask, utc) {
     };
     ko.bindingHandlers.bindelem = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel) {
-        return viewModel.element = element;
+        var el_str, val;
+        val = valueAccessor();
+        if (val === true) {
+          el_str = "element";
+        } else {
+          el_str = val;
+        }
+        viewModel[el_str] = element;
+        return setTimeout(function() {
+          return typeof viewModel.onElementBound === "function" ? viewModel.onElementBound(el_str, element) : void 0;
+        }, 50);
       }
     };
     ko.bindingHandlers.jsfileupload = {
@@ -4604,6 +4619,34 @@ Date.prototype.format = function (mask, utc) {
         return model.selectFile = function() {
           return $(element).click();
         };
+      }
+    };
+    ko.bindingHandlers.filedrop = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel) {
+        var $el, dest;
+        $el = $(element);
+        dest = valueAccessor();
+        $el.on('dragover', function(ev) {
+          ev.preventDefault();
+          return ev.originalEvent.dataTransfer.dropEffect = 'copy';
+        });
+        return $el.on('drop', function(ev) {
+          var files;
+          ev.stopPropagation();
+          ev.preventDefault();
+          files = ev.originalEvent.dataTransfer.files;
+          QS.log("I got here");
+          if ((dest.input != null) && (dest.input.files != null)) {
+            QS.log("I got here too");
+            return dest.input.files(files);
+          } else {
+            return typeof dest === "function" ? dest(files, {
+              event: ev,
+              view: viewModel,
+              element: element
+            }) : void 0;
+          }
+        });
       }
     };
     ko.bindingHandlers.jqtabs = {
@@ -4890,19 +4933,29 @@ Date.prototype.format = function (mask, utc) {
         read: function() {
           return Date.from_utc(target());
         },
-        deferEvaluation: true
+        deferEvaluation: true,
+        pure: true
       });
       target.date_str = ko.computed({
         read: function() {
           return target.date().format('mmm d, yyyy');
         },
-        deferEvaluation: true
+        deferEvaluation: true,
+        pure: true
       });
       target.ago_str = ko.computed({
         read: function() {
           return ((new TimeLength(target.date())).toString()) + " ago";
         },
-        deferEvaluation: true
+        deferEvaluation: true,
+        pure: true
+      });
+      target.moment = ko.computed({
+        read: function() {
+          return moment.unix(target());
+        },
+        deferEvaluation: true,
+        pure: true
       });
       return target;
     };
@@ -5124,6 +5177,9 @@ Date.prototype.format = function (mask, utc) {
       }
       opts.owner = self;
       opts.deferEvaluation = true;
+      if (opts.pure == null) {
+        opts.pure = true;
+      }
       return self[field] = ko.computed(opts, self);
     };
     ko.validate_for = function(field, fn, msg, self) {

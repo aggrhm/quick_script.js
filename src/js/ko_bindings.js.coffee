@@ -115,7 +115,7 @@ QuickScript.initKO = ->
 			$(element).keypress (ev)->
 				if (ev.keyCode == 13 && !ev.shiftKey)
 					action = valueAccessor()
-					val = bindingsAccessor().value
+					val = bindingsAccessor().value || bindingsAccessor().textInput
 					val($(element).val())
 					action.call(viewModel)
 					return false
@@ -282,7 +282,15 @@ QuickScript.initKO = ->
 
 	ko.bindingHandlers.bindelem =
 		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
-			viewModel.element = element
+			val = valueAccessor()
+			if val == true
+				el_str = "element"
+			else
+				el_str = val
+			viewModel[el_str] = element
+			setTimeout ->
+				viewModel.onElementBound?(el_str, element)
+			, 50
 
 	ko.bindingHandlers.jsfileupload =
 		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
@@ -301,6 +309,24 @@ QuickScript.initKO = ->
 				model.input.files(evt.target.files)
 			model.selectFile = ->
 				$(element).click()
+
+	ko.bindingHandlers.filedrop =
+		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
+			$el = $(element)
+			dest = valueAccessor()
+			$el.on 'dragover', (ev)->
+				ev.preventDefault()
+				ev.originalEvent.dataTransfer.dropEffect = 'copy'
+			$el.on 'drop', (ev)->
+				ev.stopPropagation()
+				ev.preventDefault()
+				files = ev.originalEvent.dataTransfer.files
+				QS.log "I got here"
+				if dest.input? && dest.input.files?
+					QS.log "I got here too"
+					dest.input.files(files)
+				else
+					dest?(files, {event: ev, view: viewModel, element: element})
 
 	ko.bindingHandlers.jqtabs =
 		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
@@ -694,6 +720,7 @@ QuickScript.initKO = ->
 			opts = fn_opts
 		opts.owner = self
 		opts.deferEvaluation = true
+		opts.pure = true unless opts.pure?
 		self[field] = ko.computed opts, self
 	
 	ko.validate_for = (field, fn, msg, self) ->
