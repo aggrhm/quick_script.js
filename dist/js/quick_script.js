@@ -2720,6 +2720,16 @@ Date.prototype.format = function (mask, utc) {
       return this._load(scope, QS.Collection.APPEND, opts);
     };
 
+    Collection.prototype.appendNextPage = function(opts) {
+      if ((opts == null) || (opts instanceof Function)) {
+        opts = {
+          callback: opts
+        };
+      }
+      this.page(this.page() + 1);
+      return this._load(this.scope(), QS.Collection.APPEND, opts);
+    };
+
     Collection.prototype.handleData = function(data, op) {
       var c_el, c_id, curr_a, curr_len, id_h, idx, item, itm, j, k, l, leftovers, len, len1, max_len, model, models, new_a, new_len, r_el, r_id, ref, same_itm;
       if (data == null) {
@@ -3236,6 +3246,7 @@ Date.prototype.format = function (mask, utc) {
       this.toAPI = bind(this.toAPI, this);
       this.ensure = bind(this.ensure, this);
       this.afterRender = bind(this.afterRender, this);
+      this.template = bind(this.template, this);
       this.validate_fields = bind(this.validate_fields, this);
       this.validate_for = bind(this.validate_for, this);
       this.addFields = bind(this.addFields, this);
@@ -3463,6 +3474,13 @@ Date.prototype.format = function (mask, utc) {
           return view.show();
         }
       }
+    };
+
+    View.prototype.template = function() {
+      return {
+        name: this.templateID,
+        data: this
+      };
     };
 
     View.prototype.isTask = function(task) {

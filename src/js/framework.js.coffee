@@ -400,6 +400,10 @@ class QS.Collection
 	append : (scope, opts)->
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
 		@_load(scope, QS.Collection.APPEND, opts)
+	appendNextPage : (opts)->
+		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
+		@page(@page() + 1)
+		@_load(@scope(), QS.Collection.APPEND, opts)
 	handleData : (data, op) =>
 		return if !data?
 		#QS.log "COLLECTION::HANDLE_DATA : Starting (#{QS.time()}).", 3
@@ -826,6 +830,8 @@ class QS.View
 		else
 			@view.reload.apply(@view, args[1..])
 			view.show() if view.is_visible() != true
+	template : =>
+		return {name: @templateID, data: this}
 	isTask : (task) ->
 		@task() == task
 	getViewTemplateID : (view) ->
