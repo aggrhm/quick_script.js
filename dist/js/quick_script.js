@@ -2982,6 +2982,12 @@ Date.prototype.format = function (mask, utc) {
       return item;
     };
 
+    Collection.prototype.addItemData = function(data) {
+      var item;
+      item = new this.model(data, this);
+      return this.addItem(item);
+    };
+
     Collection.prototype.removeItem = function(idx, notify) {
       notify || (notify = true);
       this.items().splice(idx, 1);
@@ -3564,7 +3570,7 @@ Date.prototype.format = function (mask, utc) {
   })();
 
   QS.View.registerComponent = function(name, template_opts, view_class) {
-    var topts;
+    var is_sync, topts;
     view_class || (view_class = this);
     QS.registered_components || (QS.registered_components = {});
     if (typeof template_opts === 'string') {
@@ -3575,6 +3581,7 @@ Date.prototype.format = function (mask, utc) {
       topts = template_opts;
     }
     topts.loader = 'QuickScript';
+    is_sync = topts.synchronous || false;
     QS.registered_components[name] = {
       template_opts: topts,
       view_class: view_class
@@ -3605,7 +3612,8 @@ Date.prototype.format = function (mask, utc) {
           return new_view;
         }
       },
-      template: topts
+      template: topts,
+      synchronous: is_sync
     });
   };
 

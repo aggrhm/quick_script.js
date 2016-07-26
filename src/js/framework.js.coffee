@@ -560,6 +560,9 @@ class QS.Collection
 		@items().push(item)
 		@items.valueHasMutated() if notify
 		return item
+	addItemData : (data)->
+		item = new @model(data, this)
+		@addItem(item)
 	removeItem : (idx, notify)->
 		notify ||= true
 		@items().splice(idx, 1)
@@ -890,6 +893,7 @@ QS.View.registerComponent = (name, template_opts, view_class)->
 	else
 		topts = template_opts
 	topts.loader = 'QuickScript'
+	is_sync = topts.synchronous || false
 	QS.registered_components[name] = {template_opts: topts, view_class: view_class}
 	ko.components.register name,
 		viewModel :
@@ -913,6 +917,7 @@ QS.View.registerComponent = (name, template_opts, view_class)->
 					new_view.element = componentInfo?.element
 				return new_view
 		template: topts
+		synchronous: is_sync
 QS.View.registerComponent 'view-element',
 	html: """
 		<!-- ko template : {nodes : $componentTemplateNodes} -->
