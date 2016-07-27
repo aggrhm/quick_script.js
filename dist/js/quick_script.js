@@ -1204,7 +1204,7 @@ Date.prototype.format = function (mask, utc) {
           pair = ref[k];
           kv = pair.split("=");
           if (!QS.utils.isBlank(kv[0])) {
-            ret[kv[0]] = kv[1];
+            ret[kv[0]] = unescape(kv[1]);
           }
         }
         return ret;
