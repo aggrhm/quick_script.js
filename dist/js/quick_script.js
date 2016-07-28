@@ -2687,6 +2687,12 @@ Date.prototype.format = function (mask, utc) {
       if (!((opts.reset != null) && !opts.reset)) {
         this.reset();
       }
+      if (opts.page != null) {
+        this.page(opts.page);
+      }
+      if (opts.limit != null) {
+        this.limit(opts.limit);
+      }
       if (scope != null) {
         this.scope(scope);
       }
@@ -3940,6 +3946,7 @@ Date.prototype.format = function (mask, utc) {
     extend(Application, superClass);
 
     function Application(opts) {
+      this.updateWindowBounds = bind(this.updateWindowBounds, this);
       this.bindToBody = bind(this.bindToBody, this);
       this.host = bind(this.host, this);
       this.getUserToken = bind(this.getUserToken, this);
@@ -3964,6 +3971,13 @@ Date.prototype.format = function (mask, utc) {
       this.account_model || (this.account_model = this.opts.account_model || QS.Model);
       this.current_user = new this.account_model();
       this.current_user_token = ko.observable(null);
+      this.window_bounds = ko.observable({
+        scrollTop: 0,
+        width: 0,
+        height: 0
+      }).extend({
+        rateLimit: 100
+      });
       this.is_logged_in = ko.computed(function() {
         if (this.auth_method === 'session') {
           return !this.current_user.is_new();
@@ -3987,6 +4001,12 @@ Date.prototype.format = function (mask, utc) {
           }
         };
       })(this));
+      $(window).on('scroll resize', (function(_this) {
+        return function() {
+          return _this.updateWindowBounds();
+        };
+      })(this));
+      this.updateWindowBounds();
       Application.__super__.constructor.call(this, 'app', null, null, this.opts);
     }
 
@@ -4173,6 +4193,17 @@ Date.prototype.format = function (mask, utc) {
           return true;
         }
       });
+    };
+
+    Application.prototype.updateWindowBounds = function() {
+      var $window, ret;
+      $window = $(window);
+      ret = {
+        scrollTop: $window.scrollTop(),
+        width: $window.width(),
+        height: $window.height()
+      };
+      return this.window_bounds(ret);
     };
 
     return Application;

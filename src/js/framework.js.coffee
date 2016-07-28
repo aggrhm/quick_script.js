@@ -389,6 +389,8 @@ class QS.Collection
 	load : (scope, opts)=>
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
 		@reset() unless opts.reset? && !opts.reset
+		@page(opts.page) if opts.page?
+		@limit(opts.limit) if opts.limit?
 		@scope(scope) if scope?
 		@_load(@scope(), QS.Collection.REPLACE, opts)
 	update : (opts)=>
@@ -1139,6 +1141,8 @@ class QS.Application extends QS.View
 		@account_model ||= (@opts.account_model || QS.Model)
 		@current_user = new @account_model()
 		@current_user_token = ko.observable(null)	# NOTE: always use getUserToken()
+		@window_bounds = ko.observable({scrollTop: 0, width: 0, height: 0}).extend({rateLimit : 100})
+		
 
 		@is_logged_in = ko.computed ->
 			if @auth_method == 'session'
@@ -1157,6 +1161,9 @@ class QS.Application extends QS.View
 				@app.trigger 'app.logged_in'
 			else
 				@app.trigger 'app.logged_out'
+		$(window).on 'scroll resize', =>
+			@updateWindowBounds()
+		@updateWindowBounds()
 		super('app', null, null, @opts)
 	configure : ->
 	route : ->
@@ -1264,6 +1271,13 @@ class QS.Application extends QS.View
 				return true
 			else
 				return true
+	updateWindowBounds : =>
+		$window = $(window)
+		ret =
+			scrollTop: $window.scrollTop()
+			width: $window.width()
+			height: $window.height()
+		@window_bounds(ret)
 
 
 QuickScript.initialize = (opts)->
