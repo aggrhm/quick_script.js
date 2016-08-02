@@ -4409,6 +4409,9 @@ Date.prototype.format = function (mask, utc) {
             val = bindingsAccessor().value || bindingsAccessor().textInput;
             val($(element).val());
             action.call(viewModel);
+            if (bindingsAccessor().shouldBlur != null) {
+              $(element).blur();
+            }
             return false;
           }
         });
