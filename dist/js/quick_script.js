@@ -4378,26 +4378,23 @@ Date.prototype.format = function (mask, utc) {
       }
     };
     ko.bindingHandlers.loading = {
-      init: function(element, valueAccessor, bindingsAccessor, viewModel) {
-        var $el;
+      init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+        var $el, html, loading_obs, loading_text;
         $el = $(element);
-        $el.data('is_loading', false);
-        return $el.data('default_html', $el.html());
+        loading_obs = ko.observable(false);
+        loading_text = allBindings.get('loadingText') || '';
+        bindingContext.$loadingObservable = loading_obs;
+        html = "{{#if : $loadingObservable }}\n<i class='" + ko.bindingHandlers.loading.icon_class + "'/> " + loading_text + "\n{{/if }}\n{{#ifnot : $loadingObservable }}\n" + ($el.html()) + "\n{{/ifnot }}";
+        return $el.html(html);
       },
-      update: function(element, valueAccessor, bindingsAccessor, viewModel) {
-        var $el, html, is_loading, loading_text;
+      update: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
+        var $el, is_loading;
         $el = $(element);
         is_loading = ko.unwrap(valueAccessor());
-        loading_text = bindingsAccessor().loadingText || "";
+        bindingContext.$loadingObservable(is_loading);
         if (is_loading) {
-          html = "<i class='" + ko.bindingHandlers.loading.icon_class + "'/> " + loading_text;
-          $el.data('is_loading', true);
-          $el.html(html);
           return $el.attr('disabled', 'true');
         } else {
-          html = $el.data('default_html');
-          $el.data('is_loading', false);
-          $el.html(html);
           return $el.removeAttr('disabled');
         }
       },
