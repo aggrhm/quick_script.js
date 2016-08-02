@@ -122,6 +122,10 @@ QuickScript.initKO = ->
 					val = bindingsAccessor().value || bindingsAccessor().textInput
 					val($(element).val())
 					action.call(viewModel)
+
+					if bindingsAccessor().handleEnterShouldBlur?
+						$(element).blur()
+
 					return false
 
 	ko.bindingHandlers.handleTab =
