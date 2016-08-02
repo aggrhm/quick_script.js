@@ -123,7 +123,7 @@ QuickScript.initKO = ->
 					val($(element).val())
 					action.call(viewModel)
 
-					if bindingsAccessor().shouldBlur?
+					if bindingsAccessor().handleEnterShouldBlur?
 						$(element).blur()
 
 					return false

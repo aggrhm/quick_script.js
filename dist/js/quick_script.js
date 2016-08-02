@@ -4409,7 +4409,7 @@ Date.prototype.format = function (mask, utc) {
             val = bindingsAccessor().value || bindingsAccessor().textInput;
             val($(element).val());
             action.call(viewModel);
-            if (bindingsAccessor().shouldBlur != null) {
+            if (bindingsAccessor().handleEnterShouldBlur != null) {
               $(element).blur();
             }
             return false;
