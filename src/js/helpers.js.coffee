@@ -243,33 +243,101 @@ unless window.console?
 	window.console =
 		log : ->
 
-# Helpful functions
-loadScript = (u, d) ->
-	d = typeof(d) != 'undefined' ? d : ""
-	$.ajax({type: "POST", url: u, data: d, dataType: "script"})
+# SUPPORTMANAGER
+class QS.SupportManager
+QS.SupportManager.hasFormData = ->
+	(window.FormData?)
+QS.SupportManager.canUpload = ->
+	QS.SupportManager.hasFormData()
 
-timeFromUnix = (tm) ->
-	date = new Date(tm * 1000)
-	return date.toLocaleTimeString()
 
-cropImage = (img_url, img_width, img_height) ->
-	return $('<div>').css({
-		background: 'url(' + img_url + ')',
-		backgroundSize: 'cover',
-		'background-position': 'center',
-		backgroundColor: '#FFF',
-		width: img_width,
-		height: img_height,
-		display: 'inline-block'
-	})
+if QS.SupportManager.hasFormData()
+	QuickScript.ajax = (opts)->
+		data = new FormData()
+		req = new XMLHttpRequest()
+		url = opts.url
+		opts.async = true unless opts.async?
+		opts.data ||= {}
+		opts.method ||= (opts.type || 'POST')
 
-link_to = (text, url) ->
-	return $('<a>').attr('href', url).html(text)
-link_to_rel = (text, url) ->
-	return $('<a>').attr('href', "#" + url).html(text)
-link_to_span = (text) ->
-	return $('<span>').addClass('clickable').html(text)
+		if opts.method == "GET"
+			url = url + "?"
+			first = true
+			for key, val of opts.data
+				if val instanceof Array
+					for aval in val
+						url = url + "#{key}#{escape('[]')}=#{escape(aval)}&"
+				else
+					url = url + "#{key}=#{escape(val)}&"
+			url = url.substring(0, url.length - 1)
+		else
+			for key, val of opts.data
+				data.append key, val
+		req.onreadystatechange = (ev)->
+			if req.readyState == 4
+				opts.loading(false) if opts.loading?
+				try
+					resp = JSON.parse(req.responseText)
+				catch
+					resp = req.responseText
+				if req.status == 200
+					opts.success(resp, req.status)
+				else
+					opts.error(resp, req.status) if opts.error?
+		#req.upload.addEventListener('error', opts.error) if opts.error?
+		if opts.progress?
+			req.upload.addEventListener 'progress', (ev)->
+				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
+		req.open opts.method, url, opts.async
+		for key, val of opts.headers
+			req.setRequestHeader(key, val) if val?
+		req.withCredentials = true
+		opts.loading(true) if opts.loading?
+		if opts.method == "GET" then req.send() else req.send(data)
+		return req
+else
+	# IE compliant
+	QuickScript.ajax = (opts)->
+		#data = new FormData()
+		req = new XMLHttpRequest()
+		url = opts.url
+		opts.async = true unless opts.async?
+		opts.method ||= (opts.type || 'POST')
 
-fadeInElement = (elem) ->
-	$(elem).hide().fadeIn()
+		# build data
+		data_s = ''
+		for key, val of opts.data
+			if val instanceof Array
+				for aval in val
+					data_s = data_s + "#{key}#{escape('[]')}=#{escape(aval)}&"
+			else
+				data_s = data_s + "#{key}=#{escape(val)}&"
+		data_s = data_s.substring(0, data_s.length - 1)
+		if opts.method == "GET"
+			url = url + "?" + data_s
+		req.onreadystatechange = (ev)->
+			if req.readyState == 4
+				opts.loading(false) if opts.loading?
+				try
+					resp = JSON.parse(req.responseText)
+				catch
+					resp = req.responseText
+				if req.status == 200
+					opts.success(resp, req.status)
+				else
+					opts.error(resp, req.status) if opts.error?
+		###
+		req.upload.addEventListener('error', opts.error) if opts.error?
+		if opts.progress?
+			req.upload.addEventListener 'progress', (ev)->
+				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
+		###
+		req.open opts.method, url, opts.async
+		for key, val of opts.headers
+			req.setRequestHeader(key, val) if val?
+		req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+		req.withCredentials = true
+		opts.loading(true) if opts.loading?
+		req.send(data_s)
+		return req
 

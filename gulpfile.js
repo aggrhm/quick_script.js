@@ -17,10 +17,22 @@ gulp.task('js', function() {
 			'src/js/lib/knockout.punches.js',
 			'src/js/lib/date.js',
 			'src/js/lib/store.js',
-			'src/js/core.js.coffee',
-			'src/js/classes.js.coffee',
-			'src/js/framework.js.coffee',
-			'src/js/ko_bindings.js.coffee'
+			'src/js/init.js.coffee',
+			'src/js/utils.js.coffee',
+			'src/js/helpers.js.coffee',
+			'src/js/extensions/init.js.coffee',
+			'src/js/extensions/utils.js.coffee',
+			'src/js/extensions/bindings.js.coffee',
+			'src/js/extensions/extenders.js.coffee',
+			'src/js/classes/model.js.coffee',
+			'src/js/classes/file_model.js.coffee',
+			'src/js/classes/collection.js.coffee',
+			'src/js/classes/view_collection.js.coffee',
+			'src/js/classes/view.js.coffee',
+			'src/js/classes/host.js.coffee',
+			'src/js/classes/model_adapter.js.coffee',
+			'src/js/classes/local_store.js.coffee',
+			'src/js/classes/application.js.coffee'
 		])
 		.pipe(coffee_filter)
 		.pipe(coffee())

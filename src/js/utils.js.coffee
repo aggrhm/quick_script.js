@@ -1,5 +1,3 @@
-window.QuickScript = window.QS = {}
-
 QuickScript.utils =
 	buildOptions : (hash)->
 		ret = []
@@ -83,7 +81,7 @@ QuickScript.utils =
 			ret[kv[0]] = unescape(kv[1]) unless QS.utils.isBlank(kv[0])
 		return ret
 	prepareAPIParam : (val, opts)=>
-		opts ||= {allowArrays: true}
+		opts ||= {allowArrays: false}
 		if val instanceof File
 			return val
 		else if (val instanceof Array) && opts.allowArrays == true
@@ -105,16 +103,6 @@ QuickScript.utils =
 		return false if !content_type?
 		return QS.utils.imageContentTypes.includes(content_type.toLowerCase())
 
-
-QuickScript.log = (msg, lvl)->
-	lvl ||= 1
-	console.log(msg) if (QS.debug == true && lvl <= QS.log_level)
-QuickScript.debug ||= true
-QuickScript.log_level ||= 5
-QuickScript.start_time = Date.now()
-QuickScript.time = ->
-	now = Date.now()
-	return (now - QS.start_time) / 1000.0
 
 QuickScript.includeEventable = (self)->
 	self::handle = (ev, callback, opts={})->
@@ -146,17 +134,6 @@ QuickScript.includeEventable = (self)->
 		for opts in rems
 			cbs.remove(opts)
 
-
-QuickScript.install = (scope)->
-	cns = ['Application', 'View', 'Model', 'FileModel', 'Collection', 'ViewCollection', 'Host', 'ModelAdapter', 'AccountAdapter', 'LocalStore']
-	others = ['PageTimer', 'Notifier', 'AuthToken', 'TimeLength', 'SelectOpts', 'SupportManager', 'AssetsLibrary']
-	install_class = (name)->
-		scope[name] = QuickScript[name]
-	for name in cns
-		install_class(name)
-	for name in others
-		install_class(name)
-
 QuickScript.STATES = {}
 QuickScript.STATES.READY = 1
 QuickScript.STATES.LOADING = 2
@@ -165,102 +142,4 @@ QuickScript.STATES.EDITING = 4
 QuickScript.STATES.INSERTING = 5
 QuickScript.STATES.APPENDING = 6
 QuickScript.STATES.UPDATING = 7
-
-# SUPPORTMANAGER
-class QS.SupportManager
-QS.SupportManager.hasFormData = ->
-	(window.FormData?)
-QS.SupportManager.canUpload = ->
-	QS.SupportManager.hasFormData()
-
-
-if QS.SupportManager.hasFormData()
-	QuickScript.ajax = (opts)->
-		data = new FormData()
-		req = new XMLHttpRequest()
-		url = opts.url
-		opts.async = true unless opts.async?
-		opts.data ||= {}
-		opts.method ||= (opts.type || 'POST')
-
-		if opts.method == "GET"
-			url = url + "?"
-			first = true
-			for key, val of opts.data
-				if val instanceof Array
-					for aval in val
-						url = url + "#{key}#{escape('[]')}=#{escape(aval)}&"
-				else
-					url = url + "#{key}=#{escape(val)}&"
-			url = url.substring(0, url.length - 1)
-		else
-			for key, val of opts.data
-				data.append key, val
-		req.onreadystatechange = (ev)->
-			if req.readyState == 4
-				opts.loading(false) if opts.loading?
-				try
-					resp = JSON.parse(req.responseText)
-				catch
-					resp = req.responseText
-				if req.status == 200
-					opts.success(resp, req.status)
-				else
-					opts.error(resp, req.status) if opts.error?
-		#req.upload.addEventListener('error', opts.error) if opts.error?
-		if opts.progress?
-			req.upload.addEventListener 'progress', (ev)->
-				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
-		req.open opts.method, url, opts.async
-		for key, val of opts.headers
-			req.setRequestHeader(key, val) if val?
-		req.withCredentials = true
-		opts.loading(true) if opts.loading?
-		if opts.method == "GET" then req.send() else req.send(data)
-		return req
-else
-	# IE compliant
-	QuickScript.ajax = (opts)->
-		#data = new FormData()
-		req = new XMLHttpRequest()
-		url = opts.url
-		opts.async = true unless opts.async?
-		opts.method ||= (opts.type || 'POST')
-
-		# build data
-		data_s = ''
-		for key, val of opts.data
-			if val instanceof Array
-				for aval in val
-					data_s = data_s + "#{key}#{escape('[]')}=#{escape(aval)}&"
-			else
-				data_s = data_s + "#{key}=#{escape(val)}&"
-		data_s = data_s.substring(0, data_s.length - 1)
-		if opts.method == "GET"
-			url = url + "?" + data_s
-		req.onreadystatechange = (ev)->
-			if req.readyState == 4
-				opts.loading(false) if opts.loading?
-				try
-					resp = JSON.parse(req.responseText)
-				catch
-					resp = req.responseText
-				if req.status == 200
-					opts.success(resp, req.status)
-				else
-					opts.error(resp, req.status) if opts.error?
-		###
-		req.upload.addEventListener('error', opts.error) if opts.error?
-		if opts.progress?
-			req.upload.addEventListener 'progress', (ev)->
-				opts.progress(ev, Math.floor( ev.loaded / ev.total * 100 ))
-		###
-		req.open opts.method, url, opts.async
-		for key, val of opts.headers
-			req.setRequestHeader(key, val) if val?
-		req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-		req.withCredentials = true
-		opts.loading(true) if opts.loading?
-		req.send(data_s)
-		return req
 
