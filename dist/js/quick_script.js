@@ -2176,7 +2176,8 @@ Date.prototype.format = function (mask, utc) {
         self[field](val);
       }
       if (typeof field === "string") {
-        return self.fields.pushOnce(field);
+        self.fields.pushOnce(field);
+        return self.field_defaults[field] = val;
       }
     };
     ko.addComputed = function(field, fn_opts, self) {
@@ -2473,24 +2474,32 @@ Date.prototype.format = function (mask, utc) {
     };
     ko.bindingHandlers.loading = {
       init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-        var $el, html, loading_obs, loading_text;
+        var $el, html, loading_obs, loading_text, new_context, sub;
         $el = $(element);
         loading_obs = ko.observable(false);
         loading_text = allBindings.get('loadingText') || '';
-        bindingContext.$loadingObservable = loading_obs;
+        new_context = bindingContext.extend({
+          '$loadingObservable': loading_obs
+        });
         html = "{{#if : $loadingObservable }}\n<i class='" + ko.bindingHandlers.loading.icon_class + "'/> " + loading_text + "\n{{/if }}\n{{#ifnot : $loadingObservable }}\n" + ($el.html()) + "\n{{/ifnot }}";
-        return $el.html(html);
-      },
-      update: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
-        var $el, is_loading;
-        $el = $(element);
-        is_loading = ko.unwrap(valueAccessor());
-        bindingContext.$loadingObservable(is_loading);
-        if (is_loading) {
-          return $el.attr('disabled', 'true');
-        } else {
-          return $el.removeAttr('disabled');
-        }
+        $el.html(html);
+        ko.applyBindingsToDescendants(new_context, element);
+        sub = ko.computed(function() {
+          var is_loading;
+          is_loading = ko.unwrap(valueAccessor());
+          new_context.$loadingObservable(is_loading);
+          if (is_loading) {
+            return $el.attr('disabled', 'true');
+          } else {
+            return $el.removeAttr('disabled');
+          }
+        });
+        ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+          return sub.dispose();
+        });
+        return {
+          controlsDescendantBindings: true
+        };
       },
       icon_class: 'fa fa-circle-o-notch fa-spin'
     };
@@ -3178,6 +3187,7 @@ Date.prototype.format = function (mask, utc) {
       this.reloadOpts = bind(this.reloadOpts, this);
       this._uuid = QS.utils.uuid();
       this.fields = [];
+      this.field_defaults = {};
       this.submodels = {};
       this.is_submodel = false;
       this.addFields(['id'], '');
@@ -3354,11 +3364,32 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Model.prototype.reset = function() {
-      this.id('');
-      this.init();
-      this.db_state(this.toJS());
+      this.resetFields();
       this.save_progress(0);
       return this.model_state(ko.modelStates.READY);
+    };
+
+    Model.prototype.resetFields = function(fields) {
+      var field, i, len, prop;
+      fields || (fields = this.fields);
+      for (i = 0, len = fields.length; i < len; i++) {
+        field = fields[i];
+        prop = this[field];
+        if (prop.reset != null) {
+          prop.reset();
+        } else {
+          prop(this.field_defaults[field] || null);
+        }
+      }
+      return this.db_state(this.toJS());
+    };
+
+    Model.prototype.resetAuxillaryFields = function() {
+      var fields;
+      fields = this.fields.filter(function(f) {
+        return f !== 'id';
+      });
+      return this.resetFields(fields);
     };
 
     Model.prototype["delete"] = function(fields, opts) {
@@ -4475,6 +4506,7 @@ Date.prototype.format = function (mask, utc) {
       this.opts || (this.opts = {});
       this.disposables = [];
       this.fields = [];
+      this.field_defaults = {};
       if (this.opts.element != null) {
         this.element = this.opts.element;
       }

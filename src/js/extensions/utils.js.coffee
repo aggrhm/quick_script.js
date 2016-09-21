@@ -46,6 +46,7 @@ QuickScript.initKOUtils = ->
 			self[field](val)
 		if (typeof(field) == "string")
 			self.fields.pushOnce(field)
+			self.field_defaults[field] = val
 	
 	ko.addComputed = (field, fn_opts, self) ->
 		opts = {}

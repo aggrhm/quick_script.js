@@ -91,7 +91,7 @@ QuickScript.initKOBindings = ->
 			# build html element
 			loading_obs = ko.observable(false)
 			loading_text = allBindings.get('loadingText') || ''
-			bindingContext.$loadingObservable = loading_obs
+			new_context = bindingContext.extend({'$loadingObservable': loading_obs})
 			html = """
 			{{#if : $loadingObservable }}
 			<i class='#{ko.bindingHandlers.loading.icon_class}'/> #{loading_text}
@@ -101,14 +101,17 @@ QuickScript.initKOBindings = ->
 			{{/ifnot }}
 			"""
 			$el.html(html)
-		update : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext) ->
-			$el = $(element)
-			is_loading = ko.unwrap(valueAccessor())
-			bindingContext.$loadingObservable(is_loading)
-			if is_loading
-				$el.attr('disabled', 'true')
-			else
-				$el.removeAttr('disabled')
+			ko.applyBindingsToDescendants(new_context, element)
+			sub = ko.computed ->
+				is_loading = ko.unwrap(valueAccessor())
+				new_context.$loadingObservable(is_loading)
+				if is_loading
+					$el.attr('disabled', 'true')
+				else
+					$el.removeAttr('disabled')
+			ko.utils.domNodeDisposal.addDisposeCallback element, ->
+				sub.dispose()
+			return {controlsDescendantBindings: true}
 		icon_class: 'fa fa-circle-o-notch fa-spin'
 
 	ko.bindingHandlers.handleEnter =

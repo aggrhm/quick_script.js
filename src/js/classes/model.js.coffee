@@ -4,6 +4,7 @@ class QS.Model
 	constructor: (data, collection, opts) ->
 		@_uuid = QS.utils.uuid()
 		@fields = []
+		@field_defaults = {}
 		@submodels = {}
 		@is_submodel = false
 		@addFields(['id'], '')
@@ -96,11 +97,21 @@ class QS.Model
 		@model_state(ko.modelStates.SAVING)
 	reset : ->
 		#@model_state(ko.modelStates.LOADING)
-		@id('')
-		@init()
-		@db_state(@toJS())
+		@resetFields()
 		@save_progress(0)
 		@model_state(ko.modelStates.READY)
+	resetFields : (fields)->
+		fields ||= @fields
+		for field in fields
+			prop = this[field]
+			if prop.reset?
+				prop.reset()
+			else
+				prop(@field_defaults[field] || null)
+		@db_state(@toJS())
+	resetAuxillaryFields : ->
+		fields = @fields.filter (f)-> f != 'id'
+		@resetFields(fields)
 	delete : (fields, opts)=>
 		opts = {callback: opts} if (!opts?) || (opts instanceof Function)
 		fields ||= ['id']
@@ -166,6 +177,7 @@ class QS.Model
 	absorb : (model) =>
 		@reset()
 		@handleData(model.toJS())
+
 QS.Model.includeCollection = (self)->
 	self ||= this
 	self.Collection = class extends QS.Collection

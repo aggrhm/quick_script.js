@@ -11,6 +11,7 @@ class QS.View
 		@disposables = []
 		#@templateID ||= "view-#{@name}"
 		@fields = []
+		@field_defaults = {}
 		@element = @opts.element if @opts.element?
 		@templateID = @opts.templateID if @opts.templateID?
 		@model = @opts.model if @opts.model?
