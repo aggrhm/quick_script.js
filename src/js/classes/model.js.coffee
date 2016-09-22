@@ -107,7 +107,7 @@ class QS.Model
 			if prop.reset?
 				prop.reset()
 			else
-				prop(@field_defaults[field] || null)
+				prop(@field_defaults[field])
 		@db_state(@toJS())
 	resetAuxillaryFields : ->
 		fields = @fields.filter (f)-> f != 'id'

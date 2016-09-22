@@ -3378,7 +3378,7 @@ Date.prototype.format = function (mask, utc) {
         if (prop.reset != null) {
           prop.reset();
         } else {
-          prop(this.field_defaults[field] || null);
+          prop(this.field_defaults[field]);
         }
       }
       return this.db_state(this.toJS());
