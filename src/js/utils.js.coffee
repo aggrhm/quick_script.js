@@ -102,6 +102,9 @@ QuickScript.utils =
 	isContentTypeImage : (content_type)->
 		return false if !content_type?
 		return QS.utils.imageContentTypes.includes(content_type.toLowerCase())
+	addTemplate : (templateName, templateMarkup)->
+		window.JST ||= {}
+		window.JST[templateName] = -> templateMarkup
 
 
 QuickScript.includeEventable = (self)->

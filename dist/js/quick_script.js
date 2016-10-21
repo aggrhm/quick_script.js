@@ -1309,6 +1309,12 @@ Date.prototype.format = function (mask, utc) {
         return false;
       }
       return QS.utils.imageContentTypes.includes(content_type.toLowerCase());
+    },
+    addTemplate: function(templateName, templateMarkup) {
+      window.JST || (window.JST = {});
+      return window.JST[templateName] = function() {
+        return templateMarkup;
+      };
     }
   };
 
@@ -1998,6 +2004,12 @@ Date.prototype.format = function (mask, utc) {
   QuickScript.initKO = function() {
     var JSTTemplateSource, templateEngine;
     ko.punches.enableAll();
+    ko.subscribable.fn.present = function() {
+      return QS.utils.isPresent(this());
+    };
+    ko.subscribable.fn.blank = function() {
+      return QS.utils.isBlank(this());
+    };
     ko.punches.utils.setNodePreprocessor(function(node) {
       var click_db, iref;
       if (node.nodeType === 1 && node.nodeName === "A" && node.getAttribute('iref') !== null) {
@@ -2285,10 +2297,7 @@ Date.prototype.format = function (mask, utc) {
       return ret;
     };
     ko.addTemplate = function(templateName, templateMarkup) {
-      window.JST || (window.JST = {});
-      return window.JST[templateName] = function() {
-        return templateMarkup;
-      };
+      return QS.utils.addTemplate(templateName, templateMarkup);
     };
     ko.modelStates = {};
     ko.modelStates.READY = 1;
@@ -2373,13 +2382,14 @@ Date.prototype.format = function (mask, utc) {
           return $(element).hide();
         }
       },
-      update: function(element, valueAccessor) {
-        var shouldDisplay;
+      update: function(element, valueAccessor, allBindings) {
+        var shouldDisplay, speed;
         shouldDisplay = ko.utils.unwrapObservable(valueAccessor());
+        speed = allBindings.get('slideVisibleSpeed') || 'fast';
         if (shouldDisplay) {
-          return $(element).slideDown('slow');
+          return $(element).slideDown(speed);
         } else {
-          return $(element).slideUp();
+          return $(element).slideUp(speed);
         }
       }
     };
@@ -2511,7 +2521,9 @@ Date.prototype.format = function (mask, utc) {
             action = valueAccessor();
             val = bindingsAccessor().value || bindingsAccessor().textInput;
             val($(element).val());
-            action.call(viewModel);
+            if (action != null) {
+              action.call(viewModel);
+            }
             if (bindingsAccessor().handleEnterShouldBlur != null) {
               $(element).blur();
             }
@@ -2776,9 +2788,38 @@ Date.prototype.format = function (mask, utc) {
         $(element).change(function(evt) {
           return model.input.files(evt.target.files);
         });
-        return model.selectFile = function() {
+        return model.selectFile = model.promptFile = function() {
           return $(element).click();
         };
+      }
+    };
+    ko.bindingHandlers.fileselect = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel) {
+        var $el, handler, name;
+        handler = valueAccessor();
+        $el = $(element);
+        name = $el.attr('name');
+        $el.change(function(ev) {
+          var files;
+          files = ev.target.files;
+          return handler(files, {
+            event: ev,
+            view: viewModel,
+            element: element
+          });
+        });
+        viewModel.file_inputs || (viewModel.file_inputs = {});
+        viewModel.file_inputs[name] = {
+          element: element,
+          promptFile: function() {
+            return $el.click();
+          }
+        };
+        return ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+          if (viewModel.file_inputs != null) {
+            return viewModel.file_inputs[name] = null;
+          }
+        });
       }
     };
     ko.bindingHandlers.filedrop = {
@@ -2795,9 +2836,7 @@ Date.prototype.format = function (mask, utc) {
           ev.stopPropagation();
           ev.preventDefault();
           files = ev.originalEvent.dataTransfer.files;
-          QS.log("I got here");
           if ((dest.input != null) && (dest.input.files != null)) {
-            QS.log("I got here too");
             return dest.input.files(files);
           } else {
             return typeof dest === "function" ? dest(files, {
@@ -3600,13 +3639,23 @@ Date.prototype.format = function (mask, utc) {
         return !QS.utils.isBlank(this.input.url());
       }, this);
       this.input.files = ko.observable([]);
-      this.input.file = ko.computed(function() {
-        if (this.input.files().length > 0) {
-          return this.input.files()[0];
-        } else {
-          return null;
-        }
-      }, this);
+      this.input.file = ko.pureComputed({
+        read: function() {
+          if (this.input.files().length > 0) {
+            return this.input.files()[0];
+          } else {
+            return null;
+          }
+        },
+        write: function(val) {
+          if (val != null) {
+            return this.input.files([val]);
+          } else {
+            return this.input.files([]);
+          }
+        },
+        owner: this
+      });
       this.input.has_file = ko.computed(function() {
         return this.input.file() != null;
       }, this);
@@ -4510,8 +4559,9 @@ Date.prototype.format = function (mask, utc) {
       if (this.opts.element != null) {
         this.element = this.opts.element;
       }
-      if (this.opts.templateID != null) {
-        this.templateID = this.opts.templateID;
+      this.templateID = this.templateID || this.opts.templateID || this.constructor.templateID;
+      if (this.opts.name != null) {
+        this.name = this.opts.name;
       }
       if (this.opts.model != null) {
         this.model = this.opts.model;
@@ -4831,6 +4881,15 @@ Date.prototype.format = function (mask, utc) {
 
   })();
 
+  QS.View.registerTemplate = function(name, template_opts, view_class) {
+    view_class || (view_class = this);
+    QS.utils.addTemplate(name, template_opts.html);
+    if (template_opts.style != null) {
+      $('head').append("<style>" + template_opts.style + "</style>");
+    }
+    return view_class.templateID || (view_class.templateID = name);
+  };
+
   QS.View.registerComponent = function(name, template_opts, view_class) {
     var is_sync, topts;
     view_class || (view_class = this);
@@ -4882,6 +4941,35 @@ Date.prototype.format = function (mask, utc) {
   QS.View.registerComponent('view-element', {
     html: "<!-- ko template : {nodes : $componentTemplateNodes} -->\n<!-- /ko -->"
   });
+
+}).call(this);
+
+(function() {
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  QS.Service = (function() {
+    QS.includeEventable(Service);
+
+    function Service(app, opts) {
+      this.app = app;
+      this.opts = opts != null ? opts : {};
+      this.addFields = bind(this.addFields, this);
+      this.init();
+    }
+
+    Service.prototype.init = function() {};
+
+    Service.prototype.addFields = function(fields, def) {
+      return ko.addFields(fields, def, this);
+    };
+
+    Service.prototype.addComputed = function(field, fn_opts) {
+      return ko.addComputed(field, fn_opts, this);
+    };
+
+    return Service;
+
+  })();
 
 }).call(this);
 
@@ -5308,7 +5396,8 @@ Date.prototype.format = function (mask, utc) {
       this.path_params(QS.utils.getURLParams(this.location.href));
       this.path_anchor(this.location.hash.substring(1));
       this.handlePath(path);
-      return this.app.trigger('path.changed', path);
+      this.app.trigger('path.changed', path);
+      return this.app.trigger('app.path_changed', path);
     };
 
     Application.prototype.handlePath = function(path) {};

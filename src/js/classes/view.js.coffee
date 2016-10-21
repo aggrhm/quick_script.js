@@ -13,7 +13,8 @@ class QS.View
 		@fields = []
 		@field_defaults = {}
 		@element = @opts.element if @opts.element?
-		@templateID = @opts.templateID if @opts.templateID?
+		@templateID = @templateID || @opts.templateID || @constructor.templateID
+		@name = @opts.name if @opts.name?
 		@model = @opts.model if @opts.model?
 		@view_name = ko.computed ->
 				@templateID
@@ -193,6 +194,14 @@ class QS.View
 		obj
 	toAPIParam : (flds)=>
 		QS.utils.prepareAPIParam(@toAPI(flds))
+
+QS.View.registerTemplate = (name, template_opts, view_class)->
+	view_class ||= this
+	QS.utils.addTemplate name, template_opts.html
+	if template_opts.style?
+		$('head').append("<style>#{template_opts.style}</style>")
+	view_class.templateID ||= name
+
 QS.View.registerComponent = (name, template_opts, view_class)->
 	view_class ||= this
 	QS.registered_components ||= {}
@@ -227,6 +236,7 @@ QS.View.registerComponent = (name, template_opts, view_class)->
 				return new_view
 		template: topts
 		synchronous: is_sync
+
 QS.View.registerComponent 'view-element',
 	html: """
 		<!-- ko template : {nodes : $componentTemplateNodes} -->

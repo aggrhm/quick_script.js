@@ -22,9 +22,12 @@ class QS.FileModel extends QS.Model
 		, this
 		# file
 		@input.files = ko.observable([])
-		@input.file = ko.computed ->
-			if @input.files().length > 0 then @input.files()[0] else null
-		, this
+		@input.file = ko.pureComputed
+			read : ->
+				if @input.files().length > 0 then @input.files()[0] else null
+			write : (val)->
+				if val? then @input.files([val]) else @input.files([])
+			owner: this
 		@input.has_file = ko.computed ->
 			@input.file()?
 		, this

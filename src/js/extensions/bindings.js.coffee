@@ -30,9 +30,10 @@ QuickScript.initKOBindings = ->
 		init : (element, valueAccessor) ->
 			shouldDisplay = ko.utils.unwrapObservable(valueAccessor())
 			if shouldDisplay then $(element).show() else $(element).hide()
-		update : (element, valueAccessor) ->
+		update : (element, valueAccessor, allBindings) ->
 			shouldDisplay = ko.utils.unwrapObservable(valueAccessor())
-			if shouldDisplay then $(element).slideDown('slow') else $(element).slideUp()
+			speed = allBindings.get('slideVisibleSpeed') || 'fast'
+			if shouldDisplay then $(element).slideDown(speed) else $(element).slideUp(speed)
 	
 	ko.bindingHandlers.visibleWithText =
 		update : (element, valueAccessor) ->
@@ -121,7 +122,7 @@ QuickScript.initKOBindings = ->
 					action = valueAccessor()
 					val = bindingsAccessor().value || bindingsAccessor().textInput
 					val($(element).val())
-					action.call(viewModel)
+					action?.call(viewModel)
 
 					if bindingsAccessor().handleEnterShouldBlur?
 						$(element).blur()
@@ -315,8 +316,26 @@ QuickScript.initKOBindings = ->
 			model = valueAccessor()
 			$(element).change (evt)->
 				model.input.files(evt.target.files)
-			model.selectFile = ->
+			model.selectFile = model.promptFile = ->
 				$(element).click()
+
+	ko.bindingHandlers.fileselect =
+		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
+			handler = valueAccessor()
+			$el = $(element)
+			name = $el.attr('name')
+			$el.change (ev)->
+				files = ev.target.files
+				handler(files, {event: ev, view: viewModel, element: element})
+			viewModel.file_inputs ||= {}
+			viewModel.file_inputs[name] = {
+				element: element
+				promptFile: ->
+					$el.click()
+			}
+			ko.utils.domNodeDisposal.addDisposeCallback element, ->
+				viewModel.file_inputs[name] = null if viewModel.file_inputs?
+
 
 	ko.bindingHandlers.filedrop =
 		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
@@ -329,9 +348,7 @@ QuickScript.initKOBindings = ->
 				ev.stopPropagation()
 				ev.preventDefault()
 				files = ev.originalEvent.dataTransfer.files
-				QS.log "I got here"
 				if dest.input? && dest.input.files?
-					QS.log "I got here too"
 					dest.input.files(files)
 				else
 					dest?(files, {event: ev, view: viewModel, element: element})

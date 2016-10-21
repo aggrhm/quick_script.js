@@ -55,6 +55,7 @@ class QS.Application extends QS.View
 		@path_anchor(@location.hash.substring(1))
 		@handlePath(path)
 		@app.trigger 'path.changed', path
+		@app.trigger 'app.path_changed', path
 	handlePath : (path) ->
 	setUser : (data)->
 		QS.log(data, 2)

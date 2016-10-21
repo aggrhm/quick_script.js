@@ -115,9 +115,7 @@ QuickScript.initKOUtils = ->
 		return ret
 
 	ko.addTemplate = (templateName, templateMarkup) ->
-		#$('head').append("<script type='text/html' id='" + templateName + "'>" + templateMarkup + "<" + "/script>")
-		window.JST ||= {}
-		window.JST[templateName] = -> templateMarkup
+		QS.utils.addTemplate(templateName, templateMarkup)
 
 	ko.modelStates = {}
 	ko.modelStates.READY = 1

@@ -29,6 +29,7 @@ gulp.task('js', function() {
 			'src/js/classes/collection.js.coffee',
 			'src/js/classes/view_collection.js.coffee',
 			'src/js/classes/view.js.coffee',
+			'src/js/classes/service.js.coffee',
 			'src/js/classes/host.js.coffee',
 			'src/js/classes/model_adapter.js.coffee',
 			'src/js/classes/local_store.js.coffee',

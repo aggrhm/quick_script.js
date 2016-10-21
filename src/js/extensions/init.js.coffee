@@ -5,6 +5,13 @@ QuickScript.initKO = ->
 	# plugins
 	ko.punches.enableAll()
 
+	## SUBSCRIBABLE FN
+	
+	ko.subscribable.fn.present = ->
+		return QS.utils.isPresent(this())
+	ko.subscribable.fn.blank = ->
+		return QS.utils.isBlank(this())
+
 	## PREPROCESSORS
 	
 	ko.punches.utils.setNodePreprocessor (node)->
