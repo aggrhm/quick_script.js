@@ -134,8 +134,16 @@ class QS.Application extends QS.View
 		else
 			$('title').text("#{@name} - #{title}")
 	bindToBody : =>
+		# update body data-bind
+		$body = $('body')
+		bdb = $body.attr('data-bind')
+		if bdb?
+			app_data_bind = "app: true, #{bdb}"
+		else
+			app_data_bind = "app: true"
+		$body.attr('data-bind', app_data_bind)
 		# layout bindings
-		$('body').koBind(this)
+		$body.koBind(this)
 		@afterRender()
 
 		# override links

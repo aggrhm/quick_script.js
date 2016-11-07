@@ -99,11 +99,11 @@ badd +1 src/js/core.js.coffee
 badd +1 src/js/ko_bindings.js.coffee
 badd +9 src/js/classes.js.coffee
 badd +101 src/js/lib/date.js
-badd +329 src/js/extensions/bindings.js.coffee
+badd +1 src/js/extensions/bindings.js.coffee
 badd +64 src/js/extensions/extenders.js.coffee
 badd +4 src/js/extensions/general.js.coffee
 badd +30 src/js/extensions/init.js.coffee
-badd +72 src/js/extensions/utils.js.coffee
+badd +1 src/js/extensions/utils.js.coffee
 badd +203 src/js/classes/model.js.coffee
 badd +26 src/js/classes/file_model.js.coffee
 badd +1 src/js/classes/collection.js.coffee
@@ -125,7 +125,7 @@ argglobal
 silent! argdel *
 argadd bower.json
 set lines=51 columns=176
-winpos 738 498
+winpos 679 323
 set stal=2
 edit README.md
 set splitbelow splitright
@@ -176,6 +176,7 @@ setlocal noexpandtab
 if &filetype != 'markdown'
 setlocal filetype=markdown
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -223,6 +224,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -237,6 +239,7 @@ if &syntax != 'markdown'
 setlocal syntax=markdown
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -292,6 +295,7 @@ setlocal noexpandtab
 if &filetype != 'markdown'
 setlocal filetype=markdown
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -339,6 +343,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -353,6 +358,7 @@ if &syntax != 'markdown'
 setlocal syntax=markdown
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -428,6 +434,7 @@ setlocal noexpandtab
 if &filetype != 'json'
 setlocal filetype=json
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -475,6 +482,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -489,6 +497,7 @@ if &syntax != 'json'
 setlocal syntax=json
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -544,6 +553,7 @@ setlocal noexpandtab
 if &filetype != 'json'
 setlocal filetype=json
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -591,6 +601,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -605,6 +616,7 @@ if &syntax != 'json'
 setlocal syntax=json
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -626,7 +638,7 @@ argglobal
 edit gulpfile.js
 setlocal keymap=
 setlocal noarabic
-setlocal autoindent
+setlocal noautoindent
 setlocal backupcopy=
 setlocal balloonexpr=
 setlocal nobinary
@@ -660,6 +672,7 @@ setlocal noexpandtab
 if &filetype != 'javascript'
 setlocal filetype=javascript
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -707,6 +720,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -721,6 +735,7 @@ if &syntax != 'javascript'
 setlocal syntax=javascript
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -792,6 +807,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -839,6 +855,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -853,6 +870,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -868,7 +886,7 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 104
-normal! 04|
+normal! 02|
 wincmd w
 argglobal
 edit src/js/helpers.js.coffee
@@ -908,6 +926,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -955,6 +974,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -969,6 +989,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1044,6 +1065,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1091,6 +1113,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1105,6 +1128,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1160,6 +1184,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1207,6 +1232,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1221,6 +1247,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1276,6 +1303,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1323,6 +1351,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1337,6 +1366,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1408,6 +1438,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1455,6 +1486,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1469,6 +1501,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1524,6 +1557,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1571,6 +1605,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1585,6 +1620,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1653,6 +1689,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1700,6 +1737,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1714,6 +1752,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1724,12 +1763,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 518 - ((14 * winheight(0) + 24) / 48)
+let s:l = 516 - ((16 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-518
-normal! 046|
+516
+normal! 032|
 wincmd w
 argglobal
 edit src/js/classes/model_adapter.js.coffee
@@ -1769,6 +1808,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1816,6 +1856,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1830,6 +1871,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1898,6 +1940,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -1945,6 +1988,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -1959,6 +2003,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -1969,12 +2014,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 48 - ((19 * winheight(0) + 24) / 48)
+let s:l = 46 - ((17 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-48
-normal! 033|
+46
+normal! 022|
 wincmd w
 argglobal
 edit src/js/utils.js.coffee
@@ -2014,6 +2059,7 @@ setlocal noexpandtab
 if &filetype != 'coffee'
 setlocal filetype=coffee
 endif
+setlocal fixendofline
 setlocal foldcolumn=0
 setlocal foldenable
 setlocal foldexpr=0
@@ -2061,6 +2107,7 @@ setlocal rightleftcmd=search
 setlocal noscrollbind
 setlocal shiftwidth=2
 setlocal noshortname
+setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=2
 setlocal nospell
@@ -2075,6 +2122,7 @@ if &syntax != 'coffee'
 setlocal syntax=coffee
 endif
 setlocal tabstop=2
+setlocal tagcase=
 setlocal tags=
 setlocal textwidth=0
 setlocal thesaurus=
@@ -2094,7 +2142,7 @@ normal! 032|
 wincmd w
 exe 'vert 1resize ' . ((&columns * 88 + 88) / 176)
 exe 'vert 2resize ' . ((&columns * 87 + 88) / 176)
-tabnext 6
+tabnext 7
 set stal=1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

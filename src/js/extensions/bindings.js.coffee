@@ -542,4 +542,20 @@ QuickScript.initKOBindings = ->
 			return {controlsDescendantBindings: true}
 	ko.virtualElements.allowedBindings.scopeAs = true
 
+	ko.bindingHandlers.app =
+		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext)->
+			# update binding context createChildContext function
+			orig_child_fn = bindingContext.constructor.prototype['createChildContext']
+			bindingContext.constructor.prototype['createChildContext'] = ->
+				ctx = orig_child_fn.apply(this, arguments)
+				if arguments[0] instanceof QS.View
+					ctx['$view'] = arguments[0]
+				return ctx
+
+			new_context = bindingContext.extend('$app': viewModel, '$view': viewModel)
+			viewModel.bindingContext = bindingContext
+			ko.applyBindingsToDescendants(new_context, element)
+			return {controlsDescendantBindings: true}
+
+
 

@@ -3103,7 +3103,30 @@ Date.prototype.format = function (mask, utc) {
         };
       }
     };
-    return ko.virtualElements.allowedBindings.scopeAs = true;
+    ko.virtualElements.allowedBindings.scopeAs = true;
+    return ko.bindingHandlers.app = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
+        var new_context, orig_child_fn;
+        orig_child_fn = bindingContext.constructor.prototype['createChildContext'];
+        bindingContext.constructor.prototype['createChildContext'] = function() {
+          var ctx;
+          ctx = orig_child_fn.apply(this, arguments);
+          if (arguments[0] instanceof QS.View) {
+            ctx['$view'] = arguments[0];
+          }
+          return ctx;
+        };
+        new_context = bindingContext.extend({
+          '$app': viewModel,
+          '$view': viewModel
+        });
+        viewModel.bindingContext = bindingContext;
+        ko.applyBindingsToDescendants(new_context, element);
+        return {
+          controlsDescendantBindings: true
+        };
+      }
+    };
   };
 
 }).call(this);
@@ -5548,8 +5571,16 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Application.prototype.bindToBody = function() {
-      var app;
-      $('body').koBind(this);
+      var $body, app, app_data_bind, bdb;
+      $body = $('body');
+      bdb = $body.attr('data-bind');
+      if (bdb != null) {
+        app_data_bind = "app: true, " + bdb;
+      } else {
+        app_data_bind = "app: true";
+      }
+      $body.attr('data-bind', app_data_bind);
+      $body.koBind(this);
       this.afterRender();
       app = this;
       return $('body').on('click', 'a', function() {
