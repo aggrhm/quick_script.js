@@ -1147,6 +1147,9 @@ Date.prototype.format = function (mask, utc) {
     isRegularObject: function(obj) {
       return obj.constructor === Object;
     },
+    isArray: function(obj) {
+      return obj instanceof Array;
+    },
     uuid: function() {
       return Math.random().toString().substring(2);
     },
@@ -5109,7 +5112,7 @@ Date.prototype.format = function (mask, utc) {
   QS.ModelAdapter = (function() {
     function ModelAdapter(opts) {
       this.add_endpoint = bind(this.add_endpoint, this);
-      var prop, val;
+      var name, path, prop, ref, val;
       this.save_url = null;
       this.load_url = null;
       this.index_url = null;
@@ -5119,6 +5122,17 @@ Date.prototype.format = function (mask, utc) {
       for (prop in opts) {
         val = opts[prop];
         this[prop] = val;
+      }
+      if (opts.endpoints != null) {
+        ref = opts.endpoints;
+        for (name in ref) {
+          path = ref[name];
+          if (path instanceof Array) {
+            this.route_method(name, path[0], path[1]);
+          } else {
+            this.route_method(name, path);
+          }
+        }
       }
     }
 

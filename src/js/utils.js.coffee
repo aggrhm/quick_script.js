@@ -19,6 +19,8 @@ QuickScript.utils =
 		return (typeof(fn) == 'function')
 	isRegularObject : (obj)->
 		return obj.constructor == Object
+	isArray : (obj)->
+		obj instanceof Array
 	uuid : ->
 		Math.random().toString().substring(2)
 	linkify : (text)->

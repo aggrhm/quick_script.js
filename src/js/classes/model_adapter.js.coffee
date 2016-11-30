@@ -8,6 +8,12 @@ class QS.ModelAdapter
 		@event_scope = null
 		for prop,val of opts
 			@[prop] = val
+		if opts.endpoints?
+			for name, path of opts.endpoints
+				if path instanceof Array
+					@route_method name, path[0], path[1]
+				else
+					@route_method name, path
 	setNotifier : (notif, scope)->
 		@notifier = notif
 		@event_scope = scope
