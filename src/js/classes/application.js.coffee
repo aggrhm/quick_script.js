@@ -2,6 +2,7 @@ class QS.Application extends QS.View
 	constructor : (opts)->
 		@app = this
 		@opts = opts
+		# path
 		@location = window.history.location || window.location
 		@path = ko.observable(null)
 		@previous_path = ko.observable(null)
@@ -41,21 +42,26 @@ class QS.Application extends QS.View
 		$(window).on 'scroll resize', =>
 			@updateWindowBounds()
 		@updateWindowBounds()
+		@parsePath()
 		super('app', null, null, @opts)
 	configure : ->
-	route : ->
-		path = @location.pathname
+	route : (opts={})->
+		# update path vars
+		@previous_path(@path())
+		@parsePath()
+		path = @path()
 		QS.log("Loading path '#{path}'")
 		@setTitle(@name, true) unless @opts.update_title == false
-		@previous_path(@path())
-		@path_parts = path.split('/')
-		@path_parts.push('') unless @path_parts[@path_parts.length-1] == ''
-		@path(path)
-		@path_params(QS.utils.getURLParams(@location.href))
-		@path_anchor(@location.hash.substring(1))
 		@handlePath(path)
 		@app.trigger 'path.changed', path
 		@app.trigger 'app.path_changed', path
+	parsePath : ->
+		path = @location.pathname
+		@path_parts = path.split('/')
+		@path_parts.push('') unless @path_parts[@path_parts.length-1] == ''
+		@path_params(QS.utils.getURLParams(@location.href))
+		@path_anchor(@location.hash.substring(1))
+		@path(path)
 	handlePath : (path) ->
 	setUser : (data)->
 		QS.log(data, 2)
