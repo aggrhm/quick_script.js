@@ -5412,9 +5412,7 @@ Date.prototype.format = function (mask, utc) {
         };
       })(this));
       this.updateWindowBounds();
-      this.route({
-        initialize: true
-      });
+      this.parsePath();
       Application.__super__.constructor.call(this, 'app', null, null, this.opts);
     }
 
@@ -5425,18 +5423,9 @@ Date.prototype.format = function (mask, utc) {
       if (opts == null) {
         opts = {};
       }
-      path = this.location.pathname;
       this.previous_path(this.path());
-      this.path_parts = path.split('/');
-      if (this.path_parts[this.path_parts.length - 1] !== '') {
-        this.path_parts.push('');
-      }
-      this.path_params(QS.utils.getURLParams(this.location.href));
-      this.path_anchor(this.location.hash.substring(1));
-      this.path(path);
-      if (opts.initialize === true) {
-        return;
-      }
+      this.parsePath();
+      path = this.path();
       QS.log("Loading path '" + path + "'");
       if (this.opts.update_title !== false) {
         this.setTitle(this.name, true);
@@ -5444,6 +5433,18 @@ Date.prototype.format = function (mask, utc) {
       this.handlePath(path);
       this.app.trigger('path.changed', path);
       return this.app.trigger('app.path_changed', path);
+    };
+
+    Application.prototype.parsePath = function() {
+      var path;
+      path = this.location.pathname;
+      this.path_parts = path.split('/');
+      if (this.path_parts[this.path_parts.length - 1] !== '') {
+        this.path_parts.push('');
+      }
+      this.path_params(QS.utils.getURLParams(this.location.href));
+      this.path_anchor(this.location.hash.substring(1));
+      return this.path(path);
     };
 
     Application.prototype.handlePath = function(path) {};
