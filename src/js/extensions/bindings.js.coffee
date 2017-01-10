@@ -549,7 +549,9 @@ QuickScript.initKOBindings = ->
 			bindingContext.constructor.prototype['createChildContext'] = ->
 				ctx = orig_child_fn.apply(this, arguments)
 				if arguments[0] instanceof QS.View
-					ctx['$view'] = arguments[0]
+					view = arguments[0]
+					ctx['$view'] = view
+					ctx[view.bindingContextVariable] = view if view.bindingContextVariable?
 				return ctx
 
 			new_context = bindingContext.extend('$app': viewModel, '$view': viewModel)

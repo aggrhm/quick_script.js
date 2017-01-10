@@ -3112,10 +3112,14 @@ Date.prototype.format = function (mask, utc) {
         var new_context, orig_child_fn;
         orig_child_fn = bindingContext.constructor.prototype['createChildContext'];
         bindingContext.constructor.prototype['createChildContext'] = function() {
-          var ctx;
+          var ctx, view;
           ctx = orig_child_fn.apply(this, arguments);
           if (arguments[0] instanceof QS.View) {
-            ctx['$view'] = arguments[0];
+            view = arguments[0];
+            ctx['$view'] = view;
+            if (view.bindingContextVariable != null) {
+              ctx[view.bindingContextVariable] = view;
+            }
           }
           return ctx;
         };
