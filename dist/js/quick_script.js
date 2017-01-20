@@ -3840,7 +3840,7 @@ Date.prototype.format = function (mask, utc) {
       this.load = bind(this.load, this);
       this.setScope = bind(this.setScope, this);
       this.extend = bind(this.extend, this);
-      var key, val;
+      var gen_observable, key, val;
       this.opts = {};
       for (key in opts) {
         val = opts[key];
@@ -3872,17 +3872,27 @@ Date.prototype.format = function (mask, utc) {
       this.is_ready = ko.dependentObservable(function() {
         return this.model_state() === ko.modelStates.READY;
       }, this);
-      this.is_loading = ko.dependentObservable(function() {
-        return this.model_state() === ko.modelStates.LOADING;
-      }, this);
+      gen_observable = (function(_this) {
+        return function(state) {
+          return ko.pureComputed({
+            read: function() {
+              return _this.model_state() === state;
+            },
+            write: function(val) {
+              if (val === true) {
+                return _this.model_state(state);
+              } else {
+                return _this.model_state(ko.modelStates.READY);
+              }
+            }
+          });
+        };
+      })(this);
+      this.is_loading = gen_observable(ko.modelStates.LOADING);
+      this.is_appending = gen_observable(ko.modelStates.APPENDING);
+      this.is_inserting = gen_observable(ko.modelStates.INSERTING);
       this.is_updating = ko.dependentObservable(function() {
         return this.model_state() !== ko.modelStates.READY;
-      }, this);
-      this.is_appending = ko.dependentObservable(function() {
-        return this.model_state() === ko.modelStates.APPENDING;
-      }, this);
-      this.is_inserting = ko.dependentObservable(function() {
-        return this.model_state() === ko.modelStates.INSERTING;
       }, this);
       this.loadOptions = ko.dependentObservable(function() {
         opts = this.extra_params();
