@@ -18,7 +18,7 @@ QuickScript.utils =
 	isFunction : (fn)->
 		return (typeof(fn) == 'function')
 	isRegularObject : (obj)->
-		return obj.constructor == Object
+		return obj? && (obj.constructor == Object)
 	isArray : (obj)->
 		obj instanceof Array
 	uuid : ->

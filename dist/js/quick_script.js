@@ -1145,7 +1145,7 @@ Date.prototype.format = function (mask, utc) {
       return typeof fn === 'function';
     },
     isRegularObject: function(obj) {
-      return obj.constructor === Object;
+      return (obj != null) && (obj.constructor === Object);
     },
     isArray: function(obj) {
       return obj instanceof Array;
