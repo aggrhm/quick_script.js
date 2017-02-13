@@ -99,10 +99,10 @@ badd +1 src/js/core.js.coffee
 badd +1 src/js/ko_bindings.js.coffee
 badd +9 src/js/classes.js.coffee
 badd +101 src/js/lib/date.js
-badd +517 src/js/extensions/bindings.js.coffee
-badd +5 src/js/extensions/extenders.js.coffee
+badd +225 src/js/extensions/bindings.js.coffee
+badd +25 src/js/extensions/extenders.js.coffee
 badd +4 src/js/extensions/general.js.coffee
-badd +18 src/js/extensions/init.js.coffee
+badd +1 src/js/extensions/init.js.coffee
 badd +17 src/js/extensions/utils.js.coffee
 badd +203 src/js/classes/model.js.coffee
 badd +26 src/js/classes/file_model.js.coffee
@@ -110,11 +110,11 @@ badd +1 src/js/classes/collection.js.coffee
 badd +45 src/js/classes/view_collection.js.coffee
 badd +4 src/js/classes/view.js.coffee
 badd +20 src/js/classes/host.js.coffee
-badd +10 src/js/classes/model_adapter.js.coffee
+badd +48 src/js/classes/model_adapter.js.coffee
 badd +1 src/js/classes/local_store.js.coffee
-badd +102 src/js/classes/application.js.coffee
-badd +1 src/js/helpers.js.coffee
-badd +145 src/js/utils.js.coffee
+badd +1 src/js/classes/application.js.coffee
+badd +37 src/js/helpers.js.coffee
+badd +24 src/js/utils.js.coffee
 badd +1 src/js/init.js.coffee
 badd +22 src/js/lib/knockout.punches.js
 badd +1 src/js/lib/knockout.js
@@ -125,7 +125,7 @@ argglobal
 silent! argdel *
 argadd bower.json
 set lines=51 columns=176
-winpos 1020 448
+winpos 1159 484
 set stal=2
 edit README.md
 set splitbelow splitright
@@ -508,12 +508,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 9 - ((8 * winheight(0) + 11) / 23)
+let s:l = 8 - ((7 * winheight(0) + 11) / 23)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-9
-normal! 014|
+8
+normal! 04|
 wincmd w
 argglobal
 edit bower.json
@@ -881,15 +881,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 35 - ((34 * winheight(0) + 24) / 48)
+let s:l = 1 - ((0 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-35
+1
 normal! 0
 wincmd w
 argglobal
-edit src/js/helpers.js.coffee
+edit src/js/extensions/extenders.js.coffee
 setlocal keymap=
 setlocal noarabic
 setlocal autoindent
@@ -955,11 +955,11 @@ setlocal nolisp
 setlocal lispwords=
 setlocal nolist
 setlocal nomacmeta
-setlocal makeprg=coffee\ -c\ \ \ $*\ helpers.js.coffee
+setlocal makeprg=coffee\ -c\ \ \ $*\ extenders.js.coffee
 setlocal matchpairs=(:),{:},[:]
 setlocal modeline
 setlocal modifiable
-setlocal nrformats=octal,hex
+setlocal nrformats=bin,octal,hex
 setlocal nonumber
 setlocal numberwidth=4
 setlocal omnifunc=javascriptcomplete#CompleteJS
@@ -1000,12 +1000,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 259 - ((6 * winheight(0) + 24) / 48)
+let s:l = 4 - ((3 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-259
-normal! 015|
+4
+normal! 0
 wincmd w
 exe 'vert 1resize ' . ((&columns * 87 + 88) / 176)
 exe 'vert 2resize ' . ((&columns * 88 + 88) / 176)
@@ -1132,12 +1132,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 60 - ((34 * winheight(0) + 24) / 48)
+let s:l = 91 - ((0 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-60
-normal! 016|
+91
+normal! 027|
 wincmd w
 argglobal
 edit src/js/classes/view.js.coffee
@@ -1251,12 +1251,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 31 - ((22 * winheight(0) + 24) / 48)
+let s:l = 156 - ((23 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-31
-normal! 06|
+156
+normal! 010|
 wincmd w
 exe 'vert 1resize ' . ((&columns * 88 + 88) / 176)
 exe 'vert 2resize ' . ((&columns * 87 + 88) / 176)
@@ -1383,12 +1383,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 312 - ((18 * winheight(0) + 24) / 48)
+let s:l = 14 - ((11 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-312
-normal! 029|
+14
+normal! 0
 wincmd w
 argglobal
 edit src/js/classes/model.js.coffee
@@ -1502,27 +1502,34 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 71 - ((44 * winheight(0) + 24) / 48)
+let s:l = 1 - ((0 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-71
-normal! 04|
+1
+normal! 0
 wincmd w
 exe 'vert 1resize ' . ((&columns * 87 + 88) / 176)
 exe 'vert 2resize ' . ((&columns * 88 + 88) / 176)
-tabedit src/js/extensions/extenders.js.coffee
+tabedit src/js/extensions/bindings.js.coffee
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
 1wincmd h
+wincmd w
+wincmd _ | wincmd |
+split
+1wincmd k
 wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
 exe 'vert 1resize ' . ((&columns * 78 + 88) / 176)
+exe '2resize ' . ((&lines * 24 + 25) / 51)
 exe 'vert 2resize ' . ((&columns * 97 + 88) / 176)
+exe '3resize ' . ((&lines * 23 + 25) / 51)
+exe 'vert 3resize ' . ((&columns * 97 + 88) / 176)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -1589,7 +1596,7 @@ setlocal nolisp
 setlocal lispwords=
 setlocal nolist
 setlocal nomacmeta
-setlocal makeprg=coffee\ -c\ \ \ $*\ extenders.js.coffee
+setlocal makeprg=coffee\ -c\ \ \ $*\ bindings.js.coffee
 setlocal matchpairs=(:),{:},[:]
 setlocal modeline
 setlocal modifiable
@@ -1634,11 +1641,130 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 52 - ((35 * winheight(0) + 24) / 48)
+let s:l = 288 - ((31 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-52
+288
+normal! 015|
+wincmd w
+argglobal
+edit src/js/classes/host.js.coffee
+setlocal keymap=
+setlocal noarabic
+setlocal autoindent
+setlocal backupcopy=
+setlocal balloonexpr=
+setlocal nobinary
+setlocal nobreakindent
+setlocal breakindentopt=
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal nocindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal colorcolumn=
+setlocal comments=:#
+setlocal commentstring=#\ %s
+setlocal complete=.,w,b,u,t,i
+setlocal concealcursor=
+setlocal conceallevel=0
+setlocal completefunc=
+setlocal nocopyindent
+setlocal cryptmethod=
+setlocal nocursorbind
+setlocal nocursorcolumn
+setlocal cursorline
+setlocal define=
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=Error:\ In\ %f\\,\ %m\ on\ line\ %l,Error:\ In\ %f\\,\ Parse\ error\ on\ line\ %l:\ %m,SyntaxError:\ In\ %f\\,\ %m,%f:%l:%c:\ error:\ %m,%-G%.%#
+setlocal noexpandtab
+if &filetype != 'coffee'
+setlocal filetype=coffee
+endif
+setlocal fixendofline
+setlocal foldcolumn=0
+setlocal foldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+setlocal foldmethod=manual
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=croql
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=2
+setlocal imsearch=2
+setlocal include=
+setlocal includeexpr=
+setlocal indentexpr=GetCoffeeIndent(v:lnum)
+setlocal indentkeys=0{,0},:,0#,!^F,o,O,e,0],0),0.,=else,=when,=catch,=finally
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255
+setlocal keywordprg=
+setlocal nolinebreak
+setlocal nolisp
+setlocal lispwords=
+setlocal nolist
+setlocal nomacmeta
+setlocal makeprg=coffee\ -c\ \ \ $*\ host.js.coffee
+setlocal matchpairs=(:),{:},[:]
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=bin,octal,hex
+setlocal nonumber
+setlocal numberwidth=4
+setlocal omnifunc=javascriptcomplete#CompleteJS
+setlocal path=
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal norelativenumber
+setlocal norightleft
+setlocal rightleftcmd=search
+setlocal noscrollbind
+setlocal shiftwidth=2
+setlocal noshortname
+setlocal signcolumn=auto
+setlocal nosmartindent
+setlocal softtabstop=2
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=coffee
+setlocal swapfile
+setlocal synmaxcol=3000
+if &syntax != 'coffee'
+setlocal syntax=coffee
+endif
+setlocal tabstop=2
+setlocal tagcase=
+setlocal tags=
+setlocal textwidth=0
+setlocal thesaurus=
+setlocal noundofile
+setlocal undolevels=-123456
+setlocal nowinfixheight
+setlocal nowinfixwidth
+setlocal wrap
+setlocal wrapmargin=0
+silent! normal! zE
+let s:l = 13 - ((0 * winheight(0) + 12) / 24)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+13
 normal! 0
 wincmd w
 argglobal
@@ -1753,16 +1879,19 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 17 - ((13 * winheight(0) + 24) / 48)
+let s:l = 48 - ((22 * winheight(0) + 11) / 23)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-17
-normal! 032|
+48
+normal! 014|
 wincmd w
 exe 'vert 1resize ' . ((&columns * 78 + 88) / 176)
+exe '2resize ' . ((&lines * 24 + 25) / 51)
 exe 'vert 2resize ' . ((&columns * 97 + 88) / 176)
-tabedit src/js/helpers.js.coffee
+exe '3resize ' . ((&lines * 23 + 25) / 51)
+exe 'vert 3resize ' . ((&columns * 97 + 88) / 176)
+tabedit src/js/extensions/utils.js.coffee
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
@@ -1840,11 +1969,11 @@ setlocal nolisp
 setlocal lispwords=
 setlocal nolist
 setlocal nomacmeta
-setlocal makeprg=coffee\ -c\ \ \ $*\ helpers.js.coffee
+setlocal makeprg=coffee\ -c\ \ \ $*\ utils.js.coffee
 setlocal matchpairs=(:),{:},[:]
 setlocal modeline
 setlocal modifiable
-setlocal nrformats=octal,hex
+setlocal nrformats=bin,octal,hex
 setlocal nonumber
 setlocal numberwidth=4
 setlocal omnifunc=javascriptcomplete#CompleteJS
@@ -1890,7 +2019,7 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 13
-normal! 019|
+normal! 025|
 wincmd w
 argglobal
 edit src/js/utils.js.coffee
@@ -2004,16 +2133,16 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 22 - ((21 * winheight(0) + 24) / 48)
+let s:l = 21 - ((20 * winheight(0) + 24) / 48)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-22
-normal! 019|
+21
+normal! 024|
 wincmd w
 exe 'vert 1resize ' . ((&columns * 88 + 88) / 176)
 exe 'vert 2resize ' . ((&columns * 87 + 88) / 176)
-tabnext 5
+tabnext 7
 set stal=1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
