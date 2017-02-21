@@ -336,11 +336,13 @@ class QS.Collection
   absorb : (model) =>
     @reset()
     @handleData(model.toJS())
-  toJS : =>
+  toJS : (flds) =>
     objs = []
     for item in @items()
-      objs.push(item.toJS())
+      objs.push(item.toJS(flds))
     objs
+  toJSON : (flds)=>
+    JSON.stringify(@toJS(flds))
   toAPI : =>
     objs = []
     for item in @items()

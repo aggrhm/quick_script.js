@@ -1465,10 +1465,11 @@ Date.prototype.format = function (mask, utc) {
   };
 
   Array.prototype.unique = function() {
-    var arr, el, j, len;
+    var arr, el, j, len, ref;
     arr = [];
-    for (j = 0, len = this.length; j < len; j++) {
-      el = this[j];
+    ref = this;
+    for (j = 0, len = ref.length; j < len; j++) {
+      el = ref[j];
       if (arr.indexOf(el) === -1) {
         arr.push(el);
       }
@@ -1887,7 +1888,7 @@ Date.prototype.format = function (mask, utc) {
         }
       }
       req.onreadystatechange = function(ev) {
-        var error, resp;
+        var resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
@@ -1957,7 +1958,7 @@ Date.prototype.format = function (mask, utc) {
         url = url + "?" + data_s;
       }
       req.onreadystatechange = function(ev) {
-        var error, resp;
+        var resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
@@ -3504,12 +3505,23 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Model.prototype.toJS = function(flds) {
-      var i, len, obj, prop;
+      var i, k, len, obj, prop, sub_flds;
       flds || (flds = this.fields);
       obj = {};
       for (i = 0, len = flds.length; i < len; i++) {
         prop = flds[i];
-        if (typeof this[prop].toJS === 'function') {
+        if (typeof prop === 'object') {
+          for (k in prop) {
+            sub_flds = prop[k];
+            if (this[k] != null) {
+              if (typeof this[k].toJS === 'function') {
+                obj[k] = this[k].toJS(sub_flds);
+              } else {
+                obj[k] = this[k]();
+              }
+            }
+          }
+        } else if (typeof this[prop].toJS === 'function') {
           obj[prop] = this[prop].toJS();
         } else {
           obj[prop] = this[prop]();
@@ -3534,7 +3546,7 @@ Date.prototype.format = function (mask, utc) {
         }
         obj[prop] = val;
       }
-      return QS.utils.prepareAPIData(obj);
+      return obj;
     };
 
     Model.prototype.toAPIParam = function(flds) {
@@ -3821,8 +3833,10 @@ Date.prototype.format = function (mask, utc) {
     function Collection(opts) {
       this.toAPIParam = bind(this.toAPIParam, this);
       this.toAPI = bind(this.toAPI, this);
+      this.toJSON = bind(this.toJSON, this);
       this.toJS = bind(this.toJS, this);
       this.absorb = bind(this.absorb, this);
+      this.toClone = bind(this.toClone, this);
       this.length = bind(this.length, this);
       this.hasItems = bind(this.hasItems, this);
       this.toggleSort = bind(this.toggleSort, this);
@@ -4390,20 +4404,31 @@ Date.prototype.format = function (mask, utc) {
       return this.items([]);
     };
 
+    Collection.prototype.toClone = function() {
+      var clone;
+      clone = new this.constructor;
+      clone.absorb(this);
+      return clone;
+    };
+
     Collection.prototype.absorb = function(model) {
       this.reset();
       return this.handleData(model.toJS());
     };
 
-    Collection.prototype.toJS = function() {
+    Collection.prototype.toJS = function(flds) {
       var i, item, len, objs, ref;
       objs = [];
       ref = this.items();
       for (i = 0, len = ref.length; i < len; i++) {
         item = ref[i];
-        objs.push(item.toJS());
+        objs.push(item.toJS(flds));
       }
       return objs;
+    };
+
+    Collection.prototype.toJSON = function(flds) {
+      return JSON.stringify(this.toJS(flds));
     };
 
     Collection.prototype.toAPI = function() {
