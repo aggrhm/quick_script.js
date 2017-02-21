@@ -9,6 +9,7 @@ class QS.Collection
     @items = ko.observableArray([])
     @scope = ko.observable(@opts.scope || {})
     @includes = ko.observable(@opts.includes || [])
+    @enhances = ko.observable(@opts.enhances || [])
     @sort = ko.observable(@opts.sort || "")
     @page = ko.observable(1)
     @limit = ko.observable(@opts.limit || 100)
@@ -49,6 +50,7 @@ class QS.Collection
         opts = @extra_params()
         opts['scope'] = @scope()
         opts['includes'] = @includes()
+        opts['enhances'] = @enhances()
         opts['sort'] = @sort()
         opts['limit'] = @limit()
         opts['page'] = @page()
@@ -113,6 +115,7 @@ class QS.Collection
     @page(opts.page) if opts.page?
     @limit(opts.limit) if opts.limit?
     @includes(opts.includes) if opts.includes?
+    @enhances(opts.enhances) if opts.enhances?
     @sort(opts.sort) if opts.sort?
     @scope(scope) if scope?
     @_load(@scope(), QS.Collection.REPLACE, opts)

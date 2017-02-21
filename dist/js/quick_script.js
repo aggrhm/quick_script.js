@@ -3851,6 +3851,7 @@ Date.prototype.format = function (mask, utc) {
       this.items = ko.observableArray([]);
       this.scope = ko.observable(this.opts.scope || {});
       this.includes = ko.observable(this.opts.includes || []);
+      this.enhances = ko.observable(this.opts.enhances || []);
       this.sort = ko.observable(this.opts.sort || "");
       this.page = ko.observable(1);
       this.limit = ko.observable(this.opts.limit || 100);
@@ -3898,6 +3899,7 @@ Date.prototype.format = function (mask, utc) {
         opts = this.extra_params();
         opts['scope'] = this.scope();
         opts['includes'] = this.includes();
+        opts['enhances'] = this.enhances();
         opts['sort'] = this.sort();
         opts['limit'] = this.limit();
         opts['page'] = this.page();
@@ -3997,6 +3999,9 @@ Date.prototype.format = function (mask, utc) {
       }
       if (opts.includes != null) {
         this.includes(opts.includes);
+      }
+      if (opts.enhances != null) {
+        this.enhances(opts.enhances);
       }
       if (opts.sort != null) {
         this.sort(opts.sort);
