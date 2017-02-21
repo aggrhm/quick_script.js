@@ -326,6 +326,10 @@ class QS.Collection
     @scope({})
   clear : ->
     @items([])
+  toClone : =>
+    clone = new @constructor
+    clone.absorb(this)
+    clone
   absorb : (model) =>
     @reset()
     @handleData(model.toJS())
