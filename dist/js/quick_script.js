@@ -1198,6 +1198,24 @@ Date.prototype.format = function (mask, utc) {
       in_y = (point.y >= rect.top) && (point.y <= rect.top + rect.height);
       return in_x && in_y;
     },
+    elementWithinBounds: function(elem, bounds, opts) {
+      var $el, db, dt, eb, et, rect;
+      if (opts == null) {
+        opts = {};
+      }
+      opts.full || (opts.full = false);
+      $el = $(elem);
+      dt = bounds.scrollTop;
+      db = dt + bounds.height;
+      rect = QS.utils.getElementPosition(elem);
+      et = rect.top;
+      eb = et + rect.height;
+      if (opts.full) {
+        return (eb <= db) && (et >= dt);
+      } else {
+        return (et > dt && et < db) || (eb < db && eb > dt);
+      }
+    },
     getElementPosition: function(el) {
       var ret;
       ret = $(el).offset();
@@ -1465,11 +1483,10 @@ Date.prototype.format = function (mask, utc) {
   };
 
   Array.prototype.unique = function() {
-    var arr, el, j, len, ref;
+    var arr, el, j, len;
     arr = [];
-    ref = this;
-    for (j = 0, len = ref.length; j < len; j++) {
-      el = ref[j];
+    for (j = 0, len = this.length; j < len; j++) {
+      el = this[j];
       if (arr.indexOf(el) === -1) {
         arr.push(el);
       }
@@ -1888,7 +1905,7 @@ Date.prototype.format = function (mask, utc) {
         }
       }
       req.onreadystatechange = function(ev) {
-        var resp;
+        var error, resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
@@ -1958,7 +1975,7 @@ Date.prototype.format = function (mask, utc) {
         url = url + "?" + data_s;
       }
       req.onreadystatechange = function(ev) {
-        var resp;
+        var error, resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
@@ -3108,7 +3125,7 @@ Date.prototype.format = function (mask, utc) {
       }
     };
     ko.virtualElements.allowedBindings.scopeAs = true;
-    return ko.bindingHandlers.app = {
+    ko.bindingHandlers.app = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
         var new_context, orig_child_fn;
         orig_child_fn = bindingContext.constructor.prototype['createChildContext'];
@@ -3133,6 +3150,27 @@ Date.prototype.format = function (mask, utc) {
         return {
           controlsDescendantBindings: true
         };
+      }
+    };
+    return ko.bindingHandlers.onScrollVisible = {
+      init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
+        var bounds, bounds_sub, check_if_visible, fn;
+        fn = valueAccessor();
+        bounds = bindingsAccessor.get('scrollVisibleBounds') || bindingContext['$app'].window_bounds;
+        bounds_sub = null;
+        check_if_visible = function(val) {
+          if ((val != null) && viewModel.is_scrolled_visible !== true && QS.utils.elementWithinBounds(element, val)) {
+            fn(viewModel);
+            return viewModel.is_scrolled_visible = true;
+          }
+        };
+        bounds_sub = bounds.subscribe(check_if_visible);
+        check_if_visible(bounds());
+        return ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+          if (bounds_sub == null) {
+            return bounds_sub.dispose();
+          }
+        });
       }
     };
   };

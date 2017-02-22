@@ -559,5 +559,20 @@ QuickScript.initKOBindings = ->
 			ko.applyBindingsToDescendants(new_context, element)
 			return {controlsDescendantBindings: true}
 
+	ko.bindingHandlers.onScrollVisible =
+		init : (element, valueAccessor, bindingsAccessor, viewModel, bindingContext)->
+			fn = valueAccessor()
+			bounds = bindingsAccessor.get('scrollVisibleBounds') || bindingContext['$app'].window_bounds
+			bounds_sub = null
+			check_if_visible = (val)->
+				if val? && viewModel.is_scrolled_visible != true && QS.utils.elementWithinBounds(element, val)
+					fn(viewModel)
+					viewModel.is_scrolled_visible = true
+			bounds_sub = bounds.subscribe check_if_visible
+
+			check_if_visible(bounds())
+
+			ko.utils.domNodeDisposal.addDisposeCallback element, ->
+				bounds_sub.dispose() if !bounds_sub?
 
 

@@ -47,6 +47,18 @@ QuickScript.utils =
 		in_x = (point.x >= rect.left) && (point.x <= rect.left + rect.width)
 		in_y = (point.y >= rect.top) && (point.y <= rect.top + rect.height)
 		return in_x && in_y
+	elementWithinBounds : (elem, bounds, opts={})->
+		opts.full ||= false
+		$el = $(elem)
+		dt = bounds.scrollTop
+		db = dt + bounds.height
+		rect = QS.utils.getElementPosition(elem)
+		et = rect.top
+		eb = et + rect.height
+		if opts.full
+			return ((eb <= db) && (et >= dt))
+		else
+			return (et > dt && et < db) || (eb < db && eb > dt)
 	getElementPosition : (el)->
 		ret = $(el).offset()
 		ret.width = el.offsetWidth
