@@ -3128,6 +3128,8 @@ Date.prototype.format = function (mask, utc) {
     ko.bindingHandlers.app = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
         var new_context, orig_child_fn;
+        bindingContext['$app'] = viewModel;
+        bindingContext['$view'] = viewModel;
         orig_child_fn = bindingContext.constructor.prototype['createChildContext'];
         bindingContext.constructor.prototype['createChildContext'] = function() {
           var ctx, view;
@@ -3141,10 +3143,7 @@ Date.prototype.format = function (mask, utc) {
           }
           return ctx;
         };
-        new_context = bindingContext.extend({
-          '$app': viewModel,
-          '$view': viewModel
-        });
+        new_context = bindingContext.extend({});
         viewModel.bindingContext = bindingContext;
         ko.applyBindingsToDescendants(new_context, element);
         return {
