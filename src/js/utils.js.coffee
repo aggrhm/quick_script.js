@@ -29,9 +29,14 @@ QuickScript.utils =
 	toUSDString : (amt) ->
 		amt_usd = amt / 100.0
 		"$ #{amt_usd.toFixed(2)}"
-	getMouseCoords : (ev, type, opts)->
+	getMouseCoords : (ev, type, opts={})->
 		type ||= 'absolute'
 		coords = null
+
+		if type == 'document'
+			coords = {x: ev.originalEvent.pageX, y: ev.originalEvent.pageY}
+			return coords
+
 		if ev.originalEvent.offsetX? && ev.originalEvent.offsetY?
 			coords = {x: ev.originalEvent.offsetX, y: ev.originalEvent.offsetY}
 		else

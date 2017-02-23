@@ -1165,8 +1165,18 @@ Date.prototype.format = function (mask, utc) {
     },
     getMouseCoords: function(ev, type, opts) {
       var coords, ts;
+      if (opts == null) {
+        opts = {};
+      }
       type || (type = 'absolute');
       coords = null;
+      if (type === 'document') {
+        coords = {
+          x: ev.originalEvent.pageX,
+          y: ev.originalEvent.pageY
+        };
+        return coords;
+      }
       if ((ev.originalEvent.offsetX != null) && (ev.originalEvent.offsetY != null)) {
         coords = {
           x: ev.originalEvent.offsetX,
