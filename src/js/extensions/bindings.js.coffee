@@ -105,10 +105,12 @@ QuickScript.initKOBindings = ->
 			ko.applyBindingsToDescendants(new_context, element)
 			sub = ko.computed ->
 				is_loading = ko.unwrap(valueAccessor())
+				bnd_dis = allBindings.get('disable')
+				should_disable = bnd_dis? && ko.unwrap(bnd_dis)
 				new_context.$loadingObservable(is_loading)
 				if is_loading
 					$el.attr('disabled', 'true')
-				else
+				else if !should_disable
 					$el.removeAttr('disabled')
 			ko.utils.domNodeDisposal.addDisposeCallback element, ->
 				sub.dispose()

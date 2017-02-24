@@ -1504,6 +1504,10 @@ Date.prototype.format = function (mask, utc) {
     return arr;
   };
 
+  Array.prototype.clone = function() {
+    return this.slice(0);
+  };
+
   Date.from_utc = function(utc) {
     return new Date(utc * 1000);
   };
@@ -2526,12 +2530,14 @@ Date.prototype.format = function (mask, utc) {
         $el.html(html);
         ko.applyBindingsToDescendants(new_context, element);
         sub = ko.computed(function() {
-          var is_loading;
+          var bnd_dis, is_loading, should_disable;
           is_loading = ko.unwrap(valueAccessor());
+          bnd_dis = allBindings.get('disable');
+          should_disable = (bnd_dis != null) && ko.unwrap(bnd_dis);
           new_context.$loadingObservable(is_loading);
           if (is_loading) {
             return $el.attr('disabled', 'true');
-          } else {
+          } else if (!should_disable) {
             return $el.removeAttr('disabled');
           }
         });
