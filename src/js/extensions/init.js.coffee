@@ -32,7 +32,7 @@ QuickScript.initKO = ->
 			applyStyles = (el)->
 				if config.style?
 					if typeof(config.style) == 'string'
-						$('head').append("<style>#{config.style}</style>")
+						$('head').append("<style>#{config.style.replace("<name>", name)}</style>")
 						callback(el)
 					else
 						$el = $(el)

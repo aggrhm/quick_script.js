@@ -258,6 +258,9 @@ class QS.Collection
   prevPage : =>
     @page(@page() - 1)
     @update()
+  updatePage : (val)=>
+    @page(val)
+    @update()
   updateScope : (scope, opts={})=>
     do_replace = false unless opts.replace == true || opts.clear == true
     do_update = true unless opts.do_update == false

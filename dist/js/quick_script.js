@@ -2063,7 +2063,7 @@ Date.prototype.format = function (mask, utc) {
           var $el, props, ref, sel;
           if (config.style != null) {
             if (typeof config.style === 'string') {
-              $('head').append("<style>" + config.style + "</style>");
+              $('head').append("<style>" + (config.style.replace("<name>", name)) + "</style>");
               return callback(el);
             } else {
               $el = $(el);
@@ -3894,6 +3894,7 @@ Date.prototype.format = function (mask, utc) {
       this.hasItems = bind(this.hasItems, this);
       this.toggleSort = bind(this.toggleSort, this);
       this.updateScope = bind(this.updateScope, this);
+      this.updatePage = bind(this.updatePage, this);
       this.prevPage = bind(this.prevPage, this);
       this.nextPage = bind(this.nextPage, this);
       this.getScopedItems = bind(this.getScopedItems, this);
@@ -4305,6 +4306,11 @@ Date.prototype.format = function (mask, utc) {
 
     Collection.prototype.prevPage = function() {
       this.page(this.page() - 1);
+      return this.update();
+    };
+
+    Collection.prototype.updatePage = function(val) {
+      this.page(val);
       return this.update();
     };
 
