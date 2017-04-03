@@ -1341,13 +1341,31 @@ Date.prototype.format = function (mask, utc) {
       }
       return QS.utils.imageContentTypes.includes(content_type.toLowerCase());
     },
-    addTemplate: function(templateName, templateMarkup) {
+    registerTemplate: function(templateName, templateMarkup) {
       window.JST || (window.JST = {});
       return window.JST[templateName] = function() {
         return templateMarkup;
       };
+    },
+    pendingStyles: [],
+    registerStyle: function(styleMarkup) {
+      return QS.utils.pendingStyles.push(styleMarkup);
+    },
+    updateStyles: function() {
+      var $style;
+      $style = $('style[id=qs]');
+      if ($style.length === 0) {
+        $('head').append("<style id='qs'>" + (QS.utils.pendingStyles.join("\n")) + "</style>");
+      } else {
+        if (QS.utils.pendingStyles.length === 0) {
+          $style.append(QS.utils.pendingStyles.join(" "));
+        }
+      }
+      return QS.utils.pendingStyles = [];
     }
   };
+
+  QuickScript.utils.addTemplate = QuickScript.utils.registerTemplate;
 
   QuickScript.includeEventable = function(self) {
     self.prototype.handle = function(ev, callback, opts) {
@@ -5516,6 +5534,7 @@ Date.prototype.format = function (mask, utc) {
       })(this));
       this.updateWindowBounds();
       this.parsePath();
+      QS.utils.updateStyles();
       Application.__super__.constructor.call(this, 'app', null, null, this.opts);
     }
 

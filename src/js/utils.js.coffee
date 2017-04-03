@@ -121,9 +121,21 @@ QuickScript.utils =
 	isContentTypeImage : (content_type)->
 		return false if !content_type?
 		return QS.utils.imageContentTypes.includes(content_type.toLowerCase())
-	addTemplate : (templateName, templateMarkup)->
+	registerTemplate : (templateName, templateMarkup)->
 		window.JST ||= {}
 		window.JST[templateName] = -> templateMarkup
+	pendingStyles : []
+	registerStyle : (styleMarkup)->
+		QS.utils.pendingStyles.push(styleMarkup)
+	updateStyles : ->
+		$style = $('style[id=qs]')
+		if $style.length == 0
+			$('head').append("<style id='qs'>#{QS.utils.pendingStyles.join("\n")}</style>")
+		else
+			$style.append(QS.utils.pendingStyles.join(" ")) if QS.utils.pendingStyles.length == 0
+		QS.utils.pendingStyles = []
+
+QuickScript.utils.addTemplate = QuickScript.utils.registerTemplate
 
 
 QuickScript.includeEventable = (self)->

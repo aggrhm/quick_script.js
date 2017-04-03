@@ -43,6 +43,7 @@ class QS.Application extends QS.View
 			@updateWindowBounds()
 		@updateWindowBounds()
 		@parsePath()
+		QS.utils.updateStyles()
 		super('app', null, null, @opts)
 	configure : ->
 	route : (opts={})->
