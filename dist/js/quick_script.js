@@ -1383,15 +1383,18 @@ Date.prototype.format = function (mask, utc) {
       cbs.push(opts);
       return opts;
     };
-    self.prototype.trigger = function(ev, data) {
+    self.prototype.trigger = function(ev, data, topts) {
       var cbs, k, l, len, len1, opts, rems, results;
+      if (topts == null) {
+        topts = {};
+      }
       QS.log("EVENTABLE::TRIGGER : " + ev, 5);
       this._events || (this._events = {});
       cbs = this._events[ev] || [];
       rems = [];
       for (k = 0, len = cbs.length; k < len; k++) {
         opts = cbs[k];
-        opts.callback(data);
+        opts.callback(data, topts);
         if (opts.once === true) {
           rems.push(opts);
         }

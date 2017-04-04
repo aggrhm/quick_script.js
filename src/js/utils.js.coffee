@@ -148,13 +148,13 @@ QuickScript.includeEventable = (self)->
 			cbs.remove(opts)
 		cbs.push opts
 		return opts
-	self::trigger = (ev, data)->
+	self::trigger = (ev, data, topts={})->
 		QS.log "EVENTABLE::TRIGGER : #{ev}", 5
 		@_events ||= {}
 		cbs = @_events[ev] || []
 		rems = []
 		for opts in cbs
-			opts.callback(data)
+			opts.callback(data, topts)
 			rems.push(opts) if opts.once == true
 		# remove any only to be ran once
 		for opts in rems
