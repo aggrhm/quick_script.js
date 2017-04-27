@@ -1357,8 +1357,8 @@ Date.prototype.format = function (mask, utc) {
       if ($style.length === 0) {
         $('head').append("<style id='qs'>" + (QS.utils.pendingStyles.join("\n")) + "</style>");
       } else {
-        if (QS.utils.pendingStyles.length === 0) {
-          $style.append(QS.utils.pendingStyles.join(" "));
+        if (QS.utils.pendingStyles.length > 0) {
+          $style.append(QS.utils.pendingStyles.join("\n"));
         }
       }
       return QS.utils.pendingStyles = [];
@@ -3426,6 +3426,9 @@ Date.prototype.format = function (mask, utc) {
       if (opts.includes != null) {
         data.includes = opts.includes;
       }
+      if (opts.enhances != null) {
+        data.enhances = opts.enhances;
+      }
       this.adapter.load({
         data: data,
         success: (function(_this) {
@@ -3460,6 +3463,9 @@ Date.prototype.format = function (mask, utc) {
         };
       }
       data = this.reloadOpts();
+      if (opts.data != null) {
+        $.extend(data, opts.data);
+      }
       return this.load(data, opts);
     };
 

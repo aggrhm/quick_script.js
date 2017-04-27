@@ -132,7 +132,7 @@ QuickScript.utils =
 		if $style.length == 0
 			$('head').append("<style id='qs'>#{QS.utils.pendingStyles.join("\n")}</style>")
 		else
-			$style.append(QS.utils.pendingStyles.join(" ")) if QS.utils.pendingStyles.length == 0
+			$style.append(QS.utils.pendingStyles.join("\n")) if QS.utils.pendingStyles.length > 0
 		QS.utils.pendingStyles = []
 
 QuickScript.utils.addTemplate = QuickScript.utils.registerTemplate

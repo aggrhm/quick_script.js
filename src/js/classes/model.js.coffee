@@ -57,6 +57,7 @@ class QS.Model
   load : (data, opts)->
     opts = {callback: opts} if (!opts?) || (opts instanceof Function)
     data.includes = opts.includes if opts.includes?
+    data.enhances = opts.enhances if opts.enhances?
     @adapter.load
       data : data
       success : (resp)=>
@@ -72,6 +73,7 @@ class QS.Model
   reload : (opts)->
     opts = {callback: opts} if (!opts?) || (opts instanceof Function)
     data = @reloadOpts()
+    $.extend(data, opts.data) if opts.data?
     @load(data, opts)
   reloadOpts : =>
     {id : @id()}
