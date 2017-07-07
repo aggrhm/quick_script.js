@@ -1257,6 +1257,9 @@ Date.prototype.format = function (mask, utc) {
         return results;
       })();
     },
+    toggle: function(obs) {
+      return obs(!obs());
+    },
     preventDefault: (function(_this) {
       return function(view, ev) {
         return typeof ev.preventDefault === "function" ? ev.preventDefault() : void 0;
@@ -1644,14 +1647,14 @@ Date.prototype.format = function (mask, utc) {
     PageTimer.prototype.start = function(opts) {
       if (opts == null) {
         opts = {
-          run_now: false
+          runNow: false
         };
       }
       if (this.t_id !== -1) {
         return;
       }
       this.t_id = setInterval(this.callback, this.frequency);
-      if (opts.run_now === true) {
+      if (opts.run_now === true || opts.runNow === true) {
         return this.callback();
       }
     };
@@ -2249,7 +2252,7 @@ Date.prototype.format = function (mask, utc) {
       }
     };
     ko.addComputed = function(field, fn_opts, self) {
-      var opts;
+      var c, opts;
       opts = {};
       if (QS.utils.isFunction(fn_opts)) {
         opts = {
@@ -2264,7 +2267,11 @@ Date.prototype.format = function (mask, utc) {
       if (opts.pure == null) {
         opts.pure = true;
       }
-      return self[field] = ko.computed(opts, self);
+      c = self[field] = ko.computed(opts, self);
+      if (typeof self.disposeLater === "function") {
+        self.disposeLater(c);
+      }
+      return c;
     };
     ko.validate_for = function(field, fn, msg, self) {
       if (self.validations == null) {
@@ -2834,7 +2841,7 @@ Date.prototype.format = function (mask, utc) {
           return model.input.files(evt.target.files);
         });
         model.fileupload = $(element).fileupload.bind($(element));
-        return model.selectFile = function() {
+        return model.selectFile = model.input.selectFile = function() {
           return $(element).click();
         };
       }
@@ -4696,8 +4703,6 @@ Date.prototype.format = function (mask, utc) {
       this.ensure = bind(this.ensure, this);
       this.afterRender = bind(this.afterRender, this);
       this.template = bind(this.template, this);
-      this.validate_fields = bind(this.validate_fields, this);
-      this.validate_for = bind(this.validate_for, this);
       this.addFields = bind(this.addFields, this);
       this.reload = bind(this.reload, this);
       this.disposeLater = bind(this.disposeLater, this);
@@ -4894,12 +4899,20 @@ Date.prototype.format = function (mask, utc) {
       return ko.addComputed(field, fn_opts, this);
     };
 
-    View.prototype.validate_for = function(field, fn, msg) {
-      return ko.validate_for(field, fn, msg, this);
+    View.prototype.subscribeTo = function() {
+      var args, d, obs;
+      obs = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+      d = obs.subscribe.apply(obs, args);
+      this.disposeLater(d);
+      return d;
     };
 
-    View.prototype.validate_fields = function(fields, fn) {
-      return ko.validate_fields(fields, fn, this);
+    View.prototype.subscribeToEvent = function() {
+      var args, d, pub;
+      pub = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+      d = pub.handle.apply(pub, args);
+      this.disposeLater(d);
+      return d;
     };
 
     View.prototype.viewCount = function() {
@@ -5101,15 +5114,21 @@ Date.prototype.format = function (mask, utc) {
 }).call(this);
 
 (function() {
-  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    slice = [].slice;
 
   QS.Service = (function() {
     QS.includeEventable(Service);
 
-    function Service(app, opts) {
-      this.app = app;
+    function Service(owner, opts) {
+      this.owner = owner;
       this.opts = opts != null ? opts : {};
+      this.disposeLater = bind(this.disposeLater, this);
       this.addFields = bind(this.addFields, this);
+      if (this.owner != null) {
+        this.app = this.owner.app;
+      }
+      this.disposables = [];
       this.init();
     }
 
@@ -5121,6 +5140,23 @@ Date.prototype.format = function (mask, utc) {
 
     Service.prototype.addComputed = function(field, fn_opts) {
       return ko.addComputed(field, fn_opts, this);
+    };
+
+    Service.prototype.dispose = function() {
+      var d, i, len, ref;
+      ref = this.disposables;
+      for (i = 0, len = ref.length; i < len; i++) {
+        d = ref[i];
+        d.dispose();
+      }
+      return this.disposables = [];
+    };
+
+    Service.prototype.disposeLater = function() {
+      var ds;
+      ds = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      this.disposables.push.apply(this.disposables, ds);
+      return this.disposables;
     };
 
     return Service;
@@ -5488,6 +5524,7 @@ Date.prototype.format = function (mask, utc) {
       this.app = this;
       this.opts = opts;
       this.location = window.history.location || window.location;
+      this.path_info = ko.observable({});
       this.path = ko.observable(null);
       this.previous_path = ko.observable(null);
       this.path_anchor = ko.observable('');
@@ -5567,15 +5604,42 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Application.prototype.parsePath = function() {
-      var path;
+      var anchor, fullpath, href, info, origin, params, parts, path, prev_info;
+      prev_info = this.path_info();
       path = this.location.pathname;
-      this.path_parts = path.split('/');
-      if (this.path_parts[this.path_parts.length - 1] !== '') {
-        this.path_parts.push('');
+      href = this.location.href;
+      origin = this.location.origin;
+      anchor = this.location.hash.substring(1);
+      fullpath = href.replace(origin, "");
+      params = QS.utils.getURLParams(href);
+      parts = path.split('/');
+      if (parts[parts.length - 1] !== '') {
+        parts.push('');
       }
-      this.path_params(QS.utils.getURLParams(this.location.href));
-      this.path_anchor(this.location.hash.substring(1));
-      return this.path(path);
+      if (prev_info.href === href) {
+        return;
+      }
+      this.path_parts = parts;
+      this.path_params(params);
+      this.path_anchor(anchor);
+      this.path(path);
+      info = {
+        href: href,
+        path: path,
+        origin: origin,
+        anchor: anchor,
+        fullpath: fullpath,
+        params: params,
+        parts: parts,
+        previous: {
+          path: prev_info.path,
+          fullpath: prev_info.fullpath,
+          parts: prev_info.parts,
+          params: prev_info.params,
+          anchor: prev_info.anchor
+        }
+      };
+      return this.path_info(info);
     };
 
     Application.prototype.handlePath = function(path) {};
@@ -5644,12 +5708,14 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Application.prototype.redirectTo = function(path, replace, opts) {
+      var on_login;
       opts || (opts = {});
+      on_login = opts.on_login || opts.onLogin;
+      if (on_login != null) {
+        this.redirect_on_login(on_login);
+      }
       return setTimeout((function(_this) {
         return function() {
-          if (opts.on_login != null) {
-            _this.redirect_on_login(opts.on_login);
-          }
           if ((replace != null) && replace === true) {
             history.replaceState(null, null, path);
           } else {

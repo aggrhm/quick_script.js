@@ -310,7 +310,7 @@ QuickScript.initKOBindings = ->
 			$(element).change (evt)->
 				model.input.files(evt.target.files)
 			model.fileupload = $(element).fileupload.bind($(element))
-			model.selectFile = ->
+			model.selectFile = model.input.selectFile = ->
 				$(element).click()
 
 	ko.bindingHandlers.fileupload =

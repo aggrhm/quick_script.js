@@ -57,7 +57,9 @@ QuickScript.initKOUtils = ->
 		opts.owner = self
 		opts.deferEvaluation = true
 		opts.pure = true unless opts.pure?
-		self[field] = ko.computed opts, self
+		c = self[field] = ko.computed opts, self
+		self.disposeLater?(c)
+		return c
 	
 	ko.validate_for = (field, fn, msg, self) ->
 		self.validations = {} unless self.validations?

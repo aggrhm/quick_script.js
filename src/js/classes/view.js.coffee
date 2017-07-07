@@ -106,10 +106,14 @@ class QS.View
 		ko.addFields(fields, def, this)
 	addComputed : (field, fn_opts) ->
 		ko.addComputed field, fn_opts, this
-	validate_for : (field, fn, msg) =>
-		ko.validate_for(field, fn, msg, this)
-	validate_fields : (fields, fn) =>
-		ko.validate_fields(fields, fn, this)
+	subscribeTo : (obs, args...)->
+		d = obs.subscribe(args...)
+		@disposeLater(d)
+		return d
+	subscribeToEvent : (pub, args...)->
+		d = pub.handle(args...)
+		@disposeLater(d)
+		return d
 	viewCount : ->
 		@views().length
 	viewList : ->

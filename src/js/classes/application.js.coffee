@@ -4,6 +4,7 @@ class QS.Application extends QS.View
 		@opts = opts
 		# path
 		@location = window.history.location || window.location
+		@path_info = ko.observable({})
 		@path = ko.observable(null)
 		@previous_path = ko.observable(null)
 		@path_anchor = ko.observable('')
@@ -57,12 +58,35 @@ class QS.Application extends QS.View
 		@app.trigger 'path.changed', path
 		@app.trigger 'app.path_changed', path
 	parsePath : ->
+		prev_info = @path_info()
 		path = @location.pathname
-		@path_parts = path.split('/')
-		@path_parts.push('') unless @path_parts[@path_parts.length-1] == ''
-		@path_params(QS.utils.getURLParams(@location.href))
-		@path_anchor(@location.hash.substring(1))
+		href = @location.href
+		origin = @location.origin
+		anchor = @location.hash.substring(1)
+		fullpath = href.replace(origin, "")
+		params = QS.utils.getURLParams(href)
+		parts = path.split('/')
+		parts.push('') unless parts[parts.length-1] == ''
+		return if prev_info.href == href
+		@path_parts = parts
+		@path_params(params)
+		@path_anchor(anchor)
 		@path(path)
+		info =
+			href: href
+			path: path
+			origin: origin
+			anchor: anchor
+			fullpath: fullpath
+			params: params
+			parts: parts
+			previous:
+				path: prev_info.path
+				fullpath: prev_info.fullpath
+				parts: prev_info.parts
+				params: prev_info.params
+				anchor: prev_info.anchor
+		@path_info(info)
 	handlePath : (path) ->
 	setUser : (data)->
 		QS.log(data, 2)
@@ -99,8 +123,9 @@ class QS.Application extends QS.View
 				@setUser(resp.data) if resp.meta == 200
 	redirectTo : (path, replace, opts) ->
 		opts ||= {}
+		on_login = opts.on_login || opts.onLogin
+		@redirect_on_login(on_login) if on_login?
 		setTimeout =>
-			@redirect_on_login(opts.on_login) if opts.on_login?
 			if replace? && replace == true
 				history.replaceState(null, null, path)
 			else

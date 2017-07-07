@@ -101,10 +101,10 @@ class QS.PageTimer
 		@callback = func.bind(self)
 		@frequency = time * 1000
 		@t_id = -1
-	start : (opts={run_now: false})=>
+	start : (opts={runNow: false})=>
 		return unless @t_id == -1
 		@t_id = setInterval(@callback, @frequency)
-		if opts.run_now == true
+		if opts.run_now == true || opts.runNow == true
 			@callback()
 	stop : =>
 		clearInterval(@t_id)

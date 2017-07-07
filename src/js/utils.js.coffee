@@ -77,6 +77,8 @@ QuickScript.utils =
 	objectToArray : (obj)->
 		ret = for key, val of obj
 			{'key': key, 'value': val}
+	toggle : (obs)->
+		obs(!obs())
 	preventDefault : (view, ev)=>
 		ev.preventDefault?()
 	getURLPath : (url)=>
