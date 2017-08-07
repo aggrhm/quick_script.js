@@ -123,6 +123,13 @@ QuickScript.utils =
 	isContentTypeImage : (content_type)->
 		return false if !content_type?
 		return QS.utils.imageContentTypes.includes(content_type.toLowerCase())
+	cloneObject : (obj)->
+		if obj instanceof Array
+			obj.slice(0)
+		else if typeof(obj) == 'object'
+			$.extend({}, obj)
+		else
+			obj
 	registerTemplate : (templateName, templateMarkup)->
 		window.JST ||= {}
 		window.JST[templateName] = -> templateMarkup

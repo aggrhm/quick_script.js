@@ -150,11 +150,11 @@ class QS.Model
             if typeof(@[k].toJS) == 'function'
               obj[k] = @[k].toJS(sub_flds)
             else
-              obj[k] = @[k]()
+              obj[k] = QS.utils.cloneObject(@[k]())
       else if typeof(@[prop].toJS) == 'function'
         obj[prop] = @[prop].toJS()
       else
-        obj[prop] = @[prop]()
+        obj[prop] = QS.utils.cloneObject(@[prop]())
     obj
   ##
   #	Convert this model into an object that can be passed to AJAX request

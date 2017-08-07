@@ -1344,6 +1344,15 @@ Date.prototype.format = function (mask, utc) {
       }
       return QS.utils.imageContentTypes.includes(content_type.toLowerCase());
     },
+    cloneObject: function(obj) {
+      if (obj instanceof Array) {
+        return obj.slice(0);
+      } else if (typeof obj === 'object') {
+        return $.extend({}, obj);
+      } else {
+        return obj;
+      }
+    },
     registerTemplate: function(templateName, templateMarkup) {
       window.JST || (window.JST = {});
       return window.JST[templateName] = function() {
@@ -3604,14 +3613,14 @@ Date.prototype.format = function (mask, utc) {
               if (typeof this[k].toJS === 'function') {
                 obj[k] = this[k].toJS(sub_flds);
               } else {
-                obj[k] = this[k]();
+                obj[k] = QS.utils.cloneObject(this[k]());
               }
             }
           }
         } else if (typeof this[prop].toJS === 'function') {
           obj[prop] = this[prop].toJS();
         } else {
-          obj[prop] = this[prop]();
+          obj[prop] = QS.utils.cloneObject(this[prop]());
         }
       }
       return obj;
