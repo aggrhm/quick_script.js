@@ -126,7 +126,7 @@ QuickScript.utils =
 	cloneObject : (obj)->
 		if obj instanceof Array
 			obj.slice(0)
-		else if typeof(obj) == 'object'
+		else if obj? && typeof(obj) == 'object'
 			$.extend({}, obj)
 		else
 			obj

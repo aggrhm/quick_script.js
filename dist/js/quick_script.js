@@ -1347,7 +1347,7 @@ Date.prototype.format = function (mask, utc) {
     cloneObject: function(obj) {
       if (obj instanceof Array) {
         return obj.slice(0);
-      } else if (typeof obj === 'object') {
+      } else if ((obj != null) && typeof obj === 'object') {
         return $.extend({}, obj);
       } else {
         return obj;
