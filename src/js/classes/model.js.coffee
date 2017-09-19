@@ -17,7 +17,9 @@ class QS.Model
     @model_state = ko.observable(0)
     @save_progress = ko.observable(0)
     if opts?
-      @is_submodel = opts.is_submodel
+      if opts.parentModel?
+        @parent_model = opts.parentModel
+        @is_submodel = true
     @extend()
     @init()
     @addComputed 'is_ready', ->
@@ -91,6 +93,7 @@ class QS.Model
     data.id = @id()
     @adapter.save
       data: data
+      loading: opts.loading
       progress : (ev, prog)=>
         @save_progress( prog )
       callback : (resp, status)=>

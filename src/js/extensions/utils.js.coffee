@@ -85,7 +85,7 @@ QuickScript.initKOUtils = ->
 		if self[field]?
 			self[field].reset()
 		else
-			self[field] = new model({}, self, {is_submodel : true})
+			self[field] = new model({}, null, {parentModel: self})
 		self.fields.pushOnce(field) if typeof(field) == "string"
 
 	ko.intercepter = (observable, write_fn, self) ->

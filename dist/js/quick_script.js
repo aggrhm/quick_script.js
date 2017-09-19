@@ -2325,8 +2325,8 @@ Date.prototype.format = function (mask, utc) {
       if (self[field] != null) {
         self[field].reset();
       } else {
-        self[field] = new model({}, self, {
-          is_submodel: true
+        self[field] = new model({}, null, {
+          parentModel: self
         });
       }
       if (typeof field === "string") {
@@ -3276,13 +3276,9 @@ Date.prototype.format = function (mask, utc) {
         deferEvaluation: true,
         pure: true
       });
-      target.moment = ko.computed({
-        read: function() {
-          return moment.unix(target());
-        },
-        deferEvaluation: true,
-        pure: true
-      });
+      target.moment = function() {
+        return moment.unix(target());
+      };
       return target;
     };
     ko.extenders.errors = function(target) {
@@ -3301,7 +3297,7 @@ Date.prototype.format = function (mask, utc) {
       });
       return target;
     };
-    return ko.extenders.editable = function(target) {
+    ko.extenders.editable = function(target) {
       target.is_editing = ko.observable(false);
       target.edited = ko.observable();
       target.startEdit = function() {
@@ -3315,6 +3311,12 @@ Date.prototype.format = function (mask, utc) {
       target.commitEdit = function() {
         target(target.edited());
         return target.is_editing(false);
+      };
+      return target;
+    };
+    return ko.extenders.bool = function(target) {
+      target.toggle = function() {
+        return target(!target());
       };
       return target;
     };
@@ -3361,7 +3363,10 @@ Date.prototype.format = function (mask, utc) {
       this.model_state = ko.observable(0);
       this.save_progress = ko.observable(0);
       if (opts != null) {
-        this.is_submodel = opts.is_submodel;
+        if (opts.parentModel != null) {
+          this.parent_model = opts.parentModel;
+          this.is_submodel = true;
+        }
       }
       this.extend();
       this.init();
@@ -3514,6 +3519,7 @@ Date.prototype.format = function (mask, utc) {
       data.id = this.id();
       this.adapter.save({
         data: data,
+        loading: opts.loading,
         progress: (function(_this) {
           return function(ev, prog) {
             return _this.save_progress(prog);
@@ -3965,7 +3971,7 @@ Date.prototype.format = function (mask, utc) {
       this.enhances = ko.observable(this.opts.enhances || []);
       this.sort = ko.observable(this.opts.sort || "");
       this.page = ko.observable(1);
-      this.limit = ko.observable(this.opts.limit || 100);
+      this.limit = ko.observable(this.opts.limit || QS.Collection.DEFAULT_LIMIT);
       this.title = ko.observable(this.opts.title || 'Collection');
       this.count = ko.observable(0);
       this.pages_count = ko.observable(0);
@@ -4560,6 +4566,8 @@ Date.prototype.format = function (mask, utc) {
 
   QS.Collection.UPDATE = 3;
 
+  QS.Collection.DEFAULT_LIMIT = 100;
+
 }).call(this);
 
 (function() {
@@ -5072,7 +5080,11 @@ Date.prototype.format = function (mask, utc) {
     var is_sync, topts;
     view_class || (view_class = this);
     QS.registered_components || (QS.registered_components = {});
-    if (typeof template_opts === 'string') {
+    if (template_opts == null) {
+      topts = {
+        template_id: name
+      };
+    } else if (typeof template_opts === 'string') {
       topts = {
         template_id: template_opts
       };

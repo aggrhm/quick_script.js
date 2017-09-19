@@ -12,7 +12,7 @@ class QS.Collection
     @enhances = ko.observable(@opts.enhances || [])
     @sort = ko.observable(@opts.sort || "")
     @page = ko.observable(1)
-    @limit = ko.observable(@opts.limit || 100)
+    @limit = ko.observable(@opts.limit || QS.Collection.DEFAULT_LIMIT)
     @title = ko.observable(@opts.title || 'Collection')
     @count = ko.observable(0)
     @pages_count = ko.observable(0)
@@ -358,3 +358,4 @@ QS.Collection.REPLACE = 0
 QS.Collection.INSERT = 1
 QS.Collection.APPEND = 2
 QS.Collection.UPDATE = 3
+QS.Collection.DEFAULT_LIMIT = 100
