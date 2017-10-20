@@ -1314,7 +1314,7 @@ Date.prototype.format = function (mask, utc) {
           return val;
         } else if ((val instanceof Array) && opts.allowArrays === true) {
           return val;
-        } else if (val === null) {
+        } else if ((val === null) || (typeof val === 'undefined')) {
           return '';
         } else if (typeof val === 'object') {
           return JSON.stringify(val);
