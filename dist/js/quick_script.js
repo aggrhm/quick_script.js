@@ -3611,7 +3611,7 @@ Date.prototype.format = function (mask, utc) {
           };
         })(this)
       });
-      return this.model_state(ko.modelStates.SAVING);
+      return this.model_state(ko.modelStates.DELETING);
     };
 
     Model.prototype.removeFromCollection = function() {
