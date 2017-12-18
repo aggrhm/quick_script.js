@@ -130,6 +130,7 @@ QuickScript.initKOUtils = ->
   ko.modelStates.INSERTING = 5
   ko.modelStates.APPENDING = 6
   ko.modelStates.UPDATING = 7
+  ko.modelStates.DELETING = 8
   ko.editors = {}
 
   jQuery.fn.extend

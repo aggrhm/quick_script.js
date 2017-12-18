@@ -34,8 +34,11 @@ class QS.Model
         @model_state() == ko.modelStates.SAVING
       write : (val)->
         if val == true then @model_state(ko.modelStates.SAVING) else @model_state(ko.modelStates.READY)
-    @addComputed 'is_editing', ->
-        @model_state() == ko.modelStates.EDITING
+    @addComputed 'is_deleting',
+      read : ->
+        @model_state() == ko.modelStates.DELETING
+      write : (val)->
+        if val == true then @model_state(ko.modelStates.DELETING) else @model_state(ko.modelStates.READY)
     @addComputed 'is_new', ->
         @id() == ''
     @addComputed 'is_dirty', ->

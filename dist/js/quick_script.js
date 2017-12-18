@@ -1526,10 +1526,11 @@ Date.prototype.format = function (mask, utc) {
   };
 
   Array.prototype.unique = function() {
-    var arr, el, j, len;
+    var arr, el, j, len, ref;
     arr = [];
-    for (j = 0, len = this.length; j < len; j++) {
-      el = this[j];
+    ref = this;
+    for (j = 0, len = ref.length; j < len; j++) {
+      el = ref[j];
       if (arr.indexOf(el) === -1) {
         arr.push(el);
       }
@@ -1952,7 +1953,7 @@ Date.prototype.format = function (mask, utc) {
         }
       }
       req.onreadystatechange = function(ev) {
-        var error, resp;
+        var resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
@@ -2022,7 +2023,7 @@ Date.prototype.format = function (mask, utc) {
         url = url + "?" + data_s;
       }
       req.onreadystatechange = function(ev) {
-        var error, resp;
+        var resp;
         if (req.readyState === 4) {
           if (opts.loading != null) {
             opts.loading(false);
@@ -2382,6 +2383,7 @@ Date.prototype.format = function (mask, utc) {
     ko.modelStates.INSERTING = 5;
     ko.modelStates.APPENDING = 6;
     ko.modelStates.UPDATING = 7;
+    ko.modelStates.DELETING = 8;
     ko.editors = {};
     jQuery.fn.extend({
       to_s: function() {
@@ -3400,8 +3402,17 @@ Date.prototype.format = function (mask, utc) {
           }
         }
       });
-      this.addComputed('is_editing', function() {
-        return this.model_state() === ko.modelStates.EDITING;
+      this.addComputed('is_deleting', {
+        read: function() {
+          return this.model_state() === ko.modelStates.DELETING;
+        },
+        write: function(val) {
+          if (val === true) {
+            return this.model_state(ko.modelStates.DELETING);
+          } else {
+            return this.model_state(ko.modelStates.READY);
+          }
+        }
       });
       this.addComputed('is_new', function() {
         return this.id() === '';
@@ -4819,8 +4830,11 @@ Date.prototype.format = function (mask, utc) {
         d = ref1[j];
         d.dispose();
       }
-      return this.disposables = [];
+      this.disposables = [];
+      return this.onDispose();
     };
+
+    View.prototype.onDispose = function() {};
 
     View.prototype.disposeLater = function() {
       var ds;

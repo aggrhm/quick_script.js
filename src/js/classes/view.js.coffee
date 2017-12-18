@@ -55,6 +55,8 @@ class QS.View
       #QS.log "Disposing observable.", 5
       d.dispose()
     @disposables = []
+    @onDispose()
+  onDispose : ->
   disposeLater : (ds...)=>
     @disposables.push.apply(@disposables, ds)
     return @disposables
