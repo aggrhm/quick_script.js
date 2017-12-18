@@ -138,7 +138,7 @@ class QS.Model
         QS.log("Delete error encountered")
         @model_state(ko.modelStates.READY)
         opts.callback?(resp)
-    @model_state(ko.modelStates.SAVING)
+    @model_state(ko.modelStates.DELETING)
   removeFromCollection : =>
     @collection.removeItemById(@id()) if @collection?
   ##
