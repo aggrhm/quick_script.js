@@ -66,7 +66,10 @@ class QS.Model
     @adapter.load
       data : data
       success : (resp)=>
-        ret_data = if opts.fields? then ko.copyObject(resp.data, opts.fields) else resp.data
+        # handle array
+        ret_data = if QS.utils.isArray(resp.data) then resp.data[0] else resp.data
+        # handle fields
+        ret_data = if opts.fields? then ko.copyObject(ret_data, opts.fields) else ret_data
         @handleData(ret_data)
         opts.callback?(resp)
     @model_state(ko.modelStates.LOADING)

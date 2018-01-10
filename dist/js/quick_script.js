@@ -3469,7 +3469,8 @@ Date.prototype.format = function (mask, utc) {
         success: (function(_this) {
           return function(resp) {
             var ret_data;
-            ret_data = opts.fields != null ? ko.copyObject(resp.data, opts.fields) : resp.data;
+            ret_data = QS.utils.isArray(resp.data) ? resp.data[0] : resp.data;
+            ret_data = opts.fields != null ? ko.copyObject(ret_data, opts.fields) : ret_data;
             _this.handleData(ret_data);
             return typeof opts.callback === "function" ? opts.callback(resp) : void 0;
           };
