@@ -4115,12 +4115,13 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Collection.prototype.load = function(scope, opts) {
+      var op;
       if ((opts == null) || (opts instanceof Function)) {
         opts = {
           callback: opts
         };
       }
-      if (!((opts.reset != null) && !opts.reset)) {
+      if (!(opts.reset === false || opts.update === true)) {
         this.reset();
       }
       if (opts.page != null) {
@@ -4141,7 +4142,8 @@ Date.prototype.format = function (mask, utc) {
       if (scope != null) {
         this.scope(scope);
       }
-      return this._load(this.scope(), QS.Collection.REPLACE, opts);
+      op = opts.update === true ? QS.Collection.UPDATE : QS.Collection.REPLACE;
+      return this._load(this.scope(), op, opts);
     };
 
     Collection.prototype.update = function(opts) {

@@ -111,14 +111,15 @@ class QS.Collection
       @model_state(ko.modelStates.INSERTING)
   load : (scope, opts)=>
     opts = {callback: opts} if (!opts?) || (opts instanceof Function)
-    @reset() unless opts.reset? && !opts.reset
+    @reset() unless (opts.reset == false || opts.update == true)
     @page(opts.page) if opts.page?
     @limit(opts.limit) if opts.limit?
     @includes(opts.includes) if opts.includes?
     @enhances(opts.enhances) if opts.enhances?
     @sort(opts.sort) if opts.sort?
     @scope(scope) if scope?
-    @_load(@scope(), QS.Collection.REPLACE, opts)
+    op = if opts.update == true then QS.Collection.UPDATE else QS.Collection.REPLACE
+    @_load(@scope(), op, opts)
   update : (opts)=>
     opts = {callback: opts} if (!opts?) || (opts instanceof Function)
     @_load(@scope(), QS.Collection.UPDATE, opts)
