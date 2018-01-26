@@ -5591,6 +5591,10 @@ Date.prototype.format = function (mask, utc) {
       }).extend({
         rateLimit: 100
       });
+      this.flash = QS.LocalStore.get('flash');
+      if (this.flash != null) {
+        QS.LocalStore.remove('flash');
+      }
       this.is_logged_in = ko.computed(function() {
         if (this.auth_method === 'session') {
           return !this.current_user.is_new();
@@ -5767,7 +5771,13 @@ Date.prototype.format = function (mask, utc) {
       })(this), 100);
     };
 
-    Application.prototype.navigateTo = function(url) {
+    Application.prototype.navigateTo = function(url, opts) {
+      if (opts == null) {
+        opts = {};
+      }
+      if (opts.flash != null) {
+        QS.LocalStore.set('flash', opts.flash);
+      }
       return window.location.href = url;
     };
 
