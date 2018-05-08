@@ -30,8 +30,17 @@ QuickScript.initKOExtenders = ->
         "#{(new TimeLength(target.date())).toString()} ago"
       deferEvaluation : true
       pure: true
-    target.moment = ->
-      moment.unix(target())
+    target.moment = ko.computed
+      read : ->
+        t = target()
+        return null if QS.utils.isBlank(t)
+        return moment.unix(t)
+      write: (val)=>
+        if !val?
+          target(null)
+        else
+          target(val.unix())
+      pure: true
 
     return target
 

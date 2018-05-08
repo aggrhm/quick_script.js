@@ -3281,9 +3281,26 @@ Date.prototype.format = function (mask, utc) {
         deferEvaluation: true,
         pure: true
       });
-      target.moment = function() {
-        return moment.unix(target());
-      };
+      target.moment = ko.computed({
+        read: function() {
+          var t;
+          t = target();
+          if (QS.utils.isBlank(t)) {
+            return null;
+          }
+          return moment.unix(t);
+        },
+        write: (function(_this) {
+          return function(val) {
+            if (val == null) {
+              return target(null);
+            } else {
+              return target(val.unix());
+            }
+          };
+        })(this),
+        pure: true
+      });
       return target;
     };
     ko.extenders.errors = function(target) {
