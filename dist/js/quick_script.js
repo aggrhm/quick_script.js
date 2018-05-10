@@ -3262,7 +3262,19 @@ Date.prototype.format = function (mask, utc) {
     ko.extenders.date = function(target) {
       target.date = ko.computed({
         read: function() {
+          var t;
+          t = target();
+          if (QS.utils.isBlank(t)) {
+            return null;
+          }
           return Date.from_utc(target());
+        },
+        write: function(val) {
+          if (val == null) {
+            return target(null);
+          } else {
+            return target(val.to_utc());
+          }
         },
         deferEvaluation: true,
         pure: true
@@ -3299,6 +3311,7 @@ Date.prototype.format = function (mask, utc) {
             }
           };
         })(this),
+        deferEvaluation: true,
         pure: true
       });
       return target;

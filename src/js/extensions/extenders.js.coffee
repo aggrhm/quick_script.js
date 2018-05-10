@@ -17,7 +17,14 @@ QuickScript.initKOExtenders = ->
   ko.extenders.date = (target) ->
     target.date = ko.computed
       read : ->
-        Date.from_utc(target())
+        t = target()
+        return null if QS.utils.isBlank(t)
+        return Date.from_utc(target())
+      write : (val)->
+        if !val?
+          target(null)
+        else
+          target(val.to_utc())
       deferEvaluation : true
       pure: true
     target.date_str = ko.computed
@@ -40,6 +47,7 @@ QuickScript.initKOExtenders = ->
           target(null)
         else
           target(val.unix())
+      deferEvaluation : true
       pure: true
 
     return target
