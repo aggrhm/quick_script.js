@@ -268,9 +268,9 @@ if QS.SupportManager.hasFormData()
 			for key, val of opts.data
 				if val instanceof Array
 					for aval in val
-						url = url + "#{key}#{escape('[]')}=#{escape(aval)}&"
+						url = url + "#{key}#{encodeURIComponent('[]')}=#{encodeURIComponent(aval)}&"
 				else
-					url = url + "#{key}=#{escape(val)}&"
+					url = url + "#{key}=#{encodeURIComponent(val)}&"
 			url = url.substring(0, url.length - 1)
 		else
 			for key, val of opts.data
@@ -311,9 +311,9 @@ else
 		for key, val of opts.data
 			if val instanceof Array
 				for aval in val
-					data_s = data_s + "#{key}#{escape('[]')}=#{escape(aval)}&"
+					data_s = data_s + "#{key}#{encodeURIComponent('[]')}=#{encodeURIComponent(aval)}&"
 			else
-				data_s = data_s + "#{key}=#{escape(val)}&"
+				data_s = data_s + "#{key}=#{encodeURIComponent(val)}&"
 		data_s = data_s.substring(0, data_s.length - 1)
 		if opts.method == "GET"
 			url = url + "?" + data_s

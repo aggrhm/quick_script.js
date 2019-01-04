@@ -1299,7 +1299,7 @@ Date.prototype.format = function (mask, utc) {
           pair = ref[k];
           kv = pair.split("=");
           if (!QS.utils.isBlank(kv[0])) {
-            ret[kv[0]] = unescape(kv[1]);
+            ret[kv[0]] = decodeURIComponent(kv[1]);
           }
         }
         return ret;
@@ -1938,10 +1938,10 @@ Date.prototype.format = function (mask, utc) {
           if (val instanceof Array) {
             for (j = 0, len = val.length; j < len; j++) {
               aval = val[j];
-              url = url + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
+              url = url + ("" + key + (encodeURIComponent('[]')) + "=" + (encodeURIComponent(aval)) + "&");
             }
           } else {
-            url = url + (key + "=" + (escape(val)) + "&");
+            url = url + (key + "=" + (encodeURIComponent(val)) + "&");
           }
         }
         url = url.substring(0, url.length - 1);
@@ -2012,10 +2012,10 @@ Date.prototype.format = function (mask, utc) {
         if (val instanceof Array) {
           for (j = 0, len = val.length; j < len; j++) {
             aval = val[j];
-            data_s = data_s + ("" + key + (escape('[]')) + "=" + (escape(aval)) + "&");
+            data_s = data_s + ("" + key + (encodeURIComponent('[]')) + "=" + (encodeURIComponent(aval)) + "&");
           }
         } else {
-          data_s = data_s + (key + "=" + (escape(val)) + "&");
+          data_s = data_s + (key + "=" + (encodeURIComponent(val)) + "&");
         }
       }
       data_s = data_s.substring(0, data_s.length - 1);

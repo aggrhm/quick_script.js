@@ -99,7 +99,7 @@ QuickScript.utils =
 		ret = {}
 		for pair in str.split("&")
 			kv = pair.split("=")
-			ret[kv[0]] = unescape(kv[1]) unless QS.utils.isBlank(kv[0])
+			ret[kv[0]] = decodeURIComponent(kv[1]) unless QS.utils.isBlank(kv[0])
 		return ret
 	prepareAPIParam : (val, opts)=>
 		opts ||= {allowArrays: false}
