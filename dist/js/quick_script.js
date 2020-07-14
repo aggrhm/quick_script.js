@@ -2402,6 +2402,7 @@ Date.prototype.format = function (mask, utc) {
       }
     });
     ko.addTemplate("viewbox", "<div data-bind='foreach : {data: views(), as: \"$view\"}'>\n  <div data-bind=\"fadeVisible : is_visible(), template : { name : getViewTemplateID, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
+    ko.addTemplate("viewbox-plain", "<div data-bind='foreach : {data: views(), as: \"$view\"}'>\n  <div data-bind=\"template : { name : getViewTemplateID, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
     return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n  <div data-bind='foreach : views()'>\n    <div class=\"slide-item\" data-bind=\"template : { name : getViewTemplateID }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n  </div>\n</div>");
   };
 

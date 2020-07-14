@@ -152,6 +152,11 @@ QuickScript.initKOUtils = ->
         <div data-bind="fadeVisible : is_visible(), template : { name : getViewTemplateID, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true"></div>
       </div>
     """
+  ko.addTemplate "viewbox-plain", """
+      <div data-bind='foreach : {data: views(), as: \"$view\"}'>
+        <div data-bind="template : { name : getViewTemplateID, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true"></div>
+      </div>
+    """
   ko.addTemplate "viewbox-slide", """
       <div class="view-slider" data-bind="style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task">
         <div data-bind='foreach : views()'>
