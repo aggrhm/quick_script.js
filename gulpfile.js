@@ -3,10 +3,6 @@ var concat = require('gulp-concat');
 var coffee = require('gulp-coffee');
 var filter = require('gulp-filter');
 
-gulp.task('default', ['build']);
-
-gulp.task('build', ['js']);
-
 gulp.task('js', function() {
 
 	coffee_filter = filter(['**/*.js.coffee'], {restore: true});
@@ -42,8 +38,12 @@ gulp.task('js', function() {
 		.pipe(gulp.dest('dist/js/'))
 });
 
+gulp.task('build', gulp.series('js'));
+
+gulp.task('default', gulp.series('build'));
+
 gulp.task('watch', function() {
-	gulp.watch('src/js/**/*', ['js']);
+	gulp.watch('src/js/**/*', gulp.series('js'));
 });
 
 //= require ./history.min

@@ -27,11 +27,11 @@ class QS.View
       QS.utils.isPresent(@error())
     , this
     @view = null
-    @task = ko.observable(null)
-    @prev_task = ko.observable(null)
+    @selected_view_name = ko.observable(null)
+    @previous_selected_view_name = ko.observable(null)
     @selected_view = ko.pureComputed =>
-      task = @task()
-      return @views.name_map[task] || null
+      name = @selected_view_name()
+      return @views.name_map[name] || null
     @layout_attr = ko.observable({})
     @transition = {type : 'fade', opts : {'slide_pos' : ko.observable(0), 'slide_index' : ko.observable(0)}}
     @transition.has_slide_css = (css, idx)=>
@@ -46,7 +46,7 @@ class QS.View
       view.hide()
     @is_visible(false)
     @view = null
-    @task(null)
+    @selected_view_name(null)
     @onHidden() if @onHidden?
   dispose : ->
     for view in @views()
@@ -62,7 +62,7 @@ class QS.View
     return @disposables
   setupViewBox : ->
     if @transition.type == 'slide'
-      @task.subscribe (val)=>
+      @selected_view_name.subscribe (val)=>
         return
         opts = @transition.opts
         if val != null
@@ -96,11 +96,9 @@ class QS.View
     view = new view_class(name, this, opts.model, opts)
     @views.push(view)
     @views[name] = @views.name_map[name] = view
-    @["is_task_#{name}"] = ko.computed ->
-        @task() == name
+    @["is_#{name}_view_selected"] = ko.computed ->
+        @selected_view_name() == name
       , this
-    @["select_task_#{name}"] = =>
-      @selectView(name)
     return view
   registerView : (name, view_class, opts={}) ->
     @registered_views[name] = {view_class: view_class, opts: opts}
@@ -138,21 +136,21 @@ class QS.View
           window.onbeforeunload = view.events.before_unload
           view.show()
           @view = view
-          @prev_task(@task())
-          @task(view.name)
+          @previous_selected_view_name(@selected_view_name())
+          @selected_view_name(view.name)
         , 50
       else
         QS.log("Subview unselected in #{@name}.", 2)
         @view = null
-        @prev_task(@task())
-        @task(null)
+        @previous_selected_view_name(@selected_view_name())
+        @selected_view_name(null)
     else
       @view.reload.apply(@view, args[1..])
       view.show() if view.is_visible() != true
   template : =>
     return {name: @templateID, data: this}
-  isTask : (task) ->
-    @task() == task
+  isSelectedViewName : (name) ->
+    @selected_view_name() == name
   getViewTemplateID : (view) ->
     # returns template for subview
     return view.templateID
@@ -171,7 +169,7 @@ class QS.View
     if @transition.type == 'slide'
       return
       setTimeout =>
-        idx = @getViewBoxIndex(@task())
+        idx = @getViewBoxIndex(@selected_view_name())
         new_el = $(@element).find('.slide-item-' + idx)
         new_el.addClass('active')
       , 500

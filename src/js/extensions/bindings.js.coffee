@@ -247,15 +247,15 @@ QuickScript.initKOBindings = ->
 	ko.bindingHandlers.carousel =
 		init : (element, valueAccessor, bindingsAccessor, viewModel) ->
 			setTimeout ->
-				idx = viewModel.getViewBoxIndex(viewModel.task())
+				idx = viewModel.getViewBoxIndex(viewModel.selected_view_name())
 				new_el = $(element).find('.slide-item-' + idx).first()
 				#new_el.addClass('active')
 			, 0
 		update : (element, valueAccessor, bindingsAccessor, viewModel) ->
 				opts = viewModel.transition.opts
-				if viewModel.task() != null
+				if viewModel.selected_view_name() != null
 					setTimeout ->
-						idx = viewModel.getViewBoxIndex(viewModel.task())
+						idx = viewModel.getViewBoxIndex(viewModel.selected_view_name())
 						console.log(viewModel.name + ': updating slider to ' + idx)
 						old_idx = opts.slide_index()
 						new_el = $(element).find('.slide-item-' + idx).first()
@@ -435,7 +435,7 @@ QuickScript.initKOBindings = ->
 				setTimeout ->
 						$(element).center()
 					, 1
-			viewModel.task.subscribe(fn)
+			viewModel.selected_view_name.subscribe(fn)
 			viewModel.is_visible.subscribe(fn)
 
 	ko.bindingHandlers.placeholder =

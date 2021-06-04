@@ -2403,7 +2403,7 @@ Date.prototype.format = function (mask, utc) {
     });
     ko.addTemplate("viewbox", "<div data-bind='foreach : {data: views(), as: \"$view\"}'>\n  <div data-bind=\"fadeVisible : is_visible(), template : { name : getViewTemplateID, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
     ko.addTemplate("viewbox-plain", "<div data-bind='foreach : {data: views(), as: \"$view\"}'>\n  <div data-bind=\"template : { name : getViewTemplateID, afterRender : afterRender, if : is_visible() }, attr : { id : templateID, 'class' : templateID }, bindelem : true\"></div>\n</div>");
-    return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : task\">\n  <div data-bind='foreach : views()'>\n    <div class=\"slide-item\" data-bind=\"template : { name : getViewTemplateID }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n  </div>\n</div>");
+    return ko.addTemplate("viewbox-slide", "<div class=\"view-slider\" data-bind=\"style : {width : transition.opts.width + 'px', height : transition.opts.height + 'px'}, carousel : {}\">\n  <div data-bind='foreach : views()'>\n    <div class=\"slide-item\" data-bind=\"template : { name : getViewTemplateID }, attr : {id : templateID, class : 'slide-item slide-item-' + $index()}, css : {}, style : {width : owner.transition.opts.width + 'px', height : owner.transition.opts.height + 'px'}, bindelem : true\"></div>\n  </div>\n</div>");
   };
 
 }).call(this);
@@ -2778,17 +2778,17 @@ Date.prototype.format = function (mask, utc) {
       init: function(element, valueAccessor, bindingsAccessor, viewModel) {
         return setTimeout(function() {
           var idx, new_el;
-          idx = viewModel.getViewBoxIndex(viewModel.task());
+          idx = viewModel.getViewBoxIndex(viewModel.selected_view_name());
           return new_el = $(element).find('.slide-item-' + idx).first();
         }, 0);
       },
       update: function(element, valueAccessor, bindingsAccessor, viewModel) {
         var opts;
         opts = viewModel.transition.opts;
-        if (viewModel.task() !== null) {
+        if (viewModel.selected_view_name() !== null) {
           return setTimeout(function() {
             var idx, new_el, old_el, old_idx;
-            idx = viewModel.getViewBoxIndex(viewModel.task());
+            idx = viewModel.getViewBoxIndex(viewModel.selected_view_name());
             console.log(viewModel.name + ': updating slider to ' + idx);
             old_idx = opts.slide_index();
             new_el = $(element).find('.slide-item-' + idx).first();
@@ -3030,7 +3030,7 @@ Date.prototype.format = function (mask, utc) {
             return $(element).center();
           }, 1);
         };
-        viewModel.task.subscribe(fn);
+        viewModel.selected_view_name.subscribe(fn);
         return viewModel.is_visible.subscribe(fn);
       }
     };
@@ -4803,13 +4803,13 @@ Date.prototype.format = function (mask, utc) {
         return QS.utils.isPresent(this.error());
       }, this);
       this.view = null;
-      this.task = ko.observable(null);
-      this.prev_task = ko.observable(null);
+      this.selected_view_name = ko.observable(null);
+      this.previous_selected_view_name = ko.observable(null);
       this.selected_view = ko.pureComputed((function(_this) {
         return function() {
-          var task;
-          task = _this.task();
-          return _this.views.name_map[task] || null;
+          var name;
+          name = _this.selected_view_name();
+          return _this.views.name_map[name] || null;
         };
       })(this));
       this.layout_attr = ko.observable({});
@@ -4846,7 +4846,7 @@ Date.prototype.format = function (mask, utc) {
       }
       this.is_visible(false);
       this.view = null;
-      this.task(null);
+      this.selected_view_name(null);
       if (this.onHidden != null) {
         return this.onHidden();
       }
@@ -4879,7 +4879,7 @@ Date.prototype.format = function (mask, utc) {
 
     View.prototype.setupViewBox = function() {
       if (this.transition.type === 'slide') {
-        return this.task.subscribe((function(_this) {
+        return this.selected_view_name.subscribe((function(_this) {
           return function(val) {
             var idx, new_el, old_el, old_idx, opts;
             return;
@@ -4938,14 +4938,9 @@ Date.prototype.format = function (mask, utc) {
       view = new view_class(name, this, opts.model, opts);
       this.views.push(view);
       this.views[name] = this.views.name_map[name] = view;
-      this["is_task_" + name] = ko.computed(function() {
-        return this.task() === name;
+      this["is_" + name + "_view_selected"] = ko.computed(function() {
+        return this.selected_view_name() === name;
       }, this);
-      this["select_task_" + name] = (function(_this) {
-        return function() {
-          return _this.selectView(name);
-        };
-      })(this);
       return view;
     };
 
@@ -5013,15 +5008,15 @@ Date.prototype.format = function (mask, utc) {
               window.onbeforeunload = view.events.before_unload;
               view.show();
               _this.view = view;
-              _this.prev_task(_this.task());
-              return _this.task(view.name);
+              _this.previous_selected_view_name(_this.selected_view_name());
+              return _this.selected_view_name(view.name);
             };
           })(this), 50);
         } else {
           QS.log("Subview unselected in " + this.name + ".", 2);
           this.view = null;
-          this.prev_task(this.task());
-          return this.task(null);
+          this.previous_selected_view_name(this.selected_view_name());
+          return this.selected_view_name(null);
         }
       } else {
         this.view.reload.apply(this.view, args.slice(1));
@@ -5038,8 +5033,8 @@ Date.prototype.format = function (mask, utc) {
       };
     };
 
-    View.prototype.isTask = function(task) {
-      return this.task() === task;
+    View.prototype.isSelectedViewName = function(name) {
+      return this.selected_view_name() === name;
     };
 
     View.prototype.getViewTemplateID = function(view) {
@@ -5071,7 +5066,7 @@ Date.prototype.format = function (mask, utc) {
         return setTimeout((function(_this) {
           return function() {
             var idx, new_el;
-            idx = _this.getViewBoxIndex(_this.task());
+            idx = _this.getViewBoxIndex(_this.selected_view_name());
             new_el = $(_this.element).find('.slide-item-' + idx);
             return new_el.addClass('active');
           };
