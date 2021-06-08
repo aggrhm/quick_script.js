@@ -6,6 +6,10 @@ Javascript Web Framework based on Knockout.js
 
 See the [docs](http://agquick.github.io/quick_script).
 
+## Pending Changes
+
+- Reset on Models and Collections should update an `instance_request_id` that when changed prevents pending requests from calling `handleData`, so that models aren't affected by queued requests after reset is called.
+
 ## Versioning
 
 1. Checkout develop branch and add changes
