@@ -48,7 +48,9 @@ class QS.View
     @view = null
     @selected_view_name(null)
     @onHidden() if @onHidden?
+    @dispose() if @opts.disposeOnHide == true
   dispose : ->
+    return if @_isDisposed == true
     for view in @views()
       view.dispose()
     for d in @disposables
@@ -56,6 +58,7 @@ class QS.View
       d.dispose()
     @disposables = []
     @onDispose()
+    @_isDisposed = true
   onDispose : ->
   disposeLater : (ds...)=>
     @disposables.push.apply(@disposables, ds)
@@ -93,12 +96,21 @@ class QS.View
     return if @views.name_map[name]?
     if typeof(opts) == 'string'
       opts = {templateID: opts}
+    opts.disposeOnHide = true if !opts.disposeOnHide? && @registered_views[name]?
     view = new view_class(name, this, opts.model, opts)
     @views.push(view)
     @views[name] = @views.name_map[name] = view
     @["is_#{name}_view_selected"] = ko.computed ->
         @selected_view_name() == name
       , this
+    return view
+  addRegisteredView : (view_name)->
+    rvo = @registered_views[view_name]
+    return undefined if !rvo?
+    return @addView(view_name, rvo.view_class, rvo.opts)
+  removeView : (view)->
+    @views.remove(view)
+    delete @views.name_map[view.name]
     return view
   registerView : (name, view_class, opts={}) ->
     @registered_views[name] = {view_class: view_class, opts: opts}
@@ -120,15 +132,16 @@ class QS.View
     @views()
   selectView : (view_name) ->
     args = Array.prototype.slice.call(arguments)
-    # lazy add view if registered
-    rvo = @registered_views[view_name]
-    if rvo?
-      @addView view_name, rvo.view_class, rvo.opts
-      @registered_views[view_name] = null
-    last_view = @view
     view = @views.name_map[view_name]
+    if !view?
+      # lazy add view if registered
+      view = @addRegisteredView(view_name)
+    last_view = @view
     if (last_view != view)
-      last_view.hide() if last_view?
+      if last_view?
+        last_view.hide()
+        # remove view if disposed for better memory management
+        @removeView(last_view) if last_view._isDisposed
       if view?
         setTimeout =>   # allow the hidden view to settle
           QS.log("View [#{view.name}] selected.", 2)
@@ -145,8 +158,16 @@ class QS.View
         @previous_selected_view_name(@selected_view_name())
         @selected_view_name(null)
     else
-      @view.reload.apply(@view, args[1..])
-      view.show() if view.is_visible() != true
+      return if !@view?
+      if @view.shouldDispose?() == true
+        @view.opts.disposeOnHide = true
+        @view.hide()
+        @removeView(@view)
+        @view = @addRegisteredView(view_name)
+        @view.load.apply(@view, args[1..])
+      else
+        @view.reload.apply(@view, args[1..])
+      @view.show() if @view.is_visible() != true
   template : =>
     return {name: @templateID, data: this}
   isSelectedViewName : (name) ->

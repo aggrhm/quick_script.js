@@ -4848,12 +4848,18 @@ Date.prototype.format = function (mask, utc) {
       this.view = null;
       this.selected_view_name(null);
       if (this.onHidden != null) {
-        return this.onHidden();
+        this.onHidden();
+      }
+      if (this.opts.disposeOnHide === true) {
+        return this.dispose();
       }
     };
 
     View.prototype.dispose = function() {
       var d, i, j, len, len1, ref, ref1, view;
+      if (this._isDisposed === true) {
+        return;
+      }
       ref = this.views();
       for (i = 0, len = ref.length; i < len; i++) {
         view = ref[i];
@@ -4865,7 +4871,8 @@ Date.prototype.format = function (mask, utc) {
         d.dispose();
       }
       this.disposables = [];
-      return this.onDispose();
+      this.onDispose();
+      return this._isDisposed = true;
     };
 
     View.prototype.onDispose = function() {};
@@ -4935,12 +4942,30 @@ Date.prototype.format = function (mask, utc) {
           templateID: opts
         };
       }
+      if ((opts.disposeOnHide == null) && (this.registered_views[name] != null)) {
+        opts.disposeOnHide = true;
+      }
       view = new view_class(name, this, opts.model, opts);
       this.views.push(view);
       this.views[name] = this.views.name_map[name] = view;
       this["is_" + name + "_view_selected"] = ko.computed(function() {
         return this.selected_view_name() === name;
       }, this);
+      return view;
+    };
+
+    View.prototype.addRegisteredView = function(view_name) {
+      var rvo;
+      rvo = this.registered_views[view_name];
+      if (rvo == null) {
+        return void 0;
+      }
+      return this.addView(view_name, rvo.view_class, rvo.opts);
+    };
+
+    View.prototype.removeView = function(view) {
+      this.views.remove(view);
+      delete this.views.name_map[view.name];
       return view;
     };
 
@@ -4987,18 +5012,19 @@ Date.prototype.format = function (mask, utc) {
     };
 
     View.prototype.selectView = function(view_name) {
-      var args, last_view, rvo, view;
+      var args, base, last_view, view;
       args = Array.prototype.slice.call(arguments);
-      rvo = this.registered_views[view_name];
-      if (rvo != null) {
-        this.addView(view_name, rvo.view_class, rvo.opts);
-        this.registered_views[view_name] = null;
+      view = this.views.name_map[view_name];
+      if (view == null) {
+        view = this.addRegisteredView(view_name);
       }
       last_view = this.view;
-      view = this.views.name_map[view_name];
       if (last_view !== view) {
         if (last_view != null) {
           last_view.hide();
+          if (last_view._isDisposed) {
+            this.removeView(last_view);
+          }
         }
         if (view != null) {
           return setTimeout((function(_this) {
@@ -5019,9 +5045,20 @@ Date.prototype.format = function (mask, utc) {
           return this.selected_view_name(null);
         }
       } else {
-        this.view.reload.apply(this.view, args.slice(1));
-        if (view.is_visible() !== true) {
-          return view.show();
+        if (this.view == null) {
+          return;
+        }
+        if ((typeof (base = this.view).shouldDispose === "function" ? base.shouldDispose() : void 0) === true) {
+          this.view.opts.disposeOnHide = true;
+          this.view.hide();
+          this.removeView(this.view);
+          this.view = this.addRegisteredView(view_name);
+          this.view.load.apply(this.view, args.slice(1));
+        } else {
+          this.view.reload.apply(this.view, args.slice(1));
+        }
+        if (this.view.is_visible() !== true) {
+          return this.view.show();
         }
       }
     };
