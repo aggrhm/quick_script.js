@@ -37,7 +37,7 @@ QuickScript.initKOUtils = ->
       valid_fn = null
     if (typeof(self[field]) != "function")
       if (val instanceof Array)
-        self[field] = ko.observableArray()
+        self[field] = ko.observableArray(val)
       else
         self[field] = ko.observable(val)
 
