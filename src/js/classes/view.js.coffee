@@ -257,6 +257,7 @@ QS.View.registerComponent = (name, template_opts, view_class)->
           owner = params.owner || context['$view'] || context['$parent'] || context['$root']
           vn = if model? then "#{name}-#{model.id?()}" else name
           params.element = componentInfo?.element
+          params.templateID = topts.template_id
           new_view = new new_view_class(vn, owner, model, params)
         else
           new_view.element = componentInfo?.element

@@ -11,11 +11,7 @@ class QS.Application extends QS.View
     @path_params = ko.observable({})
     @path_parts = []
     @title = ko.observable('')
-    @redirect_on_login = ko.observable(null)
     @auth_method = @opts.auth_method || 'session'
-    @redirect_on_login(QS.LocalStore.get('app.redirect_on_login'))
-    @redirect_on_login.subscribe (val)=>
-      QS.LocalStore.set('app.redirect_on_login', val)
     @configure()
     @account_model ||= (@opts.account_model || QS.Model)
     @current_user = new @account_model()
@@ -34,10 +30,6 @@ class QS.Application extends QS.View
     , this
     @is_logged_in.subscribe (val)=>
       if val == true
-        # redirect if necessary
-        if (rol = @redirect_on_login())?
-          @redirectTo(rol)
-          @redirect_on_login(null)
         @app.trigger 'app.logged_in'
       else
         @app.trigger 'app.logged_out'
@@ -124,8 +116,6 @@ class QS.Application extends QS.View
         @setUser(resp.data) if resp.meta == 200
   redirectTo : (path, replace, opts) ->
     opts ||= {}
-    on_login = opts.on_login || opts.onLogin
-    @redirect_on_login(on_login) if on_login?
     setTimeout =>
       if replace? && replace == true
         history.replaceState(null, null, path)
@@ -139,24 +129,13 @@ class QS.Application extends QS.View
     window.location.href = url
   loginTo : (path, opts)->
     opts ||= {}
-    if !@redirect_on_login()?
-      @redirect_on_login(path)
     @setUser(opts.user) if opts.user?
     @setUserToken(opts.token) if opts.token?
   logoutTo : (path, opts={})->
     cp = @app.path()
     @setUser(null)
     @setUserToken(null)
-    if opts.save_path == true
-      @setRedirectOnLogin(cp)
     @redirectTo(path)
-  setRedirectOnLogin : (path, opts={})->
-    opts.force = true if !opts.force?
-    rol = @redirect_on_login()
-    if opts.force == false && rol?
-      return rol
-    @redirect_on_login(path)
-    return path
   runLater : (callback)->
     setTimeout callback, 10
   host : =>

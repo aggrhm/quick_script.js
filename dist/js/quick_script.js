@@ -3210,7 +3210,7 @@ Date.prototype.format = function (mask, utc) {
         };
       }
     };
-    return ko.bindingHandlers.onScrollVisible = {
+    ko.bindingHandlers.onScrollVisible = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
         var bounds, bounds_sub, check_if_visible, fn;
         fn = valueAccessor();
@@ -3231,6 +3231,35 @@ Date.prototype.format = function (mask, utc) {
         });
       }
     };
+    ko.bindingHandlers.renderSlot = {
+      init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+        var $nodes, nc, nodes, opts, ref, tparams, tpl_nodes;
+        opts = ko.unwrap(valueAccessor());
+        nc = bindingContext.extend({
+          '$view': bindingContext['$view'].owner
+        });
+        tparams = {
+          name: opts["default"] || opts.fallback
+        };
+        nodes = bindingContext['$componentTemplateNodes'];
+        if ((nodes != null) && nodes.length > 0) {
+          $nodes = $(nodes);
+          tpl_nodes = (ref = $nodes.first("template[name=" + opts.name)[0]) != null ? ref.content.cloneNode(true).childNodes : void 0;
+          if (tpl_nodes != null) {
+            tparams = {
+              nodes: tpl_nodes
+            };
+          }
+        }
+        ko.applyBindingsToNode(element, {
+          template: tparams
+        }, nc);
+        return {
+          controlsDescendantBindings: true
+        };
+      }
+    };
+    return ko.virtualElements.allowedBindings.renderSlot = true;
   };
 
 }).call(this);
@@ -5199,6 +5228,7 @@ Date.prototype.format = function (mask, utc) {
             owner = params.owner || context['$view'] || context['$parent'] || context['$root'];
             vn = model != null ? name + "-" + (typeof model.id === "function" ? model.id() : void 0) : name;
             params.element = componentInfo != null ? componentInfo.element : void 0;
+            params.templateID = topts.template_id;
             new_view = new new_view_class(vn, owner, model, params);
           } else {
             new_view.element = componentInfo != null ? componentInfo.element : void 0;
@@ -5635,14 +5665,7 @@ Date.prototype.format = function (mask, utc) {
       this.path_params = ko.observable({});
       this.path_parts = [];
       this.title = ko.observable('');
-      this.redirect_on_login = ko.observable(null);
       this.auth_method = this.opts.auth_method || 'session';
-      this.redirect_on_login(QS.LocalStore.get('app.redirect_on_login'));
-      this.redirect_on_login.subscribe((function(_this) {
-        return function(val) {
-          return QS.LocalStore.set('app.redirect_on_login', val);
-        };
-      })(this));
       this.configure();
       this.account_model || (this.account_model = this.opts.account_model || QS.Model);
       this.current_user = new this.account_model();
@@ -5669,12 +5692,7 @@ Date.prototype.format = function (mask, utc) {
       }, this);
       this.is_logged_in.subscribe((function(_this) {
         return function(val) {
-          var rol;
           if (val === true) {
-            if ((rol = _this.redirect_on_login()) != null) {
-              _this.redirectTo(rol);
-              _this.redirect_on_login(null);
-            }
             return _this.app.trigger('app.logged_in');
           } else {
             return _this.app.trigger('app.logged_out');
@@ -5816,12 +5834,7 @@ Date.prototype.format = function (mask, utc) {
     };
 
     Application.prototype.redirectTo = function(path, replace, opts) {
-      var on_login;
       opts || (opts = {});
-      on_login = opts.on_login || opts.onLogin;
-      if (on_login != null) {
-        this.redirect_on_login(on_login);
-      }
       return setTimeout((function(_this) {
         return function() {
           if ((replace != null) && replace === true) {
@@ -5846,9 +5859,6 @@ Date.prototype.format = function (mask, utc) {
 
     Application.prototype.loginTo = function(path, opts) {
       opts || (opts = {});
-      if (this.redirect_on_login() == null) {
-        this.redirect_on_login(path);
-      }
       if (opts.user != null) {
         this.setUser(opts.user);
       }
@@ -5865,26 +5875,7 @@ Date.prototype.format = function (mask, utc) {
       cp = this.app.path();
       this.setUser(null);
       this.setUserToken(null);
-      if (opts.save_path === true) {
-        this.setRedirectOnLogin(cp);
-      }
       return this.redirectTo(path);
-    };
-
-    Application.prototype.setRedirectOnLogin = function(path, opts) {
-      var rol;
-      if (opts == null) {
-        opts = {};
-      }
-      if (opts.force == null) {
-        opts.force = true;
-      }
-      rol = this.redirect_on_login();
-      if (opts.force === false && (rol != null)) {
-        return rol;
-      }
-      this.redirect_on_login(path);
-      return path;
     };
 
     Application.prototype.runLater = function(callback) {
