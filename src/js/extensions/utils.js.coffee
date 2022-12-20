@@ -122,6 +122,12 @@ QuickScript.initKOUtils = ->
   ko.onNodeDisposed = (node, fn)->
     ko.utils.domNodeDisposal.addDisposeCallback(node, fn)
 
+  ko.ensureObservable = (val)->
+    if ko.isObservable(val)
+      return val
+    else
+      return ko.computed(()=> val)
+
   ko.modelStates = {}
   ko.modelStates.READY = 1
   ko.modelStates.LOADING = 2

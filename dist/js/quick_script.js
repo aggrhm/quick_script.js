@@ -2375,6 +2375,17 @@ Date.prototype.format = function (mask, utc) {
     ko.onNodeDisposed = function(node, fn) {
       return ko.utils.domNodeDisposal.addDisposeCallback(node, fn);
     };
+    ko.ensureObservable = function(val) {
+      if (ko.isObservable(val)) {
+        return val;
+      } else {
+        return ko.computed((function(_this) {
+          return function() {
+            return val;
+          };
+        })(this));
+      }
+    };
     ko.modelStates = {};
     ko.modelStates.READY = 1;
     ko.modelStates.LOADING = 2;
