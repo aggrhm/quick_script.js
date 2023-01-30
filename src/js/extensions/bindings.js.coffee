@@ -578,20 +578,3 @@ QuickScript.initKOBindings = ->
 
 			ko.utils.domNodeDisposal.addDisposeCallback element, ->
 				bounds_sub.dispose() if !bounds_sub?
-
-	ko.bindingHandlers.renderSlot =
-		init: (element, valueAccessor, allBindings, viewModel, bindingContext)->
-			opts = ko.unwrap(valueAccessor())
-			nc = bindingContext.extend({'$view' : bindingContext['$view'].owner})
-	
-			tparams = {name: (opts.default || opts.fallback)}
-			nodes = bindingContext['$componentTemplateNodes']
-			if nodes? && nodes.length > 0
-				$nodes = $(nodes)
-				tpl_nodes = $nodes.first("template[name=#{opts.name}")[0]?.content.cloneNode(true).childNodes
-				tparams = {nodes: tpl_nodes} if tpl_nodes?
-			ko.applyBindingsToNode(element, {template : tparams}, nc)
-	
-			return { controlsDescendantBindings: true }
-	
-	ko.virtualElements.allowedBindings.renderSlot = true

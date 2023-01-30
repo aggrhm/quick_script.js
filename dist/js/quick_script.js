@@ -3221,7 +3221,7 @@ Date.prototype.format = function (mask, utc) {
         };
       }
     };
-    ko.bindingHandlers.onScrollVisible = {
+    return ko.bindingHandlers.onScrollVisible = {
       init: function(element, valueAccessor, bindingsAccessor, viewModel, bindingContext) {
         var bounds, bounds_sub, check_if_visible, fn;
         fn = valueAccessor();
@@ -3242,35 +3242,6 @@ Date.prototype.format = function (mask, utc) {
         });
       }
     };
-    ko.bindingHandlers.renderSlot = {
-      init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-        var $nodes, nc, nodes, opts, ref, tparams, tpl_nodes;
-        opts = ko.unwrap(valueAccessor());
-        nc = bindingContext.extend({
-          '$view': bindingContext['$view'].owner
-        });
-        tparams = {
-          name: opts["default"] || opts.fallback
-        };
-        nodes = bindingContext['$componentTemplateNodes'];
-        if ((nodes != null) && nodes.length > 0) {
-          $nodes = $(nodes);
-          tpl_nodes = (ref = $nodes.first("template[name=" + opts.name)[0]) != null ? ref.content.cloneNode(true).childNodes : void 0;
-          if (tpl_nodes != null) {
-            tparams = {
-              nodes: tpl_nodes
-            };
-          }
-        }
-        ko.applyBindingsToNode(element, {
-          template: tparams
-        }, nc);
-        return {
-          controlsDescendantBindings: true
-        };
-      }
-    };
-    return ko.virtualElements.allowedBindings.renderSlot = true;
   };
 
 }).call(this);

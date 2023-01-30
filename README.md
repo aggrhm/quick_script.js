@@ -12,7 +12,7 @@ See the [docs](http://agquick.github.io/quick_script).
 
 ## Versioning
 
-1. Checkout develop branch and add changes
+1. Checkout master branch and add changes
 2. Update docs
 3. Increment version in bower.json and package.json
 4. Add updates to CHANGELOG
